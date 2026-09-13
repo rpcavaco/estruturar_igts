@@ -1,0 +1,78 @@
+{
+    "antecedentes_admissiveis": {
+        "adjetivo": [
+            "nome",
+            "adjetivo",
+            "conjuncao"
+        ],
+        "adverbio": [
+            "nome"
+        ],
+        "artigo": [
+            "verbo"
+        ],
+        "conjuncao": [
+            "nome",
+            "adjetivo"
+        ],
+        "contracao": [
+            "nome",
+            "adjetivo"
+        ],
+        "determinante": [
+            "conjuncao",
+            "preposicao"
+        ],
+        "nome": [
+            "artigo",
+            "adjetivo",
+            "conjuncao",
+            "contracao",
+            "determinante",      
+            "nome",
+            "preposicao",
+            "participio",
+            "pronome",
+            "verbo"
+        ],
+        "preposicao": [
+            "nome",
+            "adjetivo",
+            "conjuncao",
+            "participio",
+            "numero"
+        ],
+        "pronome": [
+            "conjuncao",
+            "preposicao",
+            "adjetivo"
+        ],
+        "verbo": [
+            "adverbio"
+        ],
+        "participio": [
+            "adverbio",
+            "adjetivo"
+        ],
+        "numero": [
+            "nome"
+        ],
+        "data": [
+            "preposicao"
+        ]
+    },
+    "proibidos_final": [
+        "artigo",
+        "conjuncao",
+        "contracao",
+        "preposicao"
+    ],
+    "proibidos_inicio": [
+        "participio",
+        "verbo",
+        "preposicao"
+    ],
+    "palavras_remover": [
+        "decreto-lei"
+    ]
+}
