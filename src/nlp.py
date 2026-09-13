@@ -70,7 +70,8 @@ FORMAS_VERBAIS_AUXILIARES = {
 PATT_NUMERO = {
 	"int": r"[0-9]+$",	
 	"item": r"[0-9]+[\./]+[0-9]+$",
-	"float": r"[0-9]+[\,]+[0-9]+$"
+	"float": r"[0-9]+[\,]+[0-9]+$",
+	"ord": r'[0-9]+[\. ]?[ºª]'
 } 
 
 # POS_ANTECEDENTES_INADMISSIVEIS = {
@@ -199,8 +200,8 @@ def genSepararSeparadoresColados(p_the_string: str, p_ret: List[Dict[str, Type]]
 	sep_content = ""
 
 	# remover terminações estranhas a uma palavra
-	while len(the_string) > 0 and the_string[-1] in ('.', ',', ':', ';', '”', '“', ')', '»', '/'):
-		sep_content += the_string[-1]
+	while len(the_string) > 0 and the_string[-1] in ('.', ',', ':', ';', '”', '“', ')', '»'):
+		sep_content = the_string[-1] + sep_content
 		the_string = the_string[:-1]
 
 	# print("## token 191:", token)
@@ -344,7 +345,6 @@ def genTokensList(p_in_window_text: str) -> list[Any]:
 	
 	for wrd in cleantext.split():
 		genTokens(first_tokens, wrd)
-		print(first_tokens.size(), wrd[:30])
 			# if len(set(tkn.keys()).intersection(['lower', 'string', 'div'])) > 0:
 			# 	first_tokens.append(tkn)
 

@@ -4,12 +4,38 @@ import json
 import re
 
 # from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Type
-from typing import Dict, Type
+from typing import Dict, Type, Any
 
 from nlp import injetarTemposVerbais, genTokensList #, setTokenRepr, genPOS, POSNotFound, presenca_nomes_proprios, presenca_datas
+from dict_list_manager import DictListManager
 
 PT_ALPHA_CHAR_PATT = "[a-zàáâãçèéêìíîòóôõùúü]"
 PT_INV_ALPHA_CHAR_PATT = "[^a-zàáâãçèéêìíîòóôõùúü]"
+
+def set_token_repr(p_tkn: Dict[str, Any]):
+	if 'lower' in p_tkn.keys():
+		p_tkn.update(repr=p_tkn['lower'])
+	elif 'string' in p_tkn.keys():
+		p_tkn.update(repr=p_tkn['string'])
+
+def buildRepr(p_list: 'DictListManager'):
+	p_list.walk(
+		lambda item: set_token_repr(item)
+	)
+
+def reconhecerURLs(p_list: 'DictListManager'):
+
+	for idxs_list in p_list.iterNextContiguousConstructElements(lambda item: 'lower' in item.keys() and (item["lower"].startswith("http:") or item["lower"].startswith("https:"))):
+		
+		print(idxs_list, p_list[idxs_list[0]])
+
+		p_list.buildConstruct(idxs_list, "URL")
+
+	# p_list.walk(
+	# 	lambda item: item.update(active=not item["active"]),
+	# 	predicate=lambda item: 'lower' in item.keys() and (item["lower"].startswith("http:") or item["lower"].startswith("https:"))
+	# )
+
 
 class ReconhecimentoReferentes(object):
 
@@ -61,5 +87,15 @@ class ReconhecimentoReferentes(object):
 		cleantext = in_window_text
 
 		ret['entry_token_lists'] = genTokensList(cleantext)
+
+		# Definir 'repr' onde possível ########################################
+
+		buildRepr(ret['entry_token_lists'])
+
+		# Reconhecer construções (precisa de 'repr') ##########################
+
+		reconhecerURLs(ret['entry_token_lists'])
+
+
 
 		return ret

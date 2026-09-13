@@ -31,7 +31,7 @@ Example
 import json
 import warnings
 
-from copy import deepcopy
+from copy import copy, deepcopy
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Type
 
 from jsonschema import validate
@@ -180,6 +180,40 @@ class DictListManager():
 			if validate_after:
 				self._validate(item)
 
+	def iterNextContiguousConstructElements(
+		self,
+		predicate: Callable[[Dict[str, Any]], bool]
+	) -> List[int]:
+		found_idxs = []
+		for i, item in enumerate(self._items):
+			if 'construct' in item.keys(): # No multilevel constructs
+				continue
+			if predicate(item):
+				found_idxs.append(i)
+			else:
+				if len(found_idxs) > 0:
+					ret = copy(found_idxs)
+					del found_idxs[:]
+					yield ret
+
+	def buildConstruct(self, p_indexes: List[int], p_tag):
+
+		# Verificar que indices são consecutivos
+		assert len(p_indexes) > 0 and len(p_indexes) == (p_indexes[-1] - p_indexes[0]) + 1
+
+		srt_idxs = sorted(p_indexes)
+		children = []
+		for idx in srt_idxs:
+			children.append(deepcopy(self._items[idx]))
+		for idx in reversed(srt_idxs):
+			del self._items[idx]
+		self._items.insert(min(srt_idxs), {
+			"construct": p_tag,
+			"children": children,
+			"repr": " ".join([c['repr'] for c in children if 'repr' in c.keys()])
+		})
+		
+
 	def __iter__(self) -> Iterator[Dict[str, Any]]:
 		"""Iterate over (read-only-by-convention) copies of the items."""
 		return iter(deepcopy(item) for item in self._items)
@@ -244,10 +278,6 @@ class DictListManager():
 
 	def __repr__(self) -> str:
 		return f"DictListManager(count={len(self._items)}, schemas={self.schemas})"
-
-	def size(self) -> int:
-		return len(self._items)
-
 
 if __name__ == "__main__":
 	# Minimal smoke test / usage demo.
