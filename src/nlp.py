@@ -207,25 +207,31 @@ def genSepararSeparadoresColados(p_the_string: str):
 	sep_content = ""
 
 	# remover terminações estranhas a uma palavra
+	sep_chars = []
 	while len(the_string) > 0 and the_string[-1] in ('.', ',', ':', ';', '”', '“', '"', "'", ')', '»'):
-		type_str = None
 		the_char = the_string[-1]
 		the_string = the_string[:-1]
-		if the_char in ('”', '“', '"', "'"):
-			type_str = "quote"
-		elif the_char == '»':
-			type_str = "angle_quote"
-		elif the_char == ')':
-			type_str = "parentesis"
-		if not type_str is None:
-			postlist.append({"sep": "containment_end", "type": type_str, "ok": the_char})
-		else:
-			if the_char == ',':
-				postlist.append({"sep": "soft", "ok": the_char})
-			elif the_char in ('.', ';'):
-				postlist.append({"sep": "hard", "ok": the_char})
-			elif the_char == ':':
-				postlist.append({"sep": "continuity", "ok": the_char})
+		sep_chars.append(the_char)
+
+	if len(sep_chars) > 0:
+		rev_chars = reversed(sep_chars)
+		for ch in rev_chars:
+			type_str = None
+			if ch in ('”', '“', '"', "'"):
+				type_str = "quote"
+			elif ch == '»':
+				type_str = "angle_quote"
+			elif ch == ')':
+				type_str = "parentesis"
+			if not type_str is None:
+				postlist.append({"sep": "containment_end", "type": type_str, "ok": ch})
+			else:
+				if ch == ',':
+					postlist.append({"sep": "soft", "ok": ch})
+				elif ch in ('.', ';'):
+					postlist.append({"sep": "hard", "ok": ch})
+				elif ch == ':':
+					postlist.append({"sep": "continuity", "ok": ch})
 
 	return prevlist, the_string, postlist
 
