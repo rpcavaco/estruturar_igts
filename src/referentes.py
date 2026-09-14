@@ -78,12 +78,26 @@ class ReconhecimentoReferentes(object):
 
 		self.inicios_admissiveis = set(self.pos_admissiveis["antecedentes_admissiveis"].keys())
 
-	def buildPOS(self, p_ret: Dict[str, Any]) -> None:
 
-		token_list = p_ret['entry_token_lists']
+	def marcarSiglas(self, p_list: 'DictListManager', out_siglas: List[str]) -> None:
 
-		nomes_e_siglas = copy(self.nomes)
-		nomes_e_siglas.extend(self.substituicoes.keys())
+		del out_siglas[:]
+
+		def add_sigla(p_out_siglas, p_str):
+			if not p_str in p_out_siglas:
+				p_out_siglas.append(p_str)
+
+		p_list.walk(
+			lambda item: item.update(pos='sigla'),
+			predicate=lambda item: 'repr' in item.keys() and item['repr'] in self.substituicoes.keys(),
+			afterfunc=lambda item: add_sigla(out_siglas, item['repr'])
+		)
+
+	def buildPOS(self, p_ret: Dict[str, Any], out_siglas: List[str]) -> None:
+
+		token_list = p_ret['tokens_list']
+		this_out_siglas = []
+		del out_siglas[:]
 
 		for idx, grp_tokens in token_list.iterateGroups(group_size=2, prev_is_null=True):
 			
@@ -108,7 +122,7 @@ class ReconhecimentoReferentes(object):
 					if k in prev_tkn.keys():
 						the_prev_tkn = None
 						break
-
+		
 			try:
 				genPOS(self.part_of_speech_dict, self.nomes, self.substituicoes.keys(), tkn, prev_tkn=the_prev_tkn)	
 				token_list.validate(tkn)
@@ -188,6 +202,24 @@ class ReconhecimentoReferentes(object):
 		for idxs_list_2 in reversed(idxs_lists):
 			p_list.buildConstruct(idxs_list_2, "data_mes")
 
+	def reconhecerExpansaoSiglas(self, p_list: 'DictListManager', p_siglas_list) -> None:
+
+		if len(p_siglas_list) == 0:
+			return
+
+		for sigla in p_siglas_list:
+
+			words_subst = self.substituicoes[sigla].split()
+
+
+			idxs_lists = []
+			for idx, indices in p_list.iterateMatches([words_subst]):
+				idxs_lists.append(indices)
+
+			for idxs_list_1 in reversed(idxs_lists):
+				p_list.buildConstruct(idxs_list_1, "nome_ou_designacao", adic_attribs=[('sigla', sigla)])
+
+
 	def reconhecerEmJanela(self, p_janela: str) -> Dict[str, Type]:
 
 		ret = {}
@@ -201,25 +233,36 @@ class ReconhecimentoReferentes(object):
 
 		cleantext = in_window_text
 
-		ret['entry_token_lists'] = genTokensList(cleantext)
+		ret['tokens_list'] = genTokensList(cleantext)
 
 		# Definir 'repr' onde possível ########################################
 
-		buildRepr(ret['entry_token_lists'])
+		buildRepr(ret['tokens_list'])
 
 		# Reconhecer construções (q precisam de 'repr' mas não de 'pos') ######
 
-		self.reconhecerURLs(ret['entry_token_lists'])
-		self.reconhecerDatas(ret['entry_token_lists'])
-
-		# Obter POS ###########################################################
-
-		self.buildPOS(ret)
+		self.reconhecerURLs(ret['tokens_list'])
+		self.reconhecerDatas(ret['tokens_list'])
 
 		# Reconhecer construções nome ou designação ###########################
 
-		self.reconhecerNomes(ret['entry_token_lists'])
+		self.reconhecerNomes(ret['tokens_list'])
 
+		# Marcasr siglas e nomes ou designações de expansão de sigla  #########
+
+		out_siglas = []
+		self.marcarSiglas(ret['tokens_list'], out_siglas)	
+		self.reconhecerExpansaoSiglas(ret['tokens_list'], out_siglas)
+
+		# Obter POS ###########################################################
+
+		# pos=['sigla'] já se encontram preenchidos
+
+		# 'sigla' tem de ser equiparado a 'nome', bem como certos constructs, na atribuição de POSS
+
+		self.buildPOS(ret, out_siglas)
+
+		
 
 
 

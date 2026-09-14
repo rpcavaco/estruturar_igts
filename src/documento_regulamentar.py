@@ -156,35 +156,6 @@ def ler_entre_linhas(p_text, p_line_num_start, line_num_stop=None):
 
 	return ret
 
-# class NumeracaoRomana(object):
-# 	"""Classe para leitura e verificação de números em notação romana
-# 	"""
-
-# 	def __init__(self):
-# 		self.nr = ['I', 'II', 'III', 'IV','V','VI','VII','VIII', 'IX', 
-# 			'X', 'XI', 'XII', 'XIII', 'XIV','XV','XVI','XVII','XVIII', 'XIX',
-# 			'XX', 'XXI', 'XXII', 'XXIII', 'XXIV','XXV','XXVI','XXVII','XXVIII', 'XXIX',
-# 			'XXX', 'XXXI', 'XXXII', 'XXXIII', 'XXXIV','XXXV','XXXVI','XXXVII','XXXVIII', 'XXXIX',
-# 			'XL', 'XLI', 'XLII', 'XLIII', 'XLIV','XLV','XLVI','XLVII','XLVIII', 'XLIX',
-# 			'L', 'LI', 'LII', 'LIII', 'LIV','LV','LVI','LVII','LVIII', 'LIX',
-# 			'LX', 'LXI', 'LXII', 'LXIII', 'LXIV','LXV','LXVI','LXVII','LXVIII', 'LXIX',
-# 			'LXX', 'LXXI', 'LXXII', 'LXXIII', 'LXXIV','LXXV','LXXVI','LXXVII','LXXVIII', 'LXXIX',
-# 			'LXXX', 'LXXXI', 'LXXXII', 'LXXXIII', 'LXXXIV','LXXXV','LXXXVI','LXXXVII','LXXXVIII', 'LXXXIX',
-# 			'XC', 'XCI', 'XCII', 'XCIII', 'XCIV','XCV','XCVI','XCVII','XCVIII', 'XCIX'
-# 		]
-		
-# 	def fromRomanStr(self, p_in_str) -> int | None:
-# 		try:
-# 			idx = self.nr.index(p_in_str.upper())
-# 			ret = idx + 1
-# 		except ValueError:
-# 			ret = None
-
-# 		return ret
-	
-# 	def checkIsRoman(self, p_str) -> bool:
-# 		return p_str.strip().upper() in self.nr
-
 def titulos_maiusculas_com_romano_final(p_caminho) -> list:
 	"""Extração de títulos em maiúsculas terminados por número em notação romana, a partir de ficheiro aberto propositadamente para esse fim.
 

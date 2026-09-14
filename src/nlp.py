@@ -411,12 +411,12 @@ def genPOS(p_part_of_speech_dict: Dict[str, Dict[str, Any]], p_nomes_list: List[
 	if not 'repr' in p_this_token.keys():
 		return
 
+	# Não tocar nas siglas
+	if 'pos' in p_this_token.keys() and p_this_token['pos'] == ['sigla']:
+		return
+
 	if p_this_token['repr'] in p_nomes_list:
 		p_this_token.update(pos=['nome_proprio'])
-		return 
-
-	if p_this_token['repr'] in p_siglas_list:
-		p_this_token.update(pos=['sigla'])
 		return 
 
 	if not p_this_token['repr'] in p_part_of_speech_dict.keys():

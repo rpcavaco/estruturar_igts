@@ -32,7 +32,7 @@ import json
 import warnings
 
 from copy import copy, deepcopy
-from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Type
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Type, Tuple
 
 from jsonschema import validate
 from jsonschema import Validator, Draft202012Validator
@@ -157,7 +157,8 @@ class DictListManager():
 		self,
 		func: Callable[[Dict[str, Any]], Any],
 		predicate: Optional[Callable[[Dict[str, Any]], bool]] = None,
-		validate_after: bool = True,
+		afterfunc: Optional[Callable[[Dict[str, Any]], Any]] = None,
+		validate_after: bool = True
 	) -> None:
 		"""
 		Walk the list and apply ``func`` to each dictionary, in place.
@@ -179,6 +180,9 @@ class DictListManager():
 				raise
 			if validate_after:
 				self.validate(item)
+			if not afterfunc is None:
+				afterfunc(item)
+
 
 	def iterateMatches(self, p_words_lists: List[List[str]]) -> None:
 
@@ -244,7 +248,7 @@ class DictListManager():
 				break
 
 
-	def buildConstruct(self, p_indexes: List[int], p_tag):
+	def buildConstruct(self, p_indexes: List[int], p_tag, adic_attribs: Optional[List[Tuple]] = None):
 
 		# Verificar que indices são consecutivos
 		assert len(p_indexes) > 0 and len(p_indexes) == (p_indexes[-1] - p_indexes[0]) + 1, p_indexes
@@ -255,11 +259,16 @@ class DictListManager():
 			children.append(deepcopy(self._items[idx]))
 		for idx in reversed(srt_idxs):
 			self.remove_at(idx)
-		self._items.insert(min(srt_idxs), {
+		insert_obj = {
 			"construct": p_tag,
 			"children": children,
 			"repr": " ".join([c['repr'] for c in children if 'repr' in c.keys()])
-		})
+		}
+		if not adic_attribs is None:
+			for k, v in adic_attribs:
+				insert_obj[k] = v
+
+		self._items.insert(min(srt_idxs), deepcopy(insert_obj))
 
 	def __iter__(self) -> Iterator[Dict[str, Any]]:
 		"""Iterate over (read-only-by-convention) copies of the items."""
