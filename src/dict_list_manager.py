@@ -81,7 +81,7 @@ class DictListManager():
 	# ------------------------------------------------------------------ #
 	# Schema handling
 	# ------------------------------------------------------------------ #
-	def _validate(self, item: Dict[str, Any]) -> None:
+	def validate(self, item: Dict[str, Any]) -> None:
 		"""Se não tiverem sido definidos schemas, esta validação dá sempre resultado positivo,
 			não tenta inferir um schema"""
 		if len(self.validators) > 0:
@@ -111,7 +111,7 @@ class DictListManager():
 		"""
 		item = dict(fields)
 
-		self._validate(item)
+		self.validate(item)
 		return item
 
 	def insert(
@@ -133,7 +133,7 @@ class DictListManager():
 			item = dict(item)  # defensive copy
 			if fields:
 				item.update(fields)
-			self._validate(item)
+			self.validate(item)
 
 		if index is None:
 			self._items.append(item)
@@ -178,41 +178,88 @@ class DictListManager():
 				warnings.warn(f"{e} - item:{item}")
 				raise
 			if validate_after:
-				self._validate(item)
+				self.validate(item)
+
+	def iterateMatches(self, p_words_lists: List[List[str]]) -> None:
+
+		for word_list in p_words_lists:
+			lw = len(word_list)
+			for i, group in self.iterateGroups(group_size=lw, prev_is_null=False):
+				filt_group = [t['repr'] for t in group if 'repr' in t.keys()]
+				if len(filt_group) != lw:
+					continue
+				if filt_group == word_list:
+					yield i, [j+i for j in range(lw)]
 
 	def iterNextContiguousConstructElements(
 		self,
-		predicate: Callable[[Dict[str, Any]], bool]
+		predicate: Callable[[Dict[str, Any]], bool],
+		testlist: Optional[List[str]] = None
 	) -> List[int]:
 		found_idxs = []
+		fluxo = []
+		check_fluxo = False
 		for i, item in enumerate(self._items):
-			if 'construct' in item.keys(): # No multilevel constructs
-				continue
-			if predicate(item):
-				found_idxs.append(i)
+			if not testlist is None and 'repr' in item.keys() and item['repr'] in testlist:
+				check_fluxo = True
 			else:
-				if len(found_idxs) > 0:
-					ret = copy(found_idxs)
-					del found_idxs[:]
-					yield ret
+				check_fluxo = False
+			#if check_fluxo:
+			if 'construct' in item.keys(): # No multilevel constructs
+				if len(fluxo) > 0:
+					fluxo.append(f"{item} construct {i}")
+			else:
+				if predicate(item):
+					if check_fluxo:
+						fluxo.append(f"{item} predicate OK, append {i}")
+					found_idxs.append(i)
+				else:
+					if len(found_idxs) > 0:
+						if check_fluxo:
+							fluxo.append(f"{item} predicate NOTOK, yield {i}")
+							print("\n".join(fluxo))
+							del fluxo[:]
+						ret = copy(found_idxs)
+						del found_idxs[:]
+						yield ret
+
+		if len(fluxo) > 0:
+			print("Fluxo final:", "\n".join(fluxo))
+
+	def iterateGroups(self, group_size: int = 1, prev_is_null: bool = False):
+
+		seed = 0
+		if group_size > 1 and prev_is_null:
+			group = [None] + [el for el in self._items[0:group_size-1]]
+			if len(group) == 0:
+				return
+			yield 0, group
+			seed = 1
+
+		for i, item in enumerate(self._items):		
+			group = [el for el in self._items[i:i+group_size]]
+			if len(group) > 0:
+				yield i + seed, group
+			else:
+				break
+
 
 	def buildConstruct(self, p_indexes: List[int], p_tag):
 
 		# Verificar que indices são consecutivos
-		assert len(p_indexes) > 0 and len(p_indexes) == (p_indexes[-1] - p_indexes[0]) + 1
+		assert len(p_indexes) > 0 and len(p_indexes) == (p_indexes[-1] - p_indexes[0]) + 1, p_indexes
 
 		srt_idxs = sorted(p_indexes)
 		children = []
 		for idx in srt_idxs:
 			children.append(deepcopy(self._items[idx]))
 		for idx in reversed(srt_idxs):
-			del self._items[idx]
+			self.remove_at(idx)
 		self._items.insert(min(srt_idxs), {
 			"construct": p_tag,
 			"children": children,
 			"repr": " ".join([c['repr'] for c in children if 'repr' in c.keys()])
 		})
-		
 
 	def __iter__(self) -> Iterator[Dict[str, Any]]:
 		"""Iterate over (read-only-by-convention) copies of the items."""

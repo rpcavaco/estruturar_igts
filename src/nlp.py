@@ -184,45 +184,50 @@ def verificar(value, checks, bus=None, path_exec_key='execpath'):
 		bus.setdefault(path_exec_key, [])
 		bus[path_exec_key].append('Final')
 
-def genSepararSeparadoresColados(p_the_string: str, p_ret: List[Dict[str, Type]], p_dirty: str):
+def genSepararSeparadoresColados(p_the_string: str):
 
 	sep_content = ""
 	the_string = str(p_the_string)
 
-	# remover inicios estranhos a uma palavra
-	while len(the_string) > 0 and the_string[0] in ('“', '(', '«'):
-		sep_content += the_string[0]
-		the_string = the_string[1:]
+	prevlist = []
+	postlist = []
 
-	if len(sep_content) > 0:
-		p_ret.insert(sep="simple", ok=copy(sep_content))
+	# remover inicios estranhos a uma palavra
+	while len(the_string) > 0 and the_string[0] in ('“', '”',  '"', "'", '(', '«'):
+		the_char = the_string[0]
+		the_string = the_string[1:]
+		if the_char in ('“', '”',  '"', "'"):
+			type_str = "quote"
+		elif the_char == '«':
+			type_str = "angle_quote"
+		else:
+			type_str = "parentesis"
+		prevlist.append({"sep": "containment_start", "type": type_str, "ok": the_char} )
 
 	sep_content = ""
 
 	# remover terminações estranhas a uma palavra
-	while len(the_string) > 0 and the_string[-1] in ('.', ',', ':', ';', '”', '“', ')', '»'):
-		sep_content = the_string[-1] + sep_content
+	while len(the_string) > 0 and the_string[-1] in ('.', ',', ':', ';', '”', '“', '"', "'", ')', '»'):
+		type_str = None
+		the_char = the_string[-1]
 		the_string = the_string[:-1]
-
-	# print("## token 191:", token)
-
-	# Novo teste de utilidade, agora ao token 'stripped'  ...
-	if not the_string in NOT_WORD_CHARS and len(the_string) > 0 and not the_string[0].isdigit():
-		p_ret.insert(ok=the_string, lower=the_string.lower())
-		if sep_content[:-1] == ':':
-			p_ret[-1]["enum_follows"] = True
-	else:
-		num_patt, val = getNumPattern(the_string)
-		# print("## token 200:", token, num_patt is None)
-		if not num_patt is None:
-			p_ret.insert( ok=str(the_string), numero=num_patt, string=str(the_string))
-			if not val is None:
-				p_ret[-1]["valor"] = val
+		if the_char in ('”', '“', '"', "'"):
+			type_str = "quote"
+		elif the_char == '»':
+			type_str = "angle_quote"
+		elif the_char == ')':
+			type_str = "parentesis"
+		if not type_str is None:
+			postlist.append({"sep": "containment_end", "type": type_str, "ok": the_char})
 		else:
-			p_ret.insert(raw=p_dirty)
+			if the_char == ',':
+				postlist.append({"sep": "soft", "ok": the_char})
+			elif the_char in ('.', ';'):
+				postlist.append({"sep": "hard", "ok": the_char})
+			elif the_char == ':':
+				postlist.append({"sep": "continuity", "ok": the_char})
 
-	if len(sep_content) > 0:
-		p_ret.insert(sep="simple", ok=copy(sep_content))
+	return prevlist, the_string, postlist
 
 
 def genTokens(p_ret: "DictListManager", p_dirty):
@@ -231,67 +236,81 @@ def genTokens(p_ret: "DictListManager", p_dirty):
 
 	the_string = p_dirty
 
-	if len(the_string) == 0:
-		return 
+	if len(p_dirty) == 0:
+		return
 
-	ALL_SEPS = ('.', ',', ':', ';', '”', '“', ')', '»', '“', '(', '«', '/', '-', chr(int('2013', 16)))
-	aseps = set(ALL_SEPS)
+	postlist = []
 
-	# separadores DIVISORES
-	divseps = set([':', ';','/', '-', chr(int('2013', 16))])
+	if len(p_dirty) >= 3:
+		prevlist, the_string, postlist = genSepararSeparadoresColados(the_string)
+		for el in prevlist:
+			p_ret.insert(**el)
+	else:
+		the_string = p_dirty
 
-	rom_num = NumeracaoRomana()
+	if len(the_string) > 0:
 
-	init_len = len(p_ret)
+		ALL_SEPS = ('.', ',', ':', ';', '”', '“', ')', '»', '“', '(', '«', '/', '-', chr(int('2013', 16)))
+		aseps = set(ALL_SEPS)
 
-	checks = [
+		# separadores DIVISORES
+		divseps = set([':', ';','/', '-', chr(int('2013', 16))])
 
-		(None, 
-			lambda _pv, v, _bus: v in NOT_WORD_CHARS, 
-			lambda _pv, v, bus: bus['ret'].insert(raw=bus['dirty']), 
-				True ),
+		rom_num = NumeracaoRomana()
 
-		(None, 
-			lambda pv, _v, bus: not bus['numpatt'][0] is None and not bus['numpatt'][1] is None, 
-			lambda pv, _v, bus: bus['ret'].insert(ok=the_string, numero=bus['numpatt'][0], valor=bus['numpatt'][1], string=str(the_string)), 
-				True ),
+		init_len = len(p_ret)
 
-		(None, 
-			lambda pv, _v, bus: not bus['numpatt'][0] is None and bus['numpatt'][1] is None, 
-			lambda pv, _v, bus: bus['ret'].insert(ok=the_string, numero=bus['numpatt'][0], string=str(the_string)), 
-				True ),
+		checks = [
 
-		(lambda v, _bus: rom_num.fromRomanStr(v), 
-			lambda pv, _v, _bus: not pv is None, 
-			lambda pv, _v, bus: bus['ret'].insert(k=the_string, numero="romano", valor=pv, string=str(the_string)), 
-				True ),
-
-	]
-
-	verificar(the_string, checks, bus={'ret': p_ret, 'dirty': p_dirty, 'numpatt': getNumPattern(the_string)})
-
-	if len(p_ret) == init_len:
-
-		checks2 = [
-
-			(lambda v, _bus: set(v), 
-				lambda pv, _v, bus: pv.issubset(bus['divseps']), 
-				lambda _pv, v, bus: bus['ret'].insert(sep="div", ok=v ), 
+			(None, 
+				lambda _pv, v, _bus: v in NOT_WORD_CHARS, 
+				lambda _pv, v, bus: bus['ret'].insert(raw=bus['dirty']), 
 					True ),
 
-			(lambda v, _bus: set(v), 
-				lambda pv, _v, bus: pv.issubset(bus['aseps']), 
-				lambda _pv, v, bus: bus['ret'].insert(sep="simple", ok=v ), 
-					True )
+			(None, 
+				lambda pv, _v, bus: not bus['numpatt'][0] is None and not bus['numpatt'][1] is None, 
+				lambda pv, _v, bus: bus['ret'].insert(ok=the_string, numero=bus['numpatt'][0], valor=bus['numpatt'][1], string=str(the_string)), 
+					True ),
+
+			(None, 
+				lambda pv, _v, bus: not bus['numpatt'][0] is None and bus['numpatt'][1] is None, 
+				lambda pv, _v, bus: bus['ret'].insert(ok=the_string, numero=bus['numpatt'][0], string=str(the_string)), 
+					True ),
+
+			(lambda v, _bus: rom_num.fromRomanStr(v), 
+				lambda pv, _v, _bus: not pv is None, 
+				lambda pv, _v, bus: bus['ret'].insert(k=the_string, numero="romano", valor=pv, string=str(the_string)), 
+					True ),
+
 		]
 
-		verificar(the_string, checks2, bus={'ret': p_ret, 'aseps': aseps, 'divseps': divseps })
+		verificar(the_string, checks, bus={'ret': p_ret, 'dirty': p_dirty, 'numpatt': getNumPattern(the_string)})
 
-	if len(p_ret) == init_len:
+		if len(p_ret) == init_len:
 
-		genSepararSeparadoresColados(the_string, p_ret, p_dirty)
+			checks2 = [
 
-	assert len(p_ret) > init_len
+				(lambda v, _bus: set(v), 
+					lambda pv, _v, bus: pv.issubset(bus['divseps']), 
+					lambda _pv, v, bus: bus['ret'].insert(sep="div", ok=v ), 
+						True ),
+
+				(lambda v, _bus: set(v), 
+					lambda pv, _v, bus: pv.issubset(bus['aseps']), 
+					lambda _pv, v, bus: bus['ret'].insert(sep="simple", ok=v ), 
+						True )
+			]
+
+			verificar(the_string, checks2, bus={'ret': p_ret, 'aseps': aseps, 'divseps': divseps })
+
+		if len(p_ret) == init_len:
+
+			p_ret.insert(ok=the_string, lower=the_string.lower())
+
+	for el in postlist:
+		p_ret.insert(**el)
+
+	assert len(p_ret) > init_len, f"{len(p_ret)} > {init_len},  '{p_dirty}', {prevlist}, {postlist}, '{the_string}' {p_ret}"
 
 	#print("## ret:", p_ret)
 
@@ -380,155 +399,152 @@ def setTokenRepr(p_tkn: dict[str,Any]) -> bool:
 
 	return ret
 
-# def genPOS(p_part_of_speech_dict: dict[str,dict], p_this_token: dict[str,Any], p_allowed_init_pos: list[str], prev_tkn: Any | None = None) -> None:
-def genPOS(p_part_of_speech_dict: dict[str,dict], p_this_token: dict[str,Any], prev_tkn: Any | None = None) -> None:
+def genPOS(p_part_of_speech_dict: Dict[str, Dict[str, Any]], p_nomes_list: List[str], p_siglas_list: List[str], p_this_token: Dict[str,Any], prev_tkn: Dict[str,Any] | None = None) -> None:
 
 	# assert len(p_allowed_init_pos) > 0, "genPOS: 'p_allowed_init_pos' parameter requires non-empty list"
+	if not 'repr' in p_this_token.keys():
+		return
 
-	assert not 'pos' in p_this_token.keys(), p_this_token
+	if p_this_token['repr'] in p_nomes_list:
+		p_this_token.update(pos=['nome_proprio'])
+		return 
 
-	numpatt, _val = getNumPattern(p_this_token['repr'])
+	if p_this_token['repr'] in p_siglas_list:
+		p_this_token.update(pos=['sigla'])
+		return 
 
-	if not numpatt is None:
+	if not p_this_token['repr'] in p_part_of_speech_dict.keys():
+		raise POSNotFound(p_this_token)
 
-		p_this_token['pos'] = ['numero']
-
+	if prev_tkn is None or not 'pos' in prev_tkn.keys():	# prev_tkn['repr'] in p_part_of_speech_dict.keys():
+		real_prev_tkn = None
 	else:
+		real_prev_tkn = prev_tkn
 
-		if not p_this_token['repr'] in p_part_of_speech_dict.keys():
-			raise POSNotFound(p_this_token)
+	def_pos = set(p_part_of_speech_dict[p_this_token['repr']])
 
-		if prev_tkn is None or not 'pos' in prev_tkn.keys():	# prev_tkn['repr'] in p_part_of_speech_dict.keys():
-			real_prev_tkn = None
-		else:
-			real_prev_tkn = prev_tkn
+	prev_pos = None
+	if not real_prev_tkn is None:
+		if 'pos' in real_prev_tkn.keys():
+			prev_pos = set(real_prev_tkn['pos'])
+		else:	
+			prev_pos = set(p_part_of_speech_dict[real_prev_tkn['repr']])
 
-		assert not 'pos' in p_this_token.keys()
+	nomadj_set = set(["nome", "adjetivo"])
+	nomverb_set = set(["nome", "verbo"])
+	verbadj_set = set(["verbo", "adjetivo"])
+	nompart_set = set(["nome", "participio"])
+	partadj_set = set(["participio", "adjetivo"])
 
-		def_pos = set(p_part_of_speech_dict[p_this_token['repr']])
+	ret = None
 
-		prev_pos = None
-		if not real_prev_tkn is None:
-			if 'pos' in real_prev_tkn.keys():
-				prev_pos = set(real_prev_tkn['pos'])
-			else:	
-				prev_pos = set(p_part_of_speech_dict[real_prev_tkn['repr']])
+	fluxo = []
+	pronto = False
+	count = 0
 
-		nomadj_set = set(["nome", "adjetivo"])
-		nomverb_set = set(["nome", "verbo"])
-		verbadj_set = set(["verbo", "adjetivo"])
-		nompart_set = set(["nome", "participio"])
-		partadj_set = set(["participio", "adjetivo"])
+	while not pronto and count < 5:
 
-		ret = None
-
-		fluxo = []
-		pronto = False
-		count = 0
-
-		while not pronto and count < 5:
-
-			count += 1
-		
-			if nomadj_set.issubset(def_pos):
-				if real_prev_tkn is None:
-					fluxo.append("A1")
-					def_pos.remove("adjetivo")
-					# ret = ['nome']
-					# pronto = True
-				else:
-					if 'nome' in prev_pos:
-						fluxo.append("A2")
-						# ret = ['adjetivo']
-						def_pos.remove("nome")
-					# elif 'adjetivo' in prev_pos:
-					# 	fluxo.append("A3")
-					# 	# ret = ['adjetivo']
-					# 	def_pos.remove("adjetivo")
-					else:
-						fluxo.append("A4")
-						ret = list(def_pos)
-						pronto = True
-			elif nomverb_set.issubset(def_pos):
-				if real_prev_tkn is None or len(set(['preposicao', 'artigo', 'conjuncao']).intersection(prev_pos)) > 0:
-					fluxo.append("B1")
-					#ret = ['nome']
-					def_pos.remove("verbo")
-				else:
-					if 'nome' in prev_pos:
-						fluxo.append("B2")
-						# ret = ['verbo']
-						def_pos.remove("nome")
-					else:
-						fluxo.append("B3")
-						ret = list(def_pos)
-						pronto = True
-			elif nompart_set.issubset(def_pos):
-				if real_prev_tkn is None or len(set(['preposicao', 'artigo', 'conjuncao']).intersection(prev_pos)) > 0:
-					fluxo.append("C1")
-					#ret = ['nome']
-					def_pos.remove("participio")
-				else:
-					if 'nome' in prev_pos:
-						fluxo.append("C2")
-						# ret = ['verbo']
-						def_pos.remove("nome")
-					else:
-						fluxo.append("C3")
-						ret = list(def_pos)
-						pronto = True
-			elif verbadj_set.issubset(def_pos):
-				if real_prev_tkn is None:
-					fluxo.append("D1")
-					def_pos.remove("adjetivo")
-				else:
-					if 'nome' in prev_pos:
-						fluxo.append("D2")
-						def_pos.remove("verbo")
-						# ret = ['adjetivo']
-					else:
-						fluxo.append("D3")
-						ret = list(def_pos)
-						pronto = True
-			elif partadj_set.issubset(def_pos):
-				if real_prev_tkn is None:
-					fluxo.append("E1")
-					def_pos.remove("adjetivo")
-				else:
-					if 'nome' in prev_pos:
-						fluxo.append("E2")
-						def_pos.remove("participio")
-						# ret = ['adjetivo']
-					elif bool(set(['adjetivo', 'preposicao']).intersection(prev_pos)):
-						fluxo.append("E3")
-						def_pos.remove("adjetivo")
-						# ret = ['adjetivo']
-					else:
-						fluxo.append("E4")
-						ret = list(def_pos)
-						pronto = True
+		count += 1
+	
+		if nomadj_set.issubset(def_pos):
+			if real_prev_tkn is None:
+				fluxo.append("A1")
+				def_pos.remove("adjetivo")
+				# ret = ['nome']
+				# pronto = True
 			else:
-				pronto = True
-				# if real_prev_tkn is None:
-				# 	fluxo.append("F1")
-				# 	ret = list(def_pos.intersection(p_allowed_init_pos))
-				# else:
-				# 	fluxo.append("F2")
-				ret = list(def_pos)
+				if 'nome' in prev_pos:
+					fluxo.append("A2")
+					# ret = ['adjetivo']
+					def_pos.remove("nome")
+				# elif 'adjetivo' in prev_pos:
+				# 	fluxo.append("A3")
+				# 	# ret = ['adjetivo']
+				# 	def_pos.remove("adjetivo")
+				else:
+					fluxo.append("A4")
+					ret = list(def_pos)
+					pronto = True
+		elif nomverb_set.issubset(def_pos):
+			if real_prev_tkn is None or len(set(['preposicao', 'artigo', 'conjuncao']).intersection(prev_pos)) > 0:
+				fluxo.append("B1")
+				#ret = ['nome']
+				def_pos.remove("verbo")
+			else:
+				if 'nome' in prev_pos:
+					fluxo.append("B2")
+					# ret = ['verbo']
+					def_pos.remove("nome")
+				else:
+					fluxo.append("B3")
+					ret = list(def_pos)
+					pronto = True
+		elif nompart_set.issubset(def_pos):
+			if real_prev_tkn is None or len(set(['preposicao', 'artigo', 'conjuncao']).intersection(prev_pos)) > 0:
+				fluxo.append("C1")
+				#ret = ['nome']
+				def_pos.remove("participio")
+			else:
+				if 'nome' in prev_pos:
+					fluxo.append("C2")
+					# ret = ['verbo']
+					def_pos.remove("nome")
+				else:
+					fluxo.append("C3")
+					ret = list(def_pos)
+					pronto = True
+		elif verbadj_set.issubset(def_pos):
+			if real_prev_tkn is None:
+				fluxo.append("D1")
+				def_pos.remove("adjetivo")
+			else:
+				if 'nome' in prev_pos:
+					fluxo.append("D2")
+					def_pos.remove("verbo")
+					# ret = ['adjetivo']
+				else:
+					fluxo.append("D3")
+					ret = list(def_pos)
+					pronto = True
+		elif partadj_set.issubset(def_pos):
+			if real_prev_tkn is None:
+				fluxo.append("E1")
+				def_pos.remove("adjetivo")
+			else:
+				if 'nome' in prev_pos:
+					fluxo.append("E2")
+					def_pos.remove("participio")
+					# ret = ['adjetivo']
+				elif bool(set(['adjetivo', 'preposicao']).intersection(prev_pos)):
+					fluxo.append("E3")
+					def_pos.remove("adjetivo")
+					# ret = ['adjetivo']
+				else:
+					fluxo.append("E4")
+					ret = list(def_pos)
+					pronto = True
+		else:
+			pronto = True
+			# if real_prev_tkn is None:
+			# 	fluxo.append("F1")
+			# 	ret = list(def_pos.intersection(p_allowed_init_pos))
+			# else:
+			# 	fluxo.append("F2")
+			ret = list(def_pos)
 
-		assert not ret is None and len(ret) > 0, f"prev_tkn:{prev_tkn} this_token:{p_this_token}"
+	assert not ret is None and len(ret) > 0, f"prev_tkn:{prev_tkn} this_token:{p_this_token}"
 
-		# if p_this_token['repr'] == "ocorrido":
-		# 	print(fluxo, p_this_token, partadj_set, ret, partadj_set.issubset(set(ret)))
-		
-		p_this_token['pos'] = ret
+	# if p_this_token['repr'] == "ocorrido":
+	# 	print(fluxo, p_this_token, partadj_set, ret, partadj_set.issubset(set(ret)))
+	
+	p_this_token['pos'] = ret
 
-		# # Caminho F2 é default, POS inicial é transcrito sem transformação; se for único não precisa de ser referenciado
-		# if fluxo == ['F2']:
-		# 	del fluxo[-1]
+	# # Caminho F2 é default, POS inicial é transcrito sem transformação; se for único não precisa de ser referenciado
+	# if fluxo == ['F2']:
+	# 	del fluxo[-1]
 
-		if len(fluxo) > 0:
-			p_this_token['fluxo_pos'] = fluxo
+	if len(fluxo) > 0:
+		p_this_token['fluxo_pos'] = fluxo
 
 def injetarTemposVerbais(p_dict):
 

@@ -4,38 +4,25 @@ import json
 import re
 
 # from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Type
-from typing import Dict, Type, Any
+from typing import Dict, Type, Any, List
+from copy import copy
 
-from nlp import injetarTemposVerbais, genTokensList #, setTokenRepr, genPOS, POSNotFound, presenca_nomes_proprios, presenca_datas
+from nlp import injetarTemposVerbais, genTokensList, genPOS, POSNotFound #, presenca_nomes_proprios, presenca_datas
 from dict_list_manager import DictListManager
 
 PT_ALPHA_CHAR_PATT = "[a-zàáâãçèéêìíîòóôõùúü]"
 PT_INV_ALPHA_CHAR_PATT = "[^a-zàáâãçèéêìíîòóôõùúü]"
 
-def set_token_repr(p_tkn: Dict[str, Any]):
+def set_token_repr(p_tkn: Dict[str, Any]) -> None:
 	if 'lower' in p_tkn.keys():
 		p_tkn.update(repr=p_tkn['lower'])
 	elif 'string' in p_tkn.keys():
 		p_tkn.update(repr=p_tkn['string'])
 
-def buildRepr(p_list: 'DictListManager'):
+def buildRepr(p_list: 'DictListManager') -> None:
 	p_list.walk(
 		lambda item: set_token_repr(item)
 	)
-
-def reconhecerURLs(p_list: 'DictListManager'):
-
-	for idxs_list in p_list.iterNextContiguousConstructElements(lambda item: 'lower' in item.keys() and (item["lower"].startswith("http:") or item["lower"].startswith("https:"))):
-		
-		print(idxs_list, p_list[idxs_list[0]])
-
-		p_list.buildConstruct(idxs_list, "URL")
-
-	# p_list.walk(
-	# 	lambda item: item.update(active=not item["active"]),
-	# 	predicate=lambda item: 'lower' in item.keys() and (item["lower"].startswith("http:") or item["lower"].startswith("https:"))
-	# )
-
 
 class ReconhecimentoReferentes(object):
 
@@ -69,9 +56,137 @@ class ReconhecimentoReferentes(object):
 			if not k in self.pos_admissiveis["proibidos_final"]:
 				self.pos_admissiveis_final.append(k)
 
+		self.nomes = []
+		self.nomes_compostos = []
+
+		with open(os.path.join('setup', 'nomes_proprios.json'), 'r', encoding='utf-8') as fp: 
+			nomes = json.load(fp)
+
+		assert len(nomes) > 0
+
+		for nome in nomes:
+			nome_splits = [t.lower() for t in nome.split()]	
+			if len(nome_splits) == 0:
+				continue
+			if len(nome_splits) == 1:
+				self.nomes.append(nome_splits[0])
+			else:
+				self.nomes_compostos.append(copy(nome_splits))
+
+
 		self.palavras_remover = self.pos_admissiveis["palavras_remover"]
 
 		self.inicios_admissiveis = set(self.pos_admissiveis["antecedentes_admissiveis"].keys())
+
+	def buildPOS(self, p_ret: Dict[str, Any]) -> None:
+
+		token_list = p_ret['entry_token_lists']
+
+		nomes_e_siglas = copy(self.nomes)
+		nomes_e_siglas.extend(self.substituicoes.keys())
+
+		for idx, grp_tokens in token_list.iterateGroups(group_size=2, prev_is_null=True):
+			
+			if len(grp_tokens) < 2:
+				continue
+
+			prev_tkn, tkn = grp_tokens
+
+			do_continue = False
+			for k in ('construct', 'numero'):
+				if k in tkn.keys():
+					do_continue = True
+					break
+
+			if do_continue:
+				continue
+
+			if prev_tkn is None:
+				the_prev_tkn = None
+			else:
+				for k in ('construct', 'numero'):
+					if k in prev_tkn.keys():
+						the_prev_tkn = None
+						break
+
+			try:
+				genPOS(self.part_of_speech_dict, self.nomes, self.substituicoes.keys(), tkn, prev_tkn=the_prev_tkn)	
+				token_list.validate(tkn)
+			except POSNotFound as pnf:
+				p_ret.setdefault('faltas', [])
+				p_ret['faltas'].append(str(pnf))
+
+	def reconhecerURLs(self, p_list: 'DictListManager') -> None:
+
+		idxs_lists = []
+		for idxs_list in p_list.iterNextContiguousConstructElements(
+				lambda item: 'lower' in item.keys() and (item["lower"].startswith("http:") or item["lower"].startswith("https:"))
+			):		
+				idxs_lists.append(idxs_list)
+
+		for idxs_list_1 in reversed(idxs_lists):
+			p_list.buildConstruct(idxs_list_1, "URL")
+
+	def reconhecerNomes(self, p_list: 'DictListManager'):
+
+		idxs_lists = []
+		for idx, indices in p_list.iterateMatches(self.nomes_compostos):
+			idxs_lists.append(idxs_list)
+
+		for idxs_list_1 in reversed(idxs_lists):
+			p_list.buildConstruct(idxs_list_1, "nome_ou_designacao")
+
+		seps = ['da', 'do', 'de', 'e', 'em', 'na', 'no']
+
+		idxs_lists = []
+		for idxs_list in p_list.iterNextContiguousConstructElements(
+				lambda item: 'repr' in item.keys() and (item["repr"] in self.nomes or item["repr"] in seps or item["ok"][0].isupper())
+				# testlist=["vítor", "ramalho"]
+			):
+
+			# Se não existirem nomes nos elementos selecionados (podem ser outras palavras em maiúsculas ou separadores), continuar loop
+			nomes_idx = [idx for idx in idxs_list if 'repr' in p_list[idx].keys() and p_list[idx]['repr'] in self.nomes]
+			if len(nomes_idx) == 0:
+				continue
+
+			while len(idxs_list) > 0 and p_list[idxs_list[0]]['repr'] in seps:
+				idxs_list.pop(0)
+			if len(idxs_list) > 0:
+				idxs_lists.append(idxs_list)
+
+		for idxs_list_2 in reversed(idxs_lists):
+			p_list.buildConstruct(idxs_list_2, "nome_ou_designacao")
+
+	def reconhecerDatas(self, p_list: 'DictListManager') -> None:
+
+		meses = [
+			"janeiro", "fevereiro", "março", "abril", "maio", "junho",
+			"julho", "agosto", "setembro", "outubro", "novembro", "dezembro"
+		]
+
+		idxs_lists = []
+		for idx, grp_tokens in p_list.iterateGroups(group_size=5, prev_is_null=False):	
+			if len(grp_tokens) < 5:
+				continue
+			atkn, btkn, ctkn, dtkn, etkn = grp_tokens	
+			if 'numero' in atkn.keys() and 'repr' in btkn.keys() and 'repr' in ctkn.keys() and 'repr' in dtkn.keys() and 'numero' in etkn.keys():
+				if atkn['numero'] == 'int' and btkn['repr'] == 'de' and ctkn['repr'] in meses and dtkn['repr'] == 'de' and etkn['numero'] == 'int':
+					idxs_lists.append([j+idx for j in range(5)])
+
+		for idxs_list_1 in reversed(idxs_lists):
+			p_list.buildConstruct(idxs_list_1, "data")
+
+		del idxs_lists[:]
+		for idx, grp_tokens in p_list.iterateGroups(group_size=3, prev_is_null=False):	
+			if len(grp_tokens) < 3:
+				continue
+			atkn, btkn, ctkn = grp_tokens	
+			if 'repr' in atkn.keys() and 'repr' in btkn.keys() and 'numero' in ctkn.keys():
+				if atkn['repr'] in meses and btkn['repr'] == 'de' and ctkn['numero'] == 'int':
+					idxs_lists.append([j+idx for j in range(3)])
+
+		for idxs_list_2 in reversed(idxs_lists):
+			p_list.buildConstruct(idxs_list_2, "data_mes")
 
 	def reconhecerEmJanela(self, p_janela: str) -> Dict[str, Type]:
 
@@ -92,9 +207,20 @@ class ReconhecimentoReferentes(object):
 
 		buildRepr(ret['entry_token_lists'])
 
-		# Reconhecer construções (precisa de 'repr') ##########################
+		# Reconhecer construções (q precisam de 'repr' mas não de 'pos') ######
 
-		reconhecerURLs(ret['entry_token_lists'])
+		self.reconhecerURLs(ret['entry_token_lists'])
+		self.reconhecerDatas(ret['entry_token_lists'])
+
+		# Obter POS ###########################################################
+
+		self.buildPOS(ret)
+
+		# Reconhecer construções nome ou designação ###########################
+
+		self.reconhecerNomes(ret['entry_token_lists'])
+
+
 
 
 
