@@ -88,7 +88,7 @@ class ReconhecimentoReferentes(object):
 				p_out_siglas.append(p_str)
 
 		p_list.walk(
-			lambda item: item.update(pos='sigla'),
+			lambda item: item.update(pos=['sigla']),
 			predicate=lambda item: 'repr' in item.keys() and item['repr'] in self.substituicoes.keys(),
 			afterfunc=lambda item: add_sigla(out_siglas, item['repr'])
 		)

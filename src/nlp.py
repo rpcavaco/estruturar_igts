@@ -71,7 +71,8 @@ PATT_NUMERO = {
 	"int": r"[0-9]+$",	
 	"item": r"[0-9]+[\./]+[0-9]+$",
 	"float": r"[0-9]+[\,]+[0-9]+$",
-	"ord": r'[0-9]+[\. ]?[ºª]'
+	"ord": r'[0-9]+[\. ]?[ºª]',
+	"alinea": r'[a-zA-Z]+\)'
 } 
 
 # POS_ANTECEDENTES_INADMISSIVEIS = {
@@ -240,19 +241,18 @@ def genTokens(p_ret: "DictListManager", p_dirty):
 
 	# print("## p_dirty:", p_dirty)
 
-	the_string = p_dirty
-
 	if len(p_dirty) == 0:
 		return
 
+	the_string = p_dirty
+
+	num_patt, val = getNumPattern(the_string)
 	postlist = []
 
-	if len(p_dirty) >= 3:
+	if num_patt is None and len(p_dirty) >= 2:
 		prevlist, the_string, postlist = genSepararSeparadoresColados(the_string)
 		for el in prevlist:
 			p_ret.insert(**el)
-	else:
-		the_string = p_dirty
 
 	if len(the_string) > 0:
 
@@ -310,7 +310,6 @@ def genTokens(p_ret: "DictListManager", p_dirty):
 			verificar(the_string, checks2, bus={'ret': p_ret, 'aseps': aseps, 'divseps': divseps })
 
 		if len(p_ret) == init_len:
-
 			p_ret.insert(ok=the_string, lower=the_string.lower())
 
 	for el in postlist:
@@ -405,7 +404,21 @@ def setTokenRepr(p_tkn: dict[str,Any]) -> bool:
 
 	return ret
 
-def genPOS(p_part_of_speech_dict: Dict[str, Dict[str, Any]], p_nomes_list: List[str], p_siglas_list: List[str], p_this_token: Dict[str,Any], prev_tkn: Dict[str,Any] | None = None) -> None:
+def genPOS(
+		p_part_of_speech_dict: Dict[str, Dict[str, Any]], 
+		p_nomes_list: List[str], 
+		p_siglas_list: List[str], 
+		p_this_token: Dict[str,Any], 
+		prev_tkn: Dict[str,Any] | None = None
+	) -> None:
+
+	def is_nome_equiv(p_attribs):
+		ret = False
+		for attr in ['nome', 'sigla', 'nome_proprio', 'construct']:
+			if attr in p_attribs:
+				ret = True
+				break
+		return ret
 
 	# assert len(p_allowed_init_pos) > 0, "genPOS: 'p_allowed_init_pos' parameter requires non-empty list"
 	if not 'repr' in p_this_token.keys():
@@ -429,12 +442,12 @@ def genPOS(p_part_of_speech_dict: Dict[str, Dict[str, Any]], p_nomes_list: List[
 
 	def_pos = set(p_part_of_speech_dict[p_this_token['repr']])
 
-	prev_pos = None
+	prev_attribs = None # Attribs, podem conter POSs + 'construct'
 	if not real_prev_tkn is None:
-		if 'pos' in real_prev_tkn.keys():
-			prev_pos = set(real_prev_tkn['pos'])
-		else:	
-			prev_pos = set(p_part_of_speech_dict[real_prev_tkn['repr']])
+		prev_attribs = set(real_prev_tkn['pos'])
+
+	if prev_attribs is None and not prev_tkn is None and 'construct' in prev_tkn.keys():
+		prev_attribs = ['construct']
 
 	nomadj_set = set(["nome", "adjetivo"])
 	nomverb_set = set(["nome", "verbo"])
@@ -459,7 +472,7 @@ def genPOS(p_part_of_speech_dict: Dict[str, Dict[str, Any]], p_nomes_list: List[
 				# ret = ['nome']
 				# pronto = True
 			else:
-				if 'nome' in prev_pos:
+				if is_nome_equiv(prev_attribs):
 					fluxo.append("A2")
 					# ret = ['adjetivo']
 					def_pos.remove("nome")
@@ -472,12 +485,14 @@ def genPOS(p_part_of_speech_dict: Dict[str, Dict[str, Any]], p_nomes_list: List[
 					ret = list(def_pos)
 					pronto = True
 		elif nomverb_set.issubset(def_pos):
-			if real_prev_tkn is None or len(set(['preposicao', 'artigo', 'conjuncao']).intersection(prev_pos)) > 0:
+			# if not real_prev_tkn is None:
+			# 	print("nome-verbo B:", real_prev_tkn['repr'], p_this_token['repr'])
+			if real_prev_tkn is None or len(set(['preposicao', 'artigo', 'conjuncao']).intersection(prev_attribs)) > 0:
 				fluxo.append("B1")
 				#ret = ['nome']
 				def_pos.remove("verbo")
 			else:
-				if 'nome' in prev_pos:
+				if is_nome_equiv(prev_attribs):
 					fluxo.append("B2")
 					# ret = ['verbo']
 					def_pos.remove("nome")
@@ -486,12 +501,12 @@ def genPOS(p_part_of_speech_dict: Dict[str, Dict[str, Any]], p_nomes_list: List[
 					ret = list(def_pos)
 					pronto = True
 		elif nompart_set.issubset(def_pos):
-			if real_prev_tkn is None or len(set(['preposicao', 'artigo', 'conjuncao']).intersection(prev_pos)) > 0:
+			if real_prev_tkn is None or len(set(['preposicao', 'artigo', 'conjuncao']).intersection(prev_attribs)) > 0:
 				fluxo.append("C1")
 				#ret = ['nome']
 				def_pos.remove("participio")
 			else:
-				if 'nome' in prev_pos:
+				if is_nome_equiv(prev_attribs):
 					fluxo.append("C2")
 					# ret = ['verbo']
 					def_pos.remove("nome")
@@ -504,7 +519,7 @@ def genPOS(p_part_of_speech_dict: Dict[str, Dict[str, Any]], p_nomes_list: List[
 				fluxo.append("D1")
 				def_pos.remove("adjetivo")
 			else:
-				if 'nome' in prev_pos:
+				if is_nome_equiv(prev_attribs):
 					fluxo.append("D2")
 					def_pos.remove("verbo")
 					# ret = ['adjetivo']
@@ -517,11 +532,11 @@ def genPOS(p_part_of_speech_dict: Dict[str, Dict[str, Any]], p_nomes_list: List[
 				fluxo.append("E1")
 				def_pos.remove("adjetivo")
 			else:
-				if 'nome' in prev_pos:
+				if is_nome_equiv(prev_attribs):
 					fluxo.append("E2")
 					def_pos.remove("participio")
 					# ret = ['adjetivo']
-				elif bool(set(['adjetivo', 'preposicao']).intersection(prev_pos)):
+				elif bool(set(['adjetivo', 'preposicao']).intersection(prev_attribs)):
 					fluxo.append("E3")
 					def_pos.remove("adjetivo")
 					# ret = ['adjetivo']
