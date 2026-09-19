@@ -234,6 +234,23 @@ class ReconhecimentoReferentes(object):
 		]
 
 		idxs_lists = []
+
+		for idx, grp_tokens in p_list.iterateGroups(group_size=7, prev_is_null=False):	
+			if len(grp_tokens) < 7:
+				continue
+			atkn, btkn, ctkn, dtkn, etkn, ftkn, gtkn = grp_tokens	
+			if 'numero' in atkn.keys() and \
+					'repr' in btkn.keys() and 'repr' in ctkn.keys() and 'repr' in dtkn.keys() and 'repr' in etkn.keys() \
+					 and 'repr' in ftkn.keys() and 'numero' in gtkn.keys():
+				if atkn['numero'] == 'int' and btkn['repr'] == 'de' and ctkn['repr'] in meses and dtkn['repr'] == 'do' \
+						and etkn['repr'] == 'ano' and ftkn['repr'] == 'de' and gtkn['numero'] == 'int':
+					idxs_lists.append([j+idx for j in range(7)])
+
+		for idxs_list_0 in reversed(idxs_lists):
+			p_list.buildConstruct(idxs_list_0, "data")
+
+		del idxs_lists[:]
+
 		for idx, grp_tokens in p_list.iterateGroups(group_size=5, prev_is_null=False):	
 			if len(grp_tokens) < 5:
 				continue
@@ -417,6 +434,14 @@ class ReconhecimentoReferentes(object):
 		# Marcar REFERENTES ####################################################
 		
 		self.reconhecerReferentes(ret['tokens_list'])
+
+		referentes = []
+		for tkn in ret['tokens_list']:
+			if 'construct' in tkn.keys() and tkn['construct'] == 'referente':
+				referentes.append(tkn['repr'])
+
+		if len(referentes) > 0:
+			ret['referentes'] = referentes
 
 
 
