@@ -1646,8 +1646,7 @@
         "nome"
     ],
     "efeitos": [
-        "nome",
-        "FLAG_nao_isolado"
+        "nome"
     ],
     "salvaguarda": [
         "nome",
@@ -1743,6 +1742,7 @@
         "nome"
     ],
     "públicos": [
+        "adjetivo",
         "nome"
     ],
     "vias": [
@@ -2647,6 +2647,7 @@
         "nome"
     ],
     "salvaguardas": [
+        "nome",
         "verbo"
     ],
     "atingidas": [

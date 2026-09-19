@@ -420,6 +420,14 @@ def genPOS(
 				break
 		return ret
 
+	def is_verbo_equiv(p_attribs):
+		ret = False
+		for attr in ['verbo', 'participio']:
+			if attr in p_attribs:
+				ret = True
+				break
+		return ret
+
 	# assert len(p_allowed_init_pos) > 0, "genPOS: 'p_allowed_init_pos' parameter requires non-empty list"
 	if not 'repr' in p_this_token.keys():
 		return
@@ -444,13 +452,18 @@ def genPOS(
 
 	prev_attribs = None # Attribs, podem conter POSs + 'construct'
 	if not real_prev_tkn is None:
-		prev_attribs = set(real_prev_tkn['pos'])
+		prev_attribs = list(set(real_prev_tkn['pos']))
 
 	if prev_attribs is None and not prev_tkn is None and 'construct' in prev_tkn.keys():
 		prev_attribs = ['construct']
 
+	# if p_this_token['repr'] == 'público':
+	# 	raise RuntimeError("caca")
+	# 	print("--453--", prev_tkn, real_prev_tkn, p_this_token, prev_attribs, def_pos)
+
 	nomadj_set = set(["nome", "adjetivo"])
 	nomverb_set = set(["nome", "verbo"])
+	nomadverb_set = set(["nome", "adverbio"])
 	verbadj_set = set(["verbo", "adjetivo"])
 	nompart_set = set(["nome", "participio"])
 	partadj_set = set(["participio", "adjetivo"])
@@ -472,7 +485,7 @@ def genPOS(
 				# ret = ['nome']
 				# pronto = True
 			else:
-				if is_nome_equiv(prev_attribs):
+				if is_nome_equiv(prev_attribs) or is_verbo_equiv(prev_attribs):
 					fluxo.append("A2")
 					# ret = ['adjetivo']
 					def_pos.remove("nome")
@@ -485,9 +498,7 @@ def genPOS(
 					ret = list(def_pos)
 					pronto = True
 		elif nomverb_set.issubset(def_pos):
-			# if not real_prev_tkn is None:
-			# 	print("nome-verbo B:", real_prev_tkn['repr'], p_this_token['repr'])
-			if real_prev_tkn is None or len(set(['preposicao', 'artigo', 'conjuncao']).intersection(prev_attribs)) > 0:
+			if real_prev_tkn is None or bool(set(['preposicao', 'artigo', 'conjuncao']).intersection(prev_attribs)):
 				fluxo.append("B1")
 				#ret = ['nome']
 				def_pos.remove("verbo")

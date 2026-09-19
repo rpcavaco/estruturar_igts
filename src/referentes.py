@@ -8,7 +8,7 @@ from typing import Dict, Type, Any, List
 from copy import copy
 
 from nlp import injetarTemposVerbais, genTokensList, genPOS, POSNotFound #, presenca_nomes_proprios, presenca_datas
-from dict_list_manager import DictListManager, ConstructValidationError
+from dict_list_manager import DictListManager, ConstructValidationError, EmptyConstructError
 
 PT_ALPHA_CHAR_PATT = "[a-zàáâãçèéêìíîòóôõùúü]"
 PT_INV_ALPHA_CHAR_PATT = "[^a-zàáâãçèéêìíîòóôõùúü]"
@@ -24,30 +24,30 @@ def buildRepr(p_list: 'DictListManager') -> None:
 		lambda item: set_token_repr(item)
 	)
 
-# def antecedente_compatível(
-# 		p_prev_tkn: Dict[str, Any], 
-# 		p_tkn: Dict[str, Any], 
-# 		pos_admissiveis: Dict[str, List[str]]
-# 	) -> bool | None:
+def antecedente_compatível(
+		p_prev_tkn: Dict[str, Any], 
+		p_tkn: Dict[str, Any], 
+		pos_admissiveis: Dict[str, List[str]]
+	) -> bool | None:
 	
-# 	ret = None
+	ret = None
 
-# 	if 'pos' in p_prev_tkn.keys() and 'pos' in p_tkn.keys():
-# 		ant_admiss = set([])
-# 		for pos in p_tkn['pos']:
-# 			if pos in pos_admissiveis.keys():
-# 				ant_admiss.update(pos_admissiveis[pos])
-# 		if len(ant_admiss) > 0:
-# 			ret = bool(ant_admiss.intersection(p_prev_tkn['pos']))
-# 		else:
-# 			ret = False
+	if 'pos' in p_prev_tkn.keys() and 'pos' in p_tkn.keys():
+		ant_admiss = set([])
+		for pos in p_tkn['pos']:
+			if pos in pos_admissiveis.keys():
+				ant_admiss.update(pos_admissiveis[pos])
+		if len(ant_admiss) > 0:
+			ret = bool(ant_admiss.intersection(p_prev_tkn['pos']))
+		else:
+			ret = False
 
-# 	# se o antecedente não tem 'pos' definido ou este p_tkn não tem 'pos' definido ret +e None
+	# se o antecedente não tem 'pos' definido ou este p_tkn não tem 'pos' definido ret +e None
 
-# 	# if strict and ret is None:
-# 	# 	raise AntecedenteIncompativelInconclusivoError(f"prev:'{p_prev_tkn['ok']}' este:'{p_tkn['ok']}'")
+	# if strict and ret is None:
+	# 	raise AntecedenteIncompativelInconclusivoError(f"prev:'{p_prev_tkn['ok']}' este:'{p_tkn['ok']}'")
 
-# 	return ret
+	return ret
 
 class ReconhecimentoReferentes(object):
 
@@ -66,6 +66,11 @@ class ReconhecimentoReferentes(object):
 		with open(os.path.join('setup', 'pos_admissiveis.json'), 'r', encoding='utf-8') as fp: 
 			self.pos_admissiveis = json.load(fp)	
 
+		self.inicios_admissiveis = self.pos_admissiveis['permitidos_inicio']
+
+		with open(os.path.join('setup', 'pos_admissiveis.json'), 'r', encoding='utf-8') as fp: 
+			self.pos_admissiveis = json.load(fp)	
+
 		self.sufixos_plurais = None
 		with open(os.path.join('setup', 'sufixos_plurais,json'), 'r', encoding='utf-8') as fp: 
 			self.sufixos_plurais = json.load(fp)
@@ -76,10 +81,10 @@ class ReconhecimentoReferentes(object):
 			if len(set(self.part_of_speech_dict[wrd]).intersection(check_list)) > 0:
 				self.remover_para_comparabilidade.add(wrd)
 
-		self.pos_admissiveis_final = []
+		self.pos_admissiveis_final = set([])
 		for k in self.pos_admissiveis["antecedentes_admissiveis"].keys():
 			if not k in self.pos_admissiveis["proibidos_final"]:
-				self.pos_admissiveis_final.append(k)
+				self.pos_admissiveis_final.add(k)
 
 		self.nomes = []
 		self.nomes_compostos = []
@@ -97,12 +102,6 @@ class ReconhecimentoReferentes(object):
 				self.nomes.append(nome_splits[0])
 			else:
 				self.nomes_compostos.append(copy(nome_splits))
-
-
-		self.palavras_remover = self.pos_admissiveis["palavras_remover"]
-
-		self.inicios_admissiveis = set(self.pos_admissiveis["antecedentes_admissiveis"].keys())
-
 
 	def marcarSiglas(self, p_list: 'DictListManager', out_siglas: List[str]) -> None:
 
@@ -139,6 +138,8 @@ class ReconhecimentoReferentes(object):
 			if do_continue:
 				continue
 
+			the_prev_tkn = prev_tkn
+
 			if prev_tkn is None:
 				the_prev_tkn = None
 			else:
@@ -153,6 +154,10 @@ class ReconhecimentoReferentes(object):
 			except POSNotFound as pnf:
 				p_ret.setdefault('faltas', [])
 				p_ret['faltas'].append(str(pnf))
+			# except:
+			# 	print("--156--", idx, grp_tokens, the_prev_tkn)
+			# 	raise
+
 
 	def reconhecerURLs(self, p_list: 'DictListManager') -> None:
 
@@ -269,82 +274,104 @@ class ReconhecimentoReferentes(object):
 			for idxs_list_1 in reversed(idxs_lists):
 				p_list.buildConstruct(idxs_list_1, "denominacao", adic_attribs=[('sigla', sigla)])
 
-	# def reconhecerReferentes(self, p_list: 'DictListManager'):
+	def reconhecerReferentes(self, p_list: 'DictListManager'):
 
-	# 	def validar_construct(p_children: Dict[str, Any]) -> bool:
+		def validar_construct(p_children: List[Dict[str, Any]]) -> bool:
 
-	# 		found = False
-	# 		ret = False
-	# 		for child in p_children:
-	# 			if 'nome' in child['pos']:
-	# 				found = True
-	# 				break
+			found = False
+			ret = False
+			for child in p_children:
+				if 'nome' in child['pos']:
+					found = True
+					break
 
-	# 		if found:
-	# 			if len(p_children) > 1 or not 'FLAG_nao_isolado' in p_children[0]['pos']:
-	# 				ret = True
+			if found:
+				if len(p_children) > 0:
+					if len(p_children) > 1 or ('ok' in p_children[0].keys() and p_children[0]["ok"][0].isupper()):
+						ret = True
 
-	# 		return ret
+			return ret
 
+		def right_trim(p_tkn: Dict[str, Any]) -> bool:		
 
-	# 	idxs_lists = []
-	# 	ant_admiss = self.pos_admissiveis['antecedentes_admissiveis']
+			ret = True
+			if 'pos' in p_tkn.keys():
+				ret = not bool(self.pos_admissiveis_final.intersection(p_tkn['pos']))
 
-	# 	idx_list = []
-	# 	for idx, grp_tokens in p_list.iterateGroups(group_size=2, prev_is_null=True):
+			return ret
 
-	# 		if idx > 50:
-	# 			break
+		idxs_lists = []
+		ant_admiss = self.pos_admissiveis['antecedentes_admissiveis']
+
+		idx_list = []
+		for idx, grp_tokens in p_list.iterateGroups(group_size=2, prev_is_null=True):
 			
-	# 		if len(grp_tokens) < 2:
-	# 			continue
-	# 		prev_tkn, tkn = grp_tokens
+			# último grupo, com apenas um elemento, é para desprezar
+			if len(grp_tokens) < 2:
+				continue
 
-	# 		if prev_tkn is None:
+			prev_tkn, tkn = grp_tokens
 
-	# 			if 'pos' in tkn.keys() and set(tkn['pos']).issubset(ant_admiss.keys()):
-	# 				assert 'repr' in tkn.keys()
-	# 				idx_list.append(idx)
+			if not 'pos' in tkn.keys():
 
-	# 		else:
+				if len(idx_list) > 0:
+					if len(idx_list) > 1 or ('ok' in p_list[idx_list[0]].keys() and p_list[idx_list[0]]["ok"][0].isupper()): # usar apenas listas com mais de um elemento ou se o o elemento único estiver 'capitalizado'
+						idxs_lists.append(copy(idx_list))
+					else:
+						p_list[idx_list[0]]['ref_skipped'] = "elem_unico A"
+					del idx_list[:]
 
-	# 			if 'pos' in tkn.keys():
+				continue
 
-	# 				ant_compat = antecedente_compatível(prev_tkn, tkn, ant_admiss)
-	# 				if ant_compat is None or not ant_compat: # incompatibilidade do antecedente é inconclusiva ou é verdade
+			if prev_tkn is None or not 'pos' in prev_tkn.keys() or 'ref_skipped' in prev_tkn.keys():
 
-	# 					# Começamos nova lista de índices
-	# 					print(f"ant_incompat:{ant_incompat} prev:'{prev_tkn}' este:'{tkn}'")
-						
-	# 					if len(idx_list) > 0:
-	# 						idxs_lists.append(copy(idx_list))
-	# 						del idx_list[:]
+				if set(tkn['pos']).issubset(self.inicios_admissiveis):
+					assert 'repr' in tkn.keys()
+					idx_list.append(idx)
+				else:
+					tkn['ref_skipped'] = "skip A"
+
+			else:
+
+				ant_compat = antecedente_compatível(prev_tkn, tkn, ant_admiss)
+				#print(f"ant_compat:{ant_compat} prev:'{prev_tkn}' este:'{tkn}' adm:{bool(set(tkn['pos']).intersection(self.inicios_admissiveis))}")
+				if ant_compat is None or not ant_compat: # incompatibilidade do antecedente é inconclusiva ou é verdade
+
+					# Começamos nova lista de índices
+					#print(f"ant_compat:{ant_compat} prev:'{prev_tkn}' este:'{tkn}' adm:{bool(set(tkn['pos']).intersection(self.inicios_admissiveis))}")
 					
-	# 					if bool(set(tkn['pos']).intersection(ant_admiss.keys())):
-	# 						idx_list.append(idx)
+					if len(idx_list) > 0:
+						if len(idx_list) > 1 or ('ok' in p_list[idx_list[0]].keys() and p_list[idx_list[0]]["ok"][0].isupper()):  # usar apenas listas com mais de um elemento ou se o o elemento único estiver 'capitalizado'
+							idxs_lists.append(copy(idx_list))
+						else:
+							p_list[idx_list[0]]['ref_skipped'] = "elem_unico B"
+						del idx_list[:]
 
-	# 				else:
-	# 					# compatibilidade do antecedente é clara
-	# 					idx_list.append(idx)
-
-	# 			else:
-
-	# 				if len(idx_list) > 0:
-	# 					idxs_lists.append(copy(idx_list))
-	# 					del idx_list[:]
-
-	# 	if len(idx_list) > 0:
-	# 		idxs_lists.append(copy(idx_list))
-	# 		del idx_list[:]
-
-	# 	const_valid_errorcnt = 0
-	# 	for idxs_list_1 in reversed(idxs_lists):
-	# 		try:
-	# 			p_list.buildConstruct(idxs_list_1, "referente", validation_func=validar_construct)
-	# 		except ConstructValidationError as ce:
-	# 			const_valid_errorcnt += 1
+					tkn['ref_skipped'] = "skip B"
+				
+				else:
+					# compatibilidade do antecedente é clara
+					idx_list.append(idx)
 
 
+		if len(idx_list) > 0:
+			if len(idx_list) > 1: # usar apenas listas com mais de um elemento
+				idxs_lists.append(copy(idx_list))
+			else:
+				p_list[idx_list[0]]['ref_skipped'] = "elem_unico C"
+			del idx_list[:]
+
+		const_valid_errorcnt = 0
+		const_empty_errorcnt = 0
+		for idxs_list_1 in reversed(idxs_lists):
+			try:
+				p_list.buildConstruct(idxs_list_1, "referente", right_trimming_func=right_trim, validation_func=validar_construct) #, paf=self.pos_admissiveis_final)
+			except ConstructValidationError as ce:
+				const_valid_errorcnt += 1
+			except EmptyConstructError as ece:
+				const_empty_errorcnt += 1
+
+		print("const_valid_errorcnt:", const_valid_errorcnt, "const_empty_errorcnt:", const_empty_errorcnt)
 
 
 	def reconhecerEmJanela(self, p_janela: str) -> Dict[str, Type]:
@@ -389,7 +416,7 @@ class ReconhecimentoReferentes(object):
 
 		# Marcar REFERENTES ####################################################
 		
-		# self.reconhecerReferentes(ret['tokens_list'])
+		self.reconhecerReferentes(ret['tokens_list'])
 
 
 

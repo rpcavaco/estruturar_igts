@@ -1,9 +1,13 @@
 {
+    "permitidos_inicio": [
+        "adjetivo", "nome" 
+    ],
     "antecedentes_admissiveis": {
         "adjetivo": [
             "nome",
             "adjetivo",
-            "conjuncao"
+            "conjuncao",
+            "preposicao"
         ],
         "adverbio": [
             "nome"
@@ -65,14 +69,10 @@
         "artigo",
         "conjuncao",
         "contracao",
-        "preposicao"
-    ],
-    "proibidos_inicio": [
-        "participio",
-        "verbo",
-        "preposicao"
-    ],
-    "palavras_remover": [
-        "decreto-lei"
+        "preposicao",
+        "pronome",
+        "determinante",
+        "adverbio"
     ]
 }
+

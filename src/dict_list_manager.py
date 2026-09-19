@@ -46,6 +46,9 @@ class SchemaValidationError(Exception):
 class ConstructValidationError(Exception):
 	"""Raised when a construct is invalid."""
 
+class EmptyConstructError(Exception):
+	"""Raised when a construct is empty after trimming."""
+
 class DictListManager():
 	"""
 	Manages a list of dictionaries that all share the same structure.
@@ -251,30 +254,56 @@ class DictListManager():
 				break
 
 
-	def buildConstruct(self, p_indexes: List[int], p_tag, adic_attribs: Optional[List[Tuple]] = None, validation_func: Optional[Any] = None):
+	def buildConstruct(self, p_indexes: List[int], p_tag: Dict[str, Any], adic_attribs: Optional[List[Tuple]] = None, right_trimming_func: Optional[Any] = None, validation_func: Optional[Any] = None, paf=None):
 
 		# Verificar que indices são consecutivos
 		assert len(p_indexes) > 0 and len(p_indexes) == (p_indexes[-1] - p_indexes[0]) + 1, p_indexes
 
 		srt_idxs = sorted(p_indexes)
 		children = []
-		for idx in srt_idxs:
-			children.append(deepcopy(self._items[idx]))
 
-		assert len(children) > 0
+		idxs_efetivamente_usados = []
+
+		if right_trimming_func is None:
+			for idx in srt_idxs:
+				children.append(deepcopy(self._items[idx]))
+				idxs_efetivamente_usados.append(idx)
+		else:
+
+			first_found = False
+			for rev_idx in reversed(srt_idxs):
+				if not first_found:
+					if not paf is None and 'pos' in self._items[rev_idx].keys():
+						pass
+						# if self._items[rev_idx]['repr'] == 'que':
+						# 	print(">> 278:", self._items[rev_idx-1], self._items[rev_idx], paf.intersection(self._items[rev_idx]['pos']))
+					if right_trimming_func(self._items[rev_idx]):
+						continue
+					else:
+						first_found = True
+				if first_found:
+					children.insert(0 ,deepcopy(self._items[rev_idx]))
+					idxs_efetivamente_usados.append(rev_idx)
+
+			if len(children) == 0:
+				for idx in p_indexes:
+					self._items[rev_idx]['construct_error'] = 'empty'
+				raise EmptyConstructError()
 
 		if not validation_func is None and not validation_func(children):
+			for idx in p_indexes:
+				self._items[rev_idx]['construct_error'] = 'invalid'
 			raise ConstructValidationError(children)
 
-		for idx in reversed(srt_idxs):
+		srt_idxs2 = sorted(idxs_efetivamente_usados)
+
+		for idx in reversed(srt_idxs2):
 			self.remove_at(idx)
+
 		insert_obj = {
 			"construct": p_tag,
 			"children": children
 		}
-
-		if not validation_func is None and not validation_func(children):
-			raise ConstructValidationError(children)
 
 		repr_list = []
 		for c in children:
