@@ -43,6 +43,9 @@ from validation_helpers import extend_with_default
 class SchemaValidationError(Exception):
 	"""Raised when a dictionary does not conform to the manager's schema."""
 
+class ConstructValidationError(Exception):
+	"""Raised when a construct is invalid."""
+
 class DictListManager():
 	"""
 	Manages a list of dictionaries that all share the same structure.
@@ -248,7 +251,7 @@ class DictListManager():
 				break
 
 
-	def buildConstruct(self, p_indexes: List[int], p_tag, adic_attribs: Optional[List[Tuple]] = None):
+	def buildConstruct(self, p_indexes: List[int], p_tag, adic_attribs: Optional[List[Tuple]] = None, validation_func: Optional[Any] = None):
 
 		# Verificar que indices são consecutivos
 		assert len(p_indexes) > 0 and len(p_indexes) == (p_indexes[-1] - p_indexes[0]) + 1, p_indexes
@@ -257,13 +260,31 @@ class DictListManager():
 		children = []
 		for idx in srt_idxs:
 			children.append(deepcopy(self._items[idx]))
+
+		assert len(children) > 0
+
+		if not validation_func is None and not validation_func(children):
+			raise ConstructValidationError(children)
+
 		for idx in reversed(srt_idxs):
 			self.remove_at(idx)
 		insert_obj = {
 			"construct": p_tag,
-			"children": children,
-			"repr": " ".join([c['repr'] for c in children if 'repr' in c.keys()])
+			"children": children
 		}
+
+		if not validation_func is None and not validation_func(children):
+			raise ConstructValidationError(children)
+
+		repr_list = []
+		for c in children:
+			if 'repr' in c.keys():
+				repr_list.append(c['repr'])
+			elif 'ok' in c.keys():
+				repr_list.append(c['ok'])
+		if len(repr_list) > 0:
+			insert_obj['repr'] = " ".join(repr_list)
+
 		if not adic_attribs is None:
 			for k, v in adic_attribs:
 				insert_obj[k] = v

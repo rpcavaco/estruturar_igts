@@ -8,7 +8,7 @@ from typing import Dict, Type, Any, List
 from copy import copy
 
 from nlp import injetarTemposVerbais, genTokensList, genPOS, POSNotFound #, presenca_nomes_proprios, presenca_datas
-from dict_list_manager import DictListManager
+from dict_list_manager import DictListManager, ConstructValidationError
 
 PT_ALPHA_CHAR_PATT = "[a-zàáâãçèéêìíîòóôõùúü]"
 PT_INV_ALPHA_CHAR_PATT = "[^a-zàáâãçèéêìíîòóôõùúü]"
@@ -23,6 +23,31 @@ def buildRepr(p_list: 'DictListManager') -> None:
 	p_list.walk(
 		lambda item: set_token_repr(item)
 	)
+
+# def antecedente_compatível(
+# 		p_prev_tkn: Dict[str, Any], 
+# 		p_tkn: Dict[str, Any], 
+# 		pos_admissiveis: Dict[str, List[str]]
+# 	) -> bool | None:
+	
+# 	ret = None
+
+# 	if 'pos' in p_prev_tkn.keys() and 'pos' in p_tkn.keys():
+# 		ant_admiss = set([])
+# 		for pos in p_tkn['pos']:
+# 			if pos in pos_admissiveis.keys():
+# 				ant_admiss.update(pos_admissiveis[pos])
+# 		if len(ant_admiss) > 0:
+# 			ret = bool(ant_admiss.intersection(p_prev_tkn['pos']))
+# 		else:
+# 			ret = False
+
+# 	# se o antecedente não tem 'pos' definido ou este p_tkn não tem 'pos' definido ret +e None
+
+# 	# if strict and ret is None:
+# 	# 	raise AntecedenteIncompativelInconclusivoError(f"prev:'{p_prev_tkn['ok']}' este:'{p_tkn['ok']}'")
+
+# 	return ret
 
 class ReconhecimentoReferentes(object):
 
@@ -103,7 +128,6 @@ class ReconhecimentoReferentes(object):
 			
 			if len(grp_tokens) < 2:
 				continue
-
 			prev_tkn, tkn = grp_tokens
 
 			do_continue = False
@@ -141,14 +165,14 @@ class ReconhecimentoReferentes(object):
 		for idxs_list_1 in reversed(idxs_lists):
 			p_list.buildConstruct(idxs_list_1, "URL")
 
-	def reconhecerNomes(self, p_list: 'DictListManager'):
+	def reconhecerDenominacoes(self, p_list: 'DictListManager'):
 
 		idxs_lists = []
 		for idx, indices in p_list.iterateMatches(self.nomes_compostos):
 			idxs_lists.append(idxs_list)
 
 		for idxs_list_1 in reversed(idxs_lists):
-			p_list.buildConstruct(idxs_list_1, "nome_ou_designacao")
+			p_list.buildConstruct(idxs_list_1, "denominacao")
 
 		seps = ['da', 'do', 'de', 'e', 'em', 'na', 'no']
 
@@ -158,18 +182,44 @@ class ReconhecimentoReferentes(object):
 				# testlist=["vítor", "ramalho"]
 			):
 
-			# Se não existirem nomes nos elementos selecionados (podem ser outras palavras em maiúsculas ou separadores), continuar loop
+			# Se não existirem nomes nos elementos selecionados (uma vez que, pelo critério de escolha definido
+			# acima, podem ser outras palavras em maiúsculas ou separadores), continuar loop
 			nomes_idx = [idx for idx in idxs_list if 'repr' in p_list[idx].keys() and p_list[idx]['repr'] in self.nomes]
 			if len(nomes_idx) == 0:
 				continue
-
+		
+			# remover separadoes que possam ocorrer no início
 			while len(idxs_list) > 0 and p_list[idxs_list[0]]['repr'] in seps:
 				idxs_list.pop(0)
-			if len(idxs_list) > 0:
-				idxs_lists.append(idxs_list)
+
+			if len(idxs_list) == 0:
+				continue
+
+			# Tentativa de separar duas denominações juntas, desde que a primeira
+			#   palavra a sequir à conjunção não seja um nome
+			secnd_idxs_list = []
+			for i, idx in enumerate(idxs_list):
+
+				if i == 0:
+					secnd_idxs_list.append(idx)
+					continue
+
+				pair = idxs_list[i:i+2]
+				if len(pair) == 2:			
+					if p_list[pair[0]]['repr'] in ('e', 'ou') and \
+						not p_list[pair[1]]['repr'] in self.nomes:
+							idxs_lists.append(copy(secnd_idxs_list))
+							del secnd_idxs_list[:]
+					else:
+						secnd_idxs_list.append(idx)
+				else:
+					secnd_idxs_list.append(idx)
+
+			if len(secnd_idxs_list) > 0:
+				idxs_lists.append(secnd_idxs_list)
 
 		for idxs_list_2 in reversed(idxs_lists):
-			p_list.buildConstruct(idxs_list_2, "nome_ou_designacao")
+			p_list.buildConstruct(idxs_list_2, "denominacao")
 
 	def reconhecerDatas(self, p_list: 'DictListManager') -> None:
 
@@ -217,7 +267,84 @@ class ReconhecimentoReferentes(object):
 				idxs_lists.append(indices)
 
 			for idxs_list_1 in reversed(idxs_lists):
-				p_list.buildConstruct(idxs_list_1, "nome_ou_designacao", adic_attribs=[('sigla', sigla)])
+				p_list.buildConstruct(idxs_list_1, "denominacao", adic_attribs=[('sigla', sigla)])
+
+	# def reconhecerReferentes(self, p_list: 'DictListManager'):
+
+	# 	def validar_construct(p_children: Dict[str, Any]) -> bool:
+
+	# 		found = False
+	# 		ret = False
+	# 		for child in p_children:
+	# 			if 'nome' in child['pos']:
+	# 				found = True
+	# 				break
+
+	# 		if found:
+	# 			if len(p_children) > 1 or not 'FLAG_nao_isolado' in p_children[0]['pos']:
+	# 				ret = True
+
+	# 		return ret
+
+
+	# 	idxs_lists = []
+	# 	ant_admiss = self.pos_admissiveis['antecedentes_admissiveis']
+
+	# 	idx_list = []
+	# 	for idx, grp_tokens in p_list.iterateGroups(group_size=2, prev_is_null=True):
+
+	# 		if idx > 50:
+	# 			break
+			
+	# 		if len(grp_tokens) < 2:
+	# 			continue
+	# 		prev_tkn, tkn = grp_tokens
+
+	# 		if prev_tkn is None:
+
+	# 			if 'pos' in tkn.keys() and set(tkn['pos']).issubset(ant_admiss.keys()):
+	# 				assert 'repr' in tkn.keys()
+	# 				idx_list.append(idx)
+
+	# 		else:
+
+	# 			if 'pos' in tkn.keys():
+
+	# 				ant_compat = antecedente_compatível(prev_tkn, tkn, ant_admiss)
+	# 				if ant_compat is None or not ant_compat: # incompatibilidade do antecedente é inconclusiva ou é verdade
+
+	# 					# Começamos nova lista de índices
+	# 					print(f"ant_incompat:{ant_incompat} prev:'{prev_tkn}' este:'{tkn}'")
+						
+	# 					if len(idx_list) > 0:
+	# 						idxs_lists.append(copy(idx_list))
+	# 						del idx_list[:]
+					
+	# 					if bool(set(tkn['pos']).intersection(ant_admiss.keys())):
+	# 						idx_list.append(idx)
+
+	# 				else:
+	# 					# compatibilidade do antecedente é clara
+	# 					idx_list.append(idx)
+
+	# 			else:
+
+	# 				if len(idx_list) > 0:
+	# 					idxs_lists.append(copy(idx_list))
+	# 					del idx_list[:]
+
+	# 	if len(idx_list) > 0:
+	# 		idxs_lists.append(copy(idx_list))
+	# 		del idx_list[:]
+
+	# 	const_valid_errorcnt = 0
+	# 	for idxs_list_1 in reversed(idxs_lists):
+	# 		try:
+	# 			p_list.buildConstruct(idxs_list_1, "referente", validation_func=validar_construct)
+	# 		except ConstructValidationError as ce:
+	# 			const_valid_errorcnt += 1
+
+
 
 
 	def reconhecerEmJanela(self, p_janela: str) -> Dict[str, Type]:
@@ -246,7 +373,7 @@ class ReconhecimentoReferentes(object):
 
 		# Reconhecer construções nome ou designação ###########################
 
-		self.reconhecerNomes(ret['tokens_list'])
+		self.reconhecerDenominacoes(ret['tokens_list'])
 
 		# Marcasr siglas e nomes ou designações de expansão de sigla  #########
 
@@ -258,12 +385,11 @@ class ReconhecimentoReferentes(object):
 
 		# pos=['sigla'] já se encontram preenchidos
 
-		# 'sigla' tem de ser equiparado a 'nome', bem como certos constructs, na atribuição de POSS
-
 		self.buildPOS(ret, out_siglas)
 
+		# Marcar REFERENTES ####################################################
 		
-
+		# self.reconhecerReferentes(ret['tokens_list'])
 
 
 
