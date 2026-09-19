@@ -291,6 +291,38 @@ class ReconhecimentoReferentes(object):
 			for idxs_list_1 in reversed(idxs_lists):
 				p_list.buildConstruct(idxs_list_1, "denominacao", adic_attribs=[('sigla', sigla)])
 
+	def reconhecerAtosNormativos(self, p_list: 'DictListManager') -> None:
+
+		idxs_lists = []
+
+		def is_tipo_ato(p_repr):
+			return p_repr in ('decreto-lei', 'dec.-lei', 'dl', 'portaria', 'aviso')
+
+		for idx, grp_tokens in p_list.iterateGroups(group_size=3, prev_is_null=False):	
+			if len(grp_tokens) < 3:
+				continue
+			atkn, btkn, ctkn = grp_tokens	
+			if 'repr' in atkn.keys() and 'repr' in btkn.keys() and 'numero' in ctkn.keys():
+				if is_tipo_ato(atkn['repr']) and ctkn['numero'] == 'item':
+					idxs_lists.append([j+idx for j in range(3)])
+
+		for idxs_list_0 in reversed(idxs_lists):
+			p_list.buildConstruct(idxs_list_0, "ato_normativo")
+
+		del idxs_lists [:]
+
+		for idx, grp_tokens in p_list.iterateGroups(group_size=2, prev_is_null=False):	
+			if len(grp_tokens) < 2:
+				continue
+			atkn, ctkn = grp_tokens	
+			if 'repr' in atkn.keys() and 'numero' in ctkn.keys():
+				if is_tipo_ato(atkn['repr']) and ctkn['numero'] == 'item':
+					idxs_lists.append([j+idx for j in range(2)])
+
+		for idxs_list_1 in reversed(idxs_lists):
+			p_list.buildConstruct(idxs_list_1, "ato_normativo")
+
+
 	def reconhecerReferentes(self, p_list: 'DictListManager'):
 
 		def validar_construct(p_children: List[Dict[str, Any]]) -> bool:
@@ -424,6 +456,7 @@ class ReconhecimentoReferentes(object):
 		out_siglas = []
 		self.marcarSiglas(ret['tokens_list'], out_siglas)	
 		self.reconhecerExpansaoSiglas(ret['tokens_list'], out_siglas)
+		self.reconhecerAtosNormativos(ret['tokens_list'])
 
 		# Obter POS ###########################################################
 
@@ -435,11 +468,17 @@ class ReconhecimentoReferentes(object):
 		
 		self.reconhecerReferentes(ret['tokens_list'])
 
+		atos = []
+		for tkn in ret['tokens_list']:
+			if 'construct' in tkn.keys() and tkn['construct'] == 'ato_normativo':
+				atos.append(tkn['repr'])
+		if len(atos) > 0:
+			ret['atos'] = atos
+
 		referentes = []
 		for tkn in ret['tokens_list']:
 			if 'construct' in tkn.keys() and tkn['construct'] == 'referente':
 				referentes.append(tkn['repr'])
-
 		if len(referentes) > 0:
 			ret['referentes'] = referentes
 
