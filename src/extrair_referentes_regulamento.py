@@ -10,7 +10,7 @@ from dict_list_manager import DictListManager
 
 from tqdm import tqdm
 
-def main(p_versao_concelho, p_output_file, preserve_tokens_ords=[]):
+def main(p_versao_concelho, p_output_file, preserve_tokens_ords: Optional[List[int]] = None) -> None:
 
 	wrkdir = os.path.join(p_versao_concelho, "output")
 	infile = os.path.join(wrkdir, "regulamento.json")
@@ -36,7 +36,7 @@ def main(p_versao_concelho, p_output_file, preserve_tokens_ords=[]):
 					janela_dict['p'].append(j)
 				janela_dict['input'] = instr
 				ret.setdefault('nodes', [])
-				if not i+1 in preserve_tokens_ords:
+				if not preserve_tokens_ords is None and not i+1 in preserve_tokens_ords:
 					del janela_dict['tokens_list']
 				ret['nodes'].append(deepcopy(janela_dict))
 
