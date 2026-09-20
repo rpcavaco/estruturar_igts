@@ -2953,7 +2953,12 @@
     "observadas": [
         "participio"
     ],
+    "referente": [
+        "nome",
+        "adjetivo"
+    ],
     "referentes": [
+        "nome",
         "adjetivo"
     ],
     "cidade": [

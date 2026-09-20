@@ -68,11 +68,11 @@ FORMAS_VERBAIS_AUXILIARES = {
 }
 
 PATT_NUMERO = {
-	"int": r"[0-9]+$",	
-	"item": r"[0-9]+[\./]+[0-9]+$",
-	"float": r"[0-9]+[\,]+[0-9]+$",
-	"ord": r'[0-9]+[\. ]?[ºª]',
-	"alinea": r'[a-zA-Z]+\)'
+	"int": r"^([0-9]+$)",	
+	"item": r"^([0-9]+[\./]+[0-9]+$)",
+	"float": r"^([0-9]+[\,]+[0-9]+$)",
+	"ord": r'^([0-9]+[\. ]?[ºª])',
+	"alinea": r'^([a-cA-C]?[a-zA-Z]\))'
 } 
 
 # POS_ANTECEDENTES_INADMISSIVEIS = {
@@ -144,11 +144,13 @@ class NumeracaoRomana(object):
 def getNumPattern(p_raw):
 
 	num_patt = None
+	string = None
 	for k, patt in PATT_NUMERO.items():
 
 		mo = re.match(patt, p_raw)
 		if not mo is None:
 			num_patt = k
+			string = mo.group(0)
 			break
 
 	val = None
@@ -158,7 +160,7 @@ def getNumPattern(p_raw):
 		elif num_patt == 'float':
 			val = float(p_raw) 
 
-	return num_patt, val
+	return num_patt, val, string
 
 class POSNotFound(Exception):
 	def __init__(self, p_token):	
@@ -246,13 +248,20 @@ def genTokens(p_ret: "DictListManager", p_dirty):
 
 	the_string = p_dirty
 
-	num_patt, val = getNumPattern(the_string)
+	num_patt, val, string = getNumPattern(the_string)
 	postlist = []
 
-	if num_patt is None and len(p_dirty) >= 2:
-		prevlist, the_string, postlist = genSepararSeparadoresColados(the_string)
-		for el in prevlist:
-			p_ret.insert(**el)
+	if len(p_dirty) >= 2:
+		if num_patt is None:
+			prevlist, the_string, postlist = genSepararSeparadoresColados(the_string)
+			for el in prevlist:
+				p_ret.insert(**el)
+		else:
+			assert not string is None
+			if len(string) < len(the_string):
+				prevlist, the_string, postlist = genSepararSeparadoresColados(the_string)
+				for el in prevlist:
+					p_ret.insert(**el)				
 
 	if len(the_string) > 0:
 
@@ -274,18 +283,18 @@ def genTokens(p_ret: "DictListManager", p_dirty):
 					True ),
 
 			(None, 
-				lambda pv, _v, bus: not bus['numpatt'][0] is None and not bus['numpatt'][1] is None, 
-				lambda pv, _v, bus: bus['ret'].insert(ok=the_string, numero=bus['numpatt'][0], valor=bus['numpatt'][1], string=str(the_string)), 
+				lambda _pv, _v, bus: not bus['numpatt'][0] is None and not bus['numpatt'][1] is None, 
+				lambda _pv, v, bus: bus['ret'].insert(ok=v, numero=bus['numpatt'][0], valor=bus['numpatt'][1], string=str(v)), 
 					True ),
 
 			(None, 
-				lambda pv, _v, bus: not bus['numpatt'][0] is None and bus['numpatt'][1] is None, 
-				lambda pv, _v, bus: bus['ret'].insert(ok=the_string, numero=bus['numpatt'][0], string=str(the_string)), 
+				lambda _pv, _v, bus: not bus['numpatt'][0] is None and bus['numpatt'][1] is None, 
+				lambda _pv, v, bus: bus['ret'].insert(ok=v, numero=bus['numpatt'][0], string=str(v)), 
 					True ),
 
 			(lambda v, _bus: rom_num.fromRomanStr(v), 
 				lambda pv, _v, _bus: not pv is None, 
-				lambda pv, _v, bus: bus['ret'].insert(k=the_string, numero="romano", valor=pv, string=str(the_string)), 
+				lambda pv, v, bus: bus['ret'].insert(k=v, numero="romano", valor=pv, string=str(v)), 
 					True ),
 
 		]
@@ -323,7 +332,7 @@ def genTokens(p_ret: "DictListManager", p_dirty):
 
 def genTokensList(p_in_window_text: str) -> list[Any]:
 
-	print("genTokensList:", p_in_window_text[:40])
+	#print("genTokensList:", p_in_window_text[:40])
 
 	# Texto de p_in_window_text deve estar todo em minúsculas e com palavras e separadores intervalados apenas por um único espaço em branco
 	# cleantext = ' '.join(p_in_window_text.split()).lower()
@@ -366,9 +375,12 @@ def genTokensList(p_in_window_text: str) -> list[Any]:
 	}]
 
 	first_tokens = DictListManager(schemas)
-	
-	for wrd in cleantext.split():
-		genTokens(first_tokens, wrd)
+
+	for i, ln in enumerate(cleantext.split(r"\n")):
+		if i > 0 and (not 'sep' in first_tokens[-1].keys() or first_tokens[-1]['sep'] != 'break'):
+			first_tokens.insert({"sep": "break", "ok": r"\n"})
+		for wrd in ln.split():
+			genTokens(first_tokens, wrd)
 			# if len(set(tkn.keys()).intersection(['lower', 'string', 'div'])) > 0:
 			# 	first_tokens.append(tkn)
 
@@ -588,7 +600,6 @@ def injetarTemposVerbais(p_dict):
 					raise RuntimeError(f"... ja existe '{forma}' em parts_of_speech.json e nao esta marcado como verbo")		
 			else:
 				p_dict[forma] = ['verbo']
-
 
 def query_wiktionary(p_word):
 

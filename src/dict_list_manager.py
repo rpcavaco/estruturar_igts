@@ -32,7 +32,7 @@ import json
 import warnings
 
 from copy import copy, deepcopy
-from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Type, Tuple
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Type, Tuple, Literal
 
 from jsonschema import validate
 from jsonschema import Validator, Draft202012Validator
@@ -254,7 +254,7 @@ class DictListManager():
 				break
 
 
-	def buildConstruct(self, p_indexes: List[int], p_tag: Dict[str, Any], adic_attribs: Optional[List[Tuple]] = None, right_trimming_func: Optional[Any] = None, validation_func: Optional[Any] = None, paf=None):
+	def buildConstruct(self, p_indexes: List[int], p_tag: str, adic_attribs: Optional[List[Tuple]] = None, right_trimming_func: Optional[Any] = None, validation_func: Optional[Any] = None, context_data: Optional[Any] = None, include_number: Optional[Literal['START', 'END', 'BOTH']] = None):
 
 		# Verificar que indices são consecutivos
 		assert len(p_indexes) > 0 and len(p_indexes) == (p_indexes[-1] - p_indexes[0]) + 1, p_indexes
@@ -273,37 +273,62 @@ class DictListManager():
 			first_found = False
 			for rev_idx in reversed(srt_idxs):
 				if not first_found:
-					if not paf is None and 'pos' in self._items[rev_idx].keys():
-						pass
+					# if not context_data is None and 'paf' in context_data and 'pos' in self._items[rev_idx].keys():
+						# Para visualizar motivo da ausência de um trimming expectável, temos de colocar pos_admissiveis_final em context_data 
 						# if self._items[rev_idx]['repr'] == 'que':
-						# 	print(">> 278:", self._items[rev_idx-1], self._items[rev_idx], paf.intersection(self._items[rev_idx]['pos']))
+						# 	print(">> 278:", self._items[rev_idx-1], self._items[rev_idx], context_data['paf'].intersection(self._items[rev_idx]['pos']))
 					if right_trimming_func(self._items[rev_idx]):
 						continue
 					else:
 						first_found = True
 				if first_found:
 					children.insert(0 ,deepcopy(self._items[rev_idx]))
-					idxs_efetivamente_usados.append(rev_idx)
+					idxs_efetivamente_usados.insert(0, rev_idx)
 
 			if len(children) == 0:
 				for idx in p_indexes:
-					self._items[rev_idx]['construct_error'] = 'empty'
-				raise EmptyConstructError()
+					self._items[rev_idx]['construct_error'] = f'vazio {p_tag}'
+					self.validate(self._items[rev_idx])
+				raise EmptyConstructError(" ".join([str(self._items[i]) for i in p_indexes]))
 
 		if not validation_func is None and not validation_func(children):
 			for idx in p_indexes:
-				self._items[rev_idx]['construct_error'] = 'invalid'
+				self._items[idx]['construct_error'] = f'invalido {p_tag}'
+				self.validate(self._items[idx])
 			raise ConstructValidationError(children)
 
-		srt_idxs2 = sorted(idxs_efetivamente_usados)
+		numero = None
+		if include_number:
 
-		for idx in reversed(srt_idxs2):
+			if include_number in ("END", "BOTH"):
+
+				if idxs_efetivamente_usados[-1] < len(self._items) - 1:
+					test_idx = idxs_efetivamente_usados[-1] + 1
+					if 'numero' in self._items[test_idx].keys():
+						if self._items[test_idx]['numero'] in ('item', 'ord', 'alinea'):
+							children.append(deepcopy(self._items[test_idx]))
+							idxs_efetivamente_usados.append(test_idx)
+
+			if include_number in ("START", "BOTH"):
+
+				if idxs_efetivamente_usados[0] > 0:
+					test_idx = idxs_efetivamente_usados[0] - 1
+					if 'numero' in self._items[test_idx].keys():
+						if self._items[test_idx]['numero'] in ('item', 'ord', 'alinea'):
+							children.insert(0 ,deepcopy(self._items[test_idx]))
+							idxs_efetivamente_usados.insert(0, test_idx)
+							numero = self._items[test_idx]['repr']
+
+		for idx in reversed(idxs_efetivamente_usados):
 			self.remove_at(idx)
 
 		insert_obj = {
 			"construct": p_tag,
 			"children": children
 		}
+
+		if not numero is None:
+			insert_obj['numero'] = numero
 
 		repr_list = []
 		for c in children:
@@ -318,7 +343,7 @@ class DictListManager():
 			for k, v in adic_attribs:
 				insert_obj[k] = v
 
-		self._items.insert(min(srt_idxs), deepcopy(insert_obj))
+		self._items.insert(min(idxs_efetivamente_usados), deepcopy(insert_obj))
 
 	def __iter__(self) -> Iterator[Dict[str, Any]]:
 		"""Iterate over (read-only-by-convention) copies of the items."""

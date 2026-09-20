@@ -158,7 +158,6 @@ class ReconhecimentoReferentes(object):
 			# 	print("--156--", idx, grp_tokens, the_prev_tkn)
 			# 	raise
 
-
 	def reconhecerURLs(self, p_list: 'DictListManager') -> None:
 
 		idxs_lists = []
@@ -200,6 +199,13 @@ class ReconhecimentoReferentes(object):
 			if len(idxs_list) == 0:
 				continue
 
+			# remover separadoes que possam ocorrer no final
+			while len(idxs_list) > 0 and p_list[idxs_list[-1]]['repr'] in seps:
+				idxs_list.pop()
+
+			if len(idxs_list) == 0:
+				continue
+
 			# Tentativa de separar duas denominações juntas, desde que a primeira
 			#   palavra a sequir à conjunção não seja um nome
 			secnd_idxs_list = []
@@ -224,7 +230,7 @@ class ReconhecimentoReferentes(object):
 				idxs_lists.append(secnd_idxs_list)
 
 		for idxs_list_2 in reversed(idxs_lists):
-			p_list.buildConstruct(idxs_list_2, "denominacao")
+			p_list.buildConstruct(idxs_list_2, "denominacao", include_number="START")
 
 	def reconhecerDatas(self, p_list: 'DictListManager') -> None:
 
@@ -322,7 +328,6 @@ class ReconhecimentoReferentes(object):
 		for idxs_list_1 in reversed(idxs_lists):
 			p_list.buildConstruct(idxs_list_1, "ato_normativo")
 
-
 	def reconhecerReferentes(self, p_list: 'DictListManager'):
 
 		def validar_construct(p_children: List[Dict[str, Any]]) -> bool:
@@ -342,11 +347,9 @@ class ReconhecimentoReferentes(object):
 			return ret
 
 		def right_trim(p_tkn: Dict[str, Any]) -> bool:		
-
 			ret = True
 			if 'pos' in p_tkn.keys():
 				ret = not bool(self.pos_admissiveis_final.intersection(p_tkn['pos']))
-
 			return ret
 
 		idxs_lists = []
@@ -414,14 +417,11 @@ class ReconhecimentoReferentes(object):
 		const_empty_errorcnt = 0
 		for idxs_list_1 in reversed(idxs_lists):
 			try:
-				p_list.buildConstruct(idxs_list_1, "referente", right_trimming_func=right_trim, validation_func=validar_construct) #, paf=self.pos_admissiveis_final)
+				p_list.buildConstruct(idxs_list_1, "referente", right_trimming_func=right_trim, validation_func=validar_construct, include_number="BOTH") #, context_data={'paf': self.pos_admissiveis_final})
 			except ConstructValidationError as ce:
 				const_valid_errorcnt += 1
 			except EmptyConstructError as ece:
 				const_empty_errorcnt += 1
-
-		print("const_valid_errorcnt:", const_valid_errorcnt, "const_empty_errorcnt:", const_empty_errorcnt)
-
 
 	def reconhecerEmJanela(self, p_janela: str) -> Dict[str, Type]:
 
@@ -429,13 +429,12 @@ class ReconhecimentoReferentes(object):
 
 		# Limpeza de artefactos prejudiciais ##################################
 
-		in_window_text = p_janela.replace(r"\n", " ")  				## remover caracteres newline
-		# in_window_text = re.sub(r"http[s]?://[\S]+", " ", in_window_text)   ## remover URLs
-		in_window_text = re.sub(fr"({PT_ALPHA_CHAR_PATT})/({PT_ALPHA_CHAR_PATT})", r"\1 / \2", in_window_text)   ## tornar barras separadoras contíguas a texto em barras isoladas
+		# print(in_window_text)
+
+		in_window_text = re.sub(fr"({PT_ALPHA_CHAR_PATT})/({PT_ALPHA_CHAR_PATT})", r"\1 / \2", p_janela)   ## tornar barras separadoras contíguas a texto em barras isoladas
 		in_window_text = in_window_text.replace("e/ou", "ou").replace("e / ou", "ou")
 
 		cleantext = in_window_text
-
 		ret['tokens_list'] = genTokensList(cleantext)
 
 		# Definir 'repr' onde possível ########################################
@@ -475,13 +474,18 @@ class ReconhecimentoReferentes(object):
 		if len(atos) > 0:
 			ret['atos'] = atos
 
+		denominacoes = []
+		for tkn in ret['tokens_list']:
+			if 'construct' in tkn.keys() and tkn['construct'] == 'denominacao':
+				denominacoes.append(tkn['repr'])
+		if len(denominacoes) > 0:
+			ret['denominacoes'] = denominacoes
+
 		referentes = []
 		for tkn in ret['tokens_list']:
 			if 'construct' in tkn.keys() and tkn['construct'] == 'referente':
 				referentes.append(tkn['repr'])
 		if len(referentes) > 0:
 			ret['referentes'] = referentes
-
-
 
 		return ret
