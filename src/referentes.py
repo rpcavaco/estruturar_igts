@@ -173,7 +173,7 @@ class ReconhecimentoReferentes(object):
 
 		idxs_lists = []
 		for idx, indices in p_list.iterateMatches(self.nomes_compostos):
-			idxs_lists.append(idxs_list)
+			idxs_lists.append(indices)
 
 		for idxs_list_1 in reversed(idxs_lists):
 			p_list.buildConstruct(idxs_list_1, "denominacao")
@@ -230,7 +230,13 @@ class ReconhecimentoReferentes(object):
 				idxs_lists.append(secnd_idxs_list)
 
 		for idxs_list_2 in reversed(idxs_lists):
-			p_list.buildConstruct(idxs_list_2, "denominacao", include_number="START")
+			try:
+				p_list.buildConstruct(idxs_list_2, "denominacao", include_number="START")
+			except AssertionError as ae:
+				aelist = json.loads(str(ae))
+				print(idxs_list_2)
+				print([p_list[idx] for idx in aelist])
+				
 
 	def reconhecerDatas(self, p_list: 'DictListManager') -> None:
 
@@ -423,9 +429,9 @@ class ReconhecimentoReferentes(object):
 			except EmptyConstructError as ece:
 				const_empty_errorcnt += 1
 
-	def reconhecerEmJanela(self, p_janela: str) -> Dict[str, Type]:
+	def reconhecerEmJanela(self, p_janela: str, out_dict: Dict[str, Type]) -> None:
 
-		ret = {}
+		out_dict.clear()
 
 		# Limpeza de artefactos prejudiciais ##################################
 
@@ -435,57 +441,56 @@ class ReconhecimentoReferentes(object):
 		in_window_text = in_window_text.replace("e/ou", "ou").replace("e / ou", "ou")
 
 		cleantext = in_window_text
-		ret['tokens_list'] = genTokensList(cleantext)
+		out_dict['tokens_list'] = genTokensList(cleantext)
 
 		# Definir 'repr' onde possível ########################################
 
-		buildRepr(ret['tokens_list'])
+		buildRepr(out_dict['tokens_list'])
 
 		# Reconhecer construções (q precisam de 'repr' mas não de 'pos') ######
 
-		self.reconhecerURLs(ret['tokens_list'])
-		self.reconhecerDatas(ret['tokens_list'])
+		self.reconhecerURLs(out_dict['tokens_list'])
+		self.reconhecerDatas(out_dict['tokens_list'])
 
 		# Reconhecer construções nome ou designação ###########################
 
-		self.reconhecerDenominacoes(ret['tokens_list'])
+		self.reconhecerDenominacoes(out_dict['tokens_list'])
 
 		# Marcasr siglas e nomes ou designações de expansão de sigla  #########
 
 		out_siglas = []
-		self.marcarSiglas(ret['tokens_list'], out_siglas)	
-		self.reconhecerExpansaoSiglas(ret['tokens_list'], out_siglas)
-		self.reconhecerAtosNormativos(ret['tokens_list'])
+		self.marcarSiglas(out_dict['tokens_list'], out_siglas)	
+		self.reconhecerExpansaoSiglas(out_dict['tokens_list'], out_siglas)
+		self.reconhecerAtosNormativos(out_dict['tokens_list'])
 
 		# Obter POS ###########################################################
 
 		# pos=['sigla'] já se encontram preenchidos
 
-		self.buildPOS(ret, out_siglas)
+		self.buildPOS(out_dict, out_siglas)
 
 		# Marcar REFERENTES ####################################################
 		
-		self.reconhecerReferentes(ret['tokens_list'])
+		self.reconhecerReferentes(out_dict['tokens_list'])
 
 		atos = []
-		for tkn in ret['tokens_list']:
+		for tkn in out_dict['tokens_list']:
 			if 'construct' in tkn.keys() and tkn['construct'] == 'ato_normativo':
 				atos.append(tkn['repr'])
 		if len(atos) > 0:
-			ret['atos'] = atos
+			out_dict['atos'] = atos
 
 		denominacoes = []
-		for tkn in ret['tokens_list']:
+		for tkn in out_dict['tokens_list']:
 			if 'construct' in tkn.keys() and tkn['construct'] == 'denominacao':
 				denominacoes.append(tkn['repr'])
 		if len(denominacoes) > 0:
-			ret['denominacoes'] = denominacoes
+			out_dict['denominacoes'] = denominacoes
 
 		referentes = []
-		for tkn in ret['tokens_list']:
+		for tkn in out_dict['tokens_list']:
 			if 'construct' in tkn.keys() and tkn['construct'] == 'referente':
 				referentes.append(tkn['repr'])
 		if len(referentes) > 0:
-			ret['referentes'] = referentes
+			out_dict['referentes'] = referentes
 
-		return ret

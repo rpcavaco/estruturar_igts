@@ -8,6 +8,7 @@ from uuid import uuid4
 from copy import copy
 
 from docnode import DocNode
+from nlp import NumeracaoRomana
 
 
 
@@ -854,7 +855,7 @@ def traverseNodes(p_out_dict, p_node, path=None, typestr_filter_list=None, maxde
 	if 'design' in p_node.attrs and not 'design' in _scrap_attributes:
 		local_buf.append(p_node.attrs['design'])
 	if 'cont' in p_node.attrs and not 'cont' in _scrap_attributes:
-		local_buf.append(p_node.attrs['cont'])
+		local_buf.extend([s for s in p_node.attrs['cont'].split(r'\n') if len(s) > 0])
 	if 'txt' in p_node.attrs and not 'txt' in _scrap_attributes:
 		local_buf.append(p_node.attrs['txt'])
 
@@ -960,3 +961,104 @@ def dump_docnodes(p_infile, p_outfile):
 		json.dump(out_dict, fp, indent=4, ensure_ascii=False)
 
 	return out_dict
+
+def processar_documento(p_in_path, p_out_path):
+
+	first_class_types = ["TÍTULO", "ANEXO"]
+	
+	posicoes_titulos_maiusc = titulos_maiusculas_com_romano_final(p_in_path)
+
+	porcoes = []
+	prev_start = None
+	prev_tit = None
+	prev_titlvl = None
+	for start_line, titlvl, tit in posicoes_titulos_maiusc:
+
+		if prev_start is None:
+			if start_line > 1:
+				porcoes.append({
+					'start': 1,
+					'stop': start_line-1,
+					'tit': None,
+					'titlevel': 'INTRO'
+				})
+		else:
+			porcoes.append({
+				'start': prev_start,
+				'stop': start_line-1,
+				'tit': prev_tit,
+				'titlevel': prev_titlvl
+			})
+		prev_start = start_line
+		prev_tit = tit
+		prev_titlvl = titlvl
+	porcoes.append({
+		'start': prev_start,
+		'stop': None,
+		'tit': prev_tit,
+		'titlevel': prev_titlvl
+	})
+
+	tree_root = DocNode()
+	current_node = tree_root
+
+	for porcao in porcoes:
+
+		hier = current_node.typeHierarchy()
+		stypes = current_node.siblingTypes()
+
+		if porcao['titlevel'] in first_class_types:
+			current_node = tree_root
+			current_node.addEmptySibling(porcao['titlevel'])
+		else:
+			if len(stypes) == 0 or porcao['titlevel'] == stypes[-1]:
+				current_node.addEmptySibling(porcao['titlevel'])
+			else:
+				if porcao['titlevel'] not in hier:
+					current_node = current_node.addEmptySibling2LastSibling(porcao['titlevel'])
+				else:
+					while porcao['titlevel'] != current_node.typestr:
+						current_node = current_node.parent
+					current_node = current_node.parent
+					current_node.addEmptySibling(porcao['titlevel'])
+
+		attrs_to_store = {
+			'start': porcao['start'],
+			'stop': porcao['stop'],
+			'tit': porcao['tit']
+		}
+
+		if porcao['tit'] is None:
+			dz_sz, dz_txt = ler_entre_branco_file(p_in_path, porcao['start'])
+		else:
+			dz_sz, dz_txt = ler_entre_branco_file(p_in_path, porcao['start']+1)
+
+		if porcao['titlevel'] == 'INTRO':
+			# Passar designacao a designacao do documento
+			if tree_root.attrs is None:
+				tree_root.attrs = {}
+			tree_root.attrs['design'] = dz_txt
+		else:
+			attrs_to_store['design'] = dz_txt
+
+		if porcao['stop'] is None or porcao['stop'] > porcao['start']+dz_sz:
+			
+			txt = ler_entre_linhas_file(p_in_path, porcao['start']+dz_sz, line_num_stop=porcao['stop'])
+			artigos = extrair_artigos(txt)
+			if len(artigos) > 0:
+
+				if artigos[0]['start'] > 2:
+					# Nó com lista de artigos, com parágrafo(s) de texto em preâmbulo antes dos artigos
+					print("cont + artigos, num artigo:", artigos[0]['num'])
+					attrs_to_store['cont'] = txt[:artigos[0]['start']-1]
+
+				attrs_to_store['artigos'] = [{'num': a['num'], 'id': str(uuid4()), 'atit': a['tit'], 'cont': parsing_artigo(a['cont'], num=a['num']) } for a in artigos]
+
+			else:
+				attrs_to_store['cont'] = txt
+		
+		current_node.setLastSiblingAttrs(attrs_to_store)
+
+	with open(p_out_path, 'w', encoding='utf-8') as fp: 
+		json.dump(tree_root.toJSON(), fp, indent=4)
+

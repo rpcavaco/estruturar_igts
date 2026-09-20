@@ -158,7 +158,7 @@ def getNumPattern(p_raw):
 		if num_patt == 'int':
 			val = int(p_raw) 
 		elif num_patt == 'float':
-			val = float(p_raw) 
+			val = float(p_raw.replace(',', '.')) 
 
 	return num_patt, val, string
 
@@ -294,7 +294,7 @@ def genTokens(p_ret: "DictListManager", p_dirty):
 
 			(lambda v, _bus: rom_num.fromRomanStr(v), 
 				lambda pv, _v, _bus: not pv is None, 
-				lambda pv, v, bus: bus['ret'].insert(k=v, numero="romano", valor=pv, string=str(v)), 
+				lambda pv, v, bus: bus['ret'].insert(ok=v, numero="romano", valor=pv, string=str(v)), 
 					True ),
 
 		]

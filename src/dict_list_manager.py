@@ -215,23 +215,32 @@ class DictListManager():
 			else:
 				check_fluxo = False
 			#if check_fluxo:
+
+			do_break = False
 			if 'construct' in item.keys(): # No multilevel constructs
 				if len(fluxo) > 0:
 					fluxo.append(f"{item} construct {i}")
+				do_break = True
 			else:
 				if predicate(item):
 					if check_fluxo:
 						fluxo.append(f"{item} predicate OK, append {i}")
 					found_idxs.append(i)
 				else:
-					if len(found_idxs) > 0:
-						if check_fluxo:
-							fluxo.append(f"{item} predicate NOTOK, yield {i}")
-							print("\n".join(fluxo))
-							del fluxo[:]
-						ret = copy(found_idxs)
-						del found_idxs[:]
-						yield ret
+					do_break = True
+
+			if do_break:
+				if len(found_idxs) > 0:
+					if check_fluxo:
+						fluxo.append(f"{item} predicate NOTOK, yield {i}")
+						print("\n".join(fluxo))
+						del fluxo[:]
+					assert len(found_idxs) == (found_idxs[-1] - found_idxs[0]) + 1, f"indices não consecutivos: {found_idxs}"
+					ret = copy(found_idxs)
+					del found_idxs[:]
+					yield ret
+				else:
+					del found_idxs[:]
 
 		if len(fluxo) > 0:
 			print("Fluxo final:", "\n".join(fluxo))
