@@ -58,6 +58,8 @@ class ReconhecimentoReferentes(object):
 			self.part_of_speech_dict = json.load(fp)		
 			injetarTemposVerbais(self.part_of_speech_dict)
 
+		print("Dimensão do vocabulário:", len(self.part_of_speech_dict.keys()),  "palavras")
+
 		self.substituicoes = None
 		with open(os.path.join('setup', 'substituicoes.json'), 'r', encoding='utf-8') as fp: 
 			self.substituicoes = json.load(fp)	
@@ -71,15 +73,15 @@ class ReconhecimentoReferentes(object):
 		with open(os.path.join('setup', 'pos_admissiveis.json'), 'r', encoding='utf-8') as fp: 
 			self.pos_admissiveis = json.load(fp)	
 
-		self.sufixos_plurais = None
-		with open(os.path.join('setup', 'sufixos_plurais,json'), 'r', encoding='utf-8') as fp: 
-			self.sufixos_plurais = json.load(fp)
+		# self.sufixos_plurais = None
+		# with open(os.path.join('setup', 'sufixos_plurais,json'), 'r', encoding='utf-8') as fp: 
+		# 	self.sufixos_plurais = json.load(fp)
 
-		self.remover_para_comparabilidade = set([])
-		check_list = set(['artigo', 'preposicao', 'contracao', 'conjuncao'])
-		for wrd in self.part_of_speech_dict.keys():
-			if len(set(self.part_of_speech_dict[wrd]).intersection(check_list)) > 0:
-				self.remover_para_comparabilidade.add(wrd)
+		# self.remover_para_comparabilidade = set([])
+		# check_list = set(['artigo', 'preposicao', 'contracao', 'conjuncao'])
+		# for wrd in self.part_of_speech_dict.keys():
+		# 	if len(set(self.part_of_speech_dict[wrd]).intersection(check_list)) > 0:
+		# 		self.remover_para_comparabilidade.add(wrd)
 
 		self.pos_admissiveis_final = set([])
 		for k in self.pos_admissiveis["antecedentes_admissiveis"].keys():
@@ -237,7 +239,6 @@ class ReconhecimentoReferentes(object):
 				print(idxs_list_2)
 				print([p_list[idx] for idx in aelist])
 				
-
 	def reconhecerDatas(self, p_list: 'DictListManager') -> None:
 
 		meses = [

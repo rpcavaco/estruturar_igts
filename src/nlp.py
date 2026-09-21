@@ -9,6 +9,9 @@ import warnings
 from copy import copy, deepcopy
 from unidecode import unidecode
 from time import sleep
+from tqdm import tqdm
+
+from json_helpers import find_unserializable
 
 from typing import List, Dict, Type, Any #, Callable, Dict, Iterable, Iterator, List, Optional, Type
 
@@ -21,7 +24,7 @@ from dict_list_manager import DictListManager
 
 WIKTIONARY_URL = "https://en.wiktionary.org/api/rest_v1/page/definition/{}?redirect=false"
 
-WIKTIONARY_SLEEP = 4
+WIKTIONARY_SLEEP = 3
 
 # SEP_PRIMARIOS = ['de', 'e', 'a', 'da', 'do', 'ou', 'que', 'o', 'em', 'Em', 'com', 'as', 'no', 'à', 'À', 'das', 'dos', 'para', 'os', 'A', 'se', 'não', 'na', 'ao', 'como', 'por', 'é', 'uma', 'ser', 'nos', 'nas', 'seguintes', 'um', 'As', 'O', 'caso', 'são', 'sua', 'Os', 'No', 'entre', 'às','sem', 'quando', 'desde', 'pela', 'seja', 'pelo', 'aos', 'Nas', 'neste', 'nestes', 'nesta', 'nestas', 'cada',  'mais', 'menos']
 
@@ -69,7 +72,7 @@ FORMAS_VERBAIS_AUXILIARES = {
 
 PATT_NUMERO = {
 	"int": r"^([0-9]+$)",	
-	"item": r"^([0-9]+[\./]+[0-9]+$)",
+	"item": (r"^([0-9]+[\./]+[0-9]+[\./]+[0-9]+$)", r"^([0-9]+[\./]+[0-9]+$)"),
 	"float": r"^([0-9]+[\,]+[0-9]+$)",
 	"ord": r'^([0-9]+[\. ]?[ºª])',
 	"alinea": r'^([a-cA-C]?[a-zA-Z]\))'
@@ -145,13 +148,26 @@ def getNumPattern(p_raw):
 
 	num_patt = None
 	string = None
-	for k, patt in PATT_NUMERO.items():
 
-		mo = re.match(patt, p_raw)
+	def do_eval(p_patt, pp_raw):
+		mo = re.match(p_patt, pp_raw)
 		if not mo is None:
-			num_patt = k
-			string = mo.group(0)
-			break
+			return k, mo.group(0)
+
+	for k, patts in PATT_NUMERO.items():
+
+		if isinstance(patts, list) or isinstance(patts, tuple):
+			for patt in patts:
+				eval_result = do_eval(patt, p_raw)
+				if not eval_result is None:
+					num_patt = eval_result[0]
+					string = eval_result[1]
+					break
+		else:
+			eval_result = do_eval(patts, p_raw)
+			if not eval_result is None:
+				num_patt = eval_result[0]
+				string = eval_result[1]			
 
 	val = None
 	if not num_patt is None:
@@ -264,6 +280,8 @@ def genTokens(p_ret: "DictListManager", p_dirty):
 					p_ret.insert(**el)				
 
 	if len(the_string) > 0:
+
+		the_string = the_string.replace('―', '-')
 
 		ALL_SEPS = ('.', ',', ':', ';', '”', '“', ')', '»', '“', '(', '«', '/', '-', chr(int('2013', 16)))
 		aseps = set(ALL_SEPS)
@@ -633,9 +651,9 @@ def update_parts_of_speech_dict(p_pos_dict, p_word_list: list[str], opt_out_path
 	ret = {}
 	newposs = []
 
-	for w in p_word_list:
+	for w in tqdm(p_word_list):
 
-		if not w in p_pos_dict.keys():
+		if not w in p_pos_dict.keys() or len(p_pos_dict[w]) == 0:
 
 			del newposs[:]
 			poss = query_wiktionary(w)
@@ -675,14 +693,19 @@ def update_parts_of_speech_dict(p_pos_dict, p_word_list: list[str], opt_out_path
 					r = 'INDEF'
 				if not r in newposs:
 					newposs.append(r)
-			print(">>", w, poss, newposs)
+			# print(">>", w, poss, newposs)
 			ret[w] = copy(newposs)
 
 			if not opt_out_path is None:
+
+				find_unserializable(ret)
+
 				with open(opt_out_path, 'w', encoding='utf-8') as fp:
 					json.dump(ret, fp, indent=4, ensure_ascii=False)
 
-		time.sleep(1)
+		# time.sleep(1)
+
+	find_unserializable(ret)
 
 	if opt_out_path is None:
 		p_pos_dict.update(ret)
@@ -850,11 +873,10 @@ def presenca_datas(p_tokens_to_check: list[str]) -> list[int]:
 # 	read_all_pos()
 
 
-if __name__ == "__mainz__":
-	print(query_wiktionary('que'))
 
 
-if __name__ == "__main__":
+
+if __name__ == "__main0__":
 
 	print("ok")
 

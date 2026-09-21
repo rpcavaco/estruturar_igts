@@ -1622,10 +1622,12 @@
         "verbo"
     ],
     "inviabilizada": [
-        "verbo"
+        "adjetivo",
+        "participio"
     ],
     "inviabilizadas": [
-        "verbo"
+        "adjetivo",
+        "participio"
     ],
     "formal": [
         "adjetivo"
@@ -2156,7 +2158,8 @@
         "participio"
     ],
     "motorizada": [
-        "nome"
+        "nome",
+        "adjetivo"
     ],
     "correspondendo": [
         "verbo"
@@ -3455,6 +3458,9 @@
     "perequações": [
         "nome"
     ],
+    "abrangido": [
+        "participio"
+    ],
     "abrangidos": [
         "participio"
     ],
@@ -3704,6 +3710,8 @@
         "nome"
     ],
     "estipulado": [
+        "adjetivo",
+        "nome",
         "participio"
     ],
     "até": [
@@ -3931,12 +3939,6 @@
     "podem": [
         "verbo"
     ],
-    "viabilizadas": [
-        "verbo"
-    ],
-    "viabilizada": [
-        "verbo"
-    ],
     "abranjam": [
         "verbo"
     ],
@@ -3960,10 +3962,12 @@
         "participio"
     ],
     "contabilizado": [
-        "verbo"
+        "adjetivo",
+        "particpio"
     ],
     "contabilizada": [
-        "verbo"
+        "adjetivo",
+        "particpio"
     ],
     "afetem": [
         "verbo"
@@ -10556,6 +10560,3686 @@
         "nome"
     ],
     "interface": [
+        "nome"
+    ],
+
+    "abaixo": [
+        "adverbio",
+        "interjeicao",
+        "verbo"
+    ],
+    "abatido": [
+        "adjetivo",
+        "participio"
+    ],
+    "abatimentos": [
+        "nome"
+    ],
+    "aberto": [
+        "adjetivo",
+        "participio",
+        "nome"
+    ],
+    "abrange": [
+        "verbo"
+    ],
+    "abrangendo": [
+        "verbo"
+    ],
+    "acarretar": [
+        "verbo"
+    ],
+    "acatada": [
+        "participio"
+    ],
+    "acatadas": [
+        "participio"
+    ],
+    "acatado": [
+        "participio"
+    ],
+    "acatados": [
+        "participio"
+    ],
+    "acatamento": [
+        "nome"
+    ],
+    "acatar": [
+        "verbo"
+    ],
+    "acautelará": [
+        "verbo"
+    ],
+    "acautelem": [
+        "verbo"
+    ],
+    "aceitabilidade": [
+        "nome"
+    ],
+    "acessoriamente": [
+        "adverbio"
+    ],
+    "acessórias": [
+        "nome"
+    ],
+    "acolhem": [
+        "verbo"
+    ],
+    "acompanhamento": [
+        "nome"
+    ],
+    "aconselhe": [
+        "verbo"
+    ],
+    "aconselhem": [
+        "verbo"
+    ],
+    "acrescido": [
+        "participio"
+    ],
+    "acrescidos": [
+        "participio"
+    ],
+    "adequadamente": [
+        "adverbio"
+    ],
+    "adotada": [
+        "participio"
+    ],
+    "adotados": [
+        "participio"
+    ],
+    "adotam": [
+        "verbo"
+    ],
+    "adotar-se": [
+        "verbo"
+    ],
+    "adstrita": [
+        "adjetivo"
+    ],
+    "adstritos": [
+        "adjetivo"
+    ],
+    "afetados": [
+        "adjetivo",
+        "participio"
+    ],
+    "afeto": [
+        "nome",
+        "verbo"
+    ],
+    "agricultor": [
+        "nome"
+    ],
+    "agropecuárias": [
+        "adjetivo"
+    ],
+    "agropecuário": [
+        "adjetivo"
+    ],
+    "ajustando-se": [
+        "verbo"
+    ],
+    "aldeamento": [
+        "nome"
+    ],
+    "aldeamentos": [
+        "nome"
+    ],
+    "algumas": [
+        "pronome"
+    ],
+    "alienação": [
+        "nome"
+    ],
+    "altera": [
+        "verbo"
+    ],
+    "alterado": [
+        "participio",
+        "adjetivo"
+    ],
+    "altimétrica": [
+        "adjetivo"
+    ],
+    "altimétricas": [
+        "adjetivo"
+    ],
+    "alvará": [
+        "nome"
+    ],
+    "ambos": [
+        "determinante",
+        "pronome"
+    ],
+    "ambulâncias": [
+        "nome"
+    ],
+    "anteriormente": [
+        "adverbio"
+    ],
+    "antes": [
+        "adverbio",
+        "nome"
+    ],
+    "aparcamento": [
+        "nome"
+    ],
+    "aparcamentos": [
+        "nome"
+    ],
+    "aparecimento": [
+        "nome"
+    ],
+    "aparelhos": [
+        "nome"
+    ],
+    "apartamentos": [
+        "nome"
+    ],
+    "aparência": [
+        "nome"
+    ],
+    "aplicabilidade": [
+        "nome"
+    ],
+    "aplicados": [
+        "adjetivo",
+        "participio"
+    ],
+    "aplicam": [
+        "verbo"
+    ],
+    "aplicando": [
+        "verbo"
+    ],
+    "aplicar-se": [
+        "verbo"
+    ],
+    "aplicar-se-lhes": [
+        "verbo"
+    ],
+    "aplicar-se-ão": [
+        "verbo"
+    ],
+    "apoiada": [
+        "participio"
+    ],
+    "apreciação": [
+        "nome"
+    ],
+    "apresente": [
+        "verbo"
+    ],
+    "apropriadas": [
+        "adjetivo",
+        "participio"
+    ],
+    "aprovar": [
+        "verbo"
+    ],
+    "aproveitamentos": [
+        "nome"
+    ],
+    "aproximarem-se": [
+        "verbo"
+    ],
+    "aquedutos": [
+        "nome"
+    ],
+    "aquela": [
+        "determinante",
+        "pronome",
+        "verbo"
+    ],
+    "aquelas": [
+        "determinante",
+        "pronome",
+        "verbo"
+    ],
+    "aquele": [
+        "determinante",
+        "pronome",
+        "verbo"
+    ],
+    "aqueles": [
+        "determinante",
+        "pronome",
+        "verbo"
+    ],
+    "aquíferos": [
+        "nome"
+    ],
+    "arborizados": [
+        "participio"
+    ],
+    "arbóreos": [
+        "adjetivo"
+    ],
+    "armazém": [
+        "nome"
+    ],
+    "arredondamento": [
+        "nome"
+    ],
+    "arredondamentos": [
+        "nome"
+    ],
+    "arte": [
+        "nome"
+    ],
+    "artesanato": [
+        "nome"
+    ],
+    "articulada": [
+        "adjetivo",
+        "participio"
+    ],
+    "articuladamente": [
+        "adverbio"
+    ],
+    "articulando-os": [
+        "verbo"
+    ],
+    "asseguradas": [
+        "participio"
+    ],
+    "assegurado": [
+        "participio"
+    ],
+    "assegurados": [
+        "participio"
+    ],
+    "asseguram": [
+        "verbo"
+    ],
+    "associações": [
+        "nome"
+    ],
+    "assegurem": [
+        "verbo"
+    ],
+    "assumem": [
+        "verbo"
+    ],
+    "assumir": [
+        "verbo"
+    ],
+    "assumiram": [
+        "verbo"
+    ],
+    "atenda": [
+        "verbo"
+    ],
+    "atestada": [
+        "participio"
+    ],
+    "atribuir": [
+        "verbo"
+    ],
+    "atribuída": [
+        "adjetivo",
+        "participio"
+    ],
+    "atrás": [
+        "adverbio"
+    ],
+    "atuais": [
+        "adjetivo",
+        "verbo"
+    ],
+    "atualmente": [
+        "adverbio"
+    ],
+    "aumentos": [
+        "nome"
+    ],
+    "automaticamente": [
+        "adverbio"
+    ],
+    "automóvel": [
+        "nome"
+    ],
+    "autorizadas": [
+        "participio"
+    ],
+    "autorizar": [
+        "verbo"
+    ],
+    "autorizativo": [
+        "nome"
+    ],
+    "autotanques": [
+        "nome"
+    ],
+    "avaliados": [
+        "participio"
+    ],
+    "avulsa": [
+        "nome"
+    ],
+    "avulsas": [
+        "nome"
+    ],
+    "avulso": [
+        "nome"
+    ],
+    "avulsos": [
+        "nome"
+    ],
+    "azinheira-de-bolota-doce": [
+        "nome"
+    ],
+    "b": [
+        "letra"
+    ],
+    "bacteriana": [
+        "adjetivo"
+    ],
+    "barreira": [
+        "nome"
+    ],
+    "bebidas": [
+        "adjetivo",
+        "nome",
+        "participio"
+    ],
+    "beleza": [
+        "nome",
+        "interjeicao"
+    ],
+    "beneficiada": [
+        "participio"
+    ],
+    "beneficiadas": [
+        "participio"
+    ],
+    "beneficiam": [
+        "verbo"
+    ],
+    "benefício": [
+        "nome"
+    ],
+    "bermas": [
+        "nome"
+    ],
+    "biofísicos": [
+        "adjetivo",
+        "nome"
+    ],
+    "bombeiros": [
+        "nome"
+    ],
+    "botânicas": [
+        "adjetivo",
+        "nome"
+    ],
+    "bruto": [
+        "adjetivo",
+        "nome"
+    ],
+    "básicos": [
+        "adjetivo",
+        "nome"
+    ],
+    "cabo": [
+        "nome"
+    ],
+    "caducidade": [
+        "nome"
+    ],
+    "calculado": [
+        "adjetivo",
+        "participio"
+    ],
+    "camadas": [
+        "nome"
+    ],
+    "camarária": [
+        "adjetivo"
+    ],
+    "campistas": [
+        "nome"
+    ],
+    "campos": [
+        "nome"
+    ],
+    "capacidades": [
+        "nome"
+    ],
+    "capítulos": [
+        "nome"
+    ],
+    "caracterizando-se": [
+        "verbo"
+    ],
+    "caracterização": [
+        "nome"
+    ],
+    "carenciadas": [
+        "adjetivo"
+    ],
+    "cargo": [
+        "nome"
+    ],
+    "carros": [
+        "nome"
+    ],
+    "cartas": [
+        "nome",
+        "verbo"
+    ],
+    "cartográfica": [
+        "adjetivo"
+    ],
+    "cartográficos": [
+        "adjetivo"
+    ],
+    "cedem": [
+        "verbo"
+    ],
+    "centrado": [
+        "participio"
+    ],
+    "centralidades": [
+        "nome"
+    ],
+    "certidão": [
+        "nome"
+    ],
+    "certifica": [
+        "verbo"
+    ],
+    "certificação": [
+        "nome"
+    ],
+    "cessado": [
+        "participio"
+    ],
+    "cessam": [
+        "verbo"
+    ],
+    "cessação": [
+        "nome"
+    ],
+    "cesse": [
+        "verbo"
+    ],
+    "cinegética": [
+        "adjetivo"
+    ],
+    "cinegéticas": [
+        "adjetivo"
+    ],
+    "circunstância": [
+        "nome"
+    ],
+    "coerente": [
+        "adjetivo"
+    ],
+    "coerentes": [
+        "adjetivo"
+    ],
+    "coincidem": [
+        "verbo"
+    ],
+    "colmatadas": [
+        "participio"
+    ],
+    "colocados": [
+        "adjetivo",
+        "participio"
+    ],
+    "combustão": [
+        "nome"
+    ],
+    "comercialização": [
+        "nome"
+    ],
+    "comercializável": [
+        "adjetivo"
+    ],
+    "cometidos": [
+        "participio"
+    ],
+    "comparativa": [
+        "adjetivo"
+    ],
+    "compatibilizam": [
+        "verbo"
+    ],
+    "compensados": [
+        "participio"
+    ],
+    "compensatória": [
+        "adjetivo"
+    ],
+    "complementam": [
+        "verbo"
+    ],
+    "complementaridade": [
+        "nome"
+    ],
+    "completamente": [
+        "adverbio"
+    ],
+    "componente": [
+        "nome"
+    ],
+    "compreendidas": [
+        "adjetivo",
+        "participio"
+    ],
+    "comprimento": [
+        "nome"
+    ],
+    "comprometimento": [
+        "nome"
+    ],
+    "compromisso": [
+        "nome"
+    ],
+    "comprovação": [
+        "nome"
+    ],
+    "comum": [
+        "adjetivo"
+    ],
+    "comunicar": [
+        "verbo"
+    ],
+    "comunidade": [
+        "nome"
+    ],
+    "concedidos": [
+        "adjetivo",
+        "participio"
+    ],
+    "concelhio": [
+        "nome"
+    ],
+    "concelhos": [
+        "nome"
+    ],
+    "concertadas": [
+        "participio"
+    ],
+    "conclua": [
+        "verbo"
+    ],
+    "concluída": [
+        "participio"
+    ],
+    "concluído": [
+        "participio"
+    ],
+    "concluídos": [
+        "participio"
+    ],
+    "concretas": [
+        "adjetivo",
+        "verbo"
+    ],
+    "concretiza": [
+        "verbo"
+    ],
+    "concretizadas": [
+        "participio"
+    ],
+    "concretizar-se": [
+        "verbo"
+    ],
+    "concretizarem": [
+        "verbo"
+    ],
+    "concretizem": [
+        "verbo"
+    ],
+    "concreto": [
+        "adjetivo",
+        "nome",
+        "verbo"
+    ],
+    "condicionadores": [
+        "nome"
+    ],
+    "condicionados": [
+        "adjetivo",
+        "participio"
+    ],
+    "conduzidos": [
+        "adjetivo"
+    ],
+    "conferidas": [
+        "participio"
+    ],
+    "conferido": [
+        "participio"
+    ],
+    "conferir": [
+        "verbo"
+    ],
+    "configurações": [
+        "nome"
+    ],
+    "confinam": [
+        "verbo"
+    ],
+    "confine": [
+        "verbo"
+    ],
+    "confiram": [
+        "verbo"
+    ],
+    "conformar": [
+        "verbo"
+    ],
+    "conformarem": [
+        "verbo"
+    ],
+    "conformes": [
+        "verbo"
+    ],
+    "confronta": [
+        "verbo"
+    ],
+    "confrontam": [
+        "verbo"
+    ],
+    "confrontar": [
+        "verbo"
+    ],
+    "congéneres": [
+        "nome"
+    ],
+    "conhecido": [
+        "adjetivo",
+        "nome",
+        "participio"
+    ],
+    "conjugadamente": [
+        "adverbio"
+    ],
+    "conjugando": [
+        "verbo"
+    ],
+    "conjunta": [
+        "adjetivo"
+    ],
+    "conjuntamente": [
+        "adverbio"
+    ],
+    "consagrar": [
+        "verbo"
+    ],
+    "conservem": [
+        "verbo"
+    ],
+    "considerado": [
+        "participio"
+    ],
+    "considerem": [
+        "verbo"
+    ],
+    "consignadas": [
+        "participio"
+    ],
+    "consignados": [
+        "participio"
+    ],
+    "consignar": [
+        "verbo"
+    ],
+    "consistam": [
+        "verbo"
+    ],
+    "constarem": [
+        "verbo"
+    ],
+    "constitui": [
+        "verbo"
+    ],
+    "constitui-se": [
+        "verbo"
+    ],
+    "constituindo-se": [
+        "verbo"
+    ],
+    "constituição": [
+        "nome"
+    ],
+    "constituído": [
+        "participio"
+    ],
+    "constituídos": [
+        "participio"
+    ],
+    "construídos": [
+        "participio"
+    ],
+    "consumidor": [
+        "adjetivo",
+        "nome"
+    ],
+    "consumo": [
+        "nome",
+        "verbo"
+    ],
+    "contabilizadas": [
+        "adjetivo",
+        "participio"
+    ],
+    "contabilizados": [
+        "adjetivo",
+        "participio"
+    ],
+    "contabilização": [
+        "nome"
+    ],
+    "contabilizável": [
+        "adjetivo"
+    ],
+    "contar": [
+        "verbo"
+    ],
+    "contentores": [
+        "adjetivo",
+        "nome"
+    ],
+    "conteúdo": [
+        "nome"
+    ],
+    "contidos": [
+        "participio"
+    ],
+    "contiguidade": [
+        "nome"
+    ],
+    "controlada": [
+        "participio"
+    ],
+    "controle": [
+        "nome",
+        "verbo"
+    ],
+    "contrário": [
+        "adjetivo"
+    ],
+    "contínua": [
+        "adjetivo"
+    ],
+    "contínuas": [
+        "adjetivo"
+    ],
+    "conveniente": [
+        "adjetivo"
+    ],
+    "cooperativa": [
+        "nome",
+        "adjetivo"
+    ],
+    "corpo": [
+        "nome"
+    ],
+    "corpos": [
+        "nome"
+    ],
+    "correntes": [
+        "nome"
+    ],
+    "corretamente": [
+        "adverbio"
+    ],
+    "cotas": [
+        "verbo"
+    ],
+    "couber": [
+        "verbo"
+    ],
+    "criados": [
+        "nome",
+        "participio"
+    ],
+    "critério": [
+        "nome"
+    ],
+    "cujas": [
+        "determinante"
+    ],
+    "cumpra": [
+        "verbo"
+    ],
+    "cumprindo": [
+        "verbo"
+    ],
+    "cumprir-se": [
+        "verbo"
+    ],
+    "cumprirem": [
+        "verbo"
+    ],
+    "cumulativas": [
+        "adjetivo"
+    ],
+    "cumulativo": [
+        "adjetivo"
+    ],
+    "cálculo": [
+        "nome"
+    ],
+    "cércea": [
+        "nome"
+    ],
+    "cérceas": [
+        "nome"
+    ],
+    "céu": [
+        "nome"
+    ],
+    "círculo": [
+        "nome"
+    ],
+    "d": [
+        "letra",
+        "nome"
+    ],
+    "daquelas": [
+        "contracao"
+    ],
+    "daquele": [
+        "contracao"
+    ],
+    "datas": [
+        "nome",
+        "verbo"
+    ],
+    "decidam": [
+        "verbo"
+    ],
+    "decisões": [
+        "nome"
+    ],
+    "declarado": [
+        "participio"
+    ],
+    "decorra": [
+        "verbo"
+    ],
+    "decorram": [
+        "verbo"
+    ],
+    "decorrer": [
+        "verbo"
+    ],
+    "decorridos": [
+        "participio"
+    ],
+    "deficientemente": [
+        "adverbio"
+    ],
+    "deficientes": [
+        "adjetivo",
+        "nome"
+    ],
+    "deficitária": [
+        "adjetivo"
+    ],
+    "deficitário": [
+        "adjetivo"
+    ],
+    "definam": [
+        "verbo"
+    ],
+    "define": [
+        "verbo"
+    ],
+    "define-se": [
+        "verbo"
+    ],
+    "definidor": [
+        "verbo"
+    ],
+    "definitiva": [
+        "adjetivo"
+    ],
+    "definitivamente": [
+        "adverbio"
+    ],
+    "deixar": [
+        "verbo"
+    ],
+    "dela": [
+        "contracao"
+    ],
+    "delas": [
+        "contracao"
+    ],
+    "dele": [
+        "contracao",
+        "verbo"
+    ],
+    "deles": [
+        "contracao",
+        "verbo"
+    ],
+    "deliberado": [
+        "adjetivo",
+        "participio"
+    ],
+    "deliberações": [
+        "nome"
+    ],
+    "deliberou": [
+        "verbo"
+    ],
+    "delimitados": [
+        "participio"
+    ],
+    "delimitam": [
+        "verbo"
+    ],
+    "delimitar": [
+        "verbo"
+    ],
+    "demarcados": [
+        "participio"
+    ],
+    "demonstrativa": [
+        "adjetivo"
+    ],
+    "dentro": [
+        "adverbio"
+    ],
+    "deposição": [
+        "nome"
+    ],
+    "desafogada": [
+        "participio"
+    ],
+    "desafogados": [
+        "participio"
+    ],
+    "desativação": [
+        "nome"
+    ],
+    "descontada": [
+        "participio"
+    ],
+    "descontínuos": [
+        "adjetivo"
+    ],
+    "descritos": [
+        "adjetivo",
+        "participio"
+    ],
+    "desencadear": [
+        "verbo"
+    ],
+    "designa-se": [
+        "verbo"
+    ],
+    "designando-se": [
+        "verbo"
+    ],
+    "desigualdades": [
+        "nome"
+    ],
+    "deslocalização": [
+        "nome"
+    ],
+    "desnecessidade": [
+        "nome"
+    ],
+    "desonerado": [
+        "participio"
+    ],
+    "despejo": [
+        "verbo"
+    ],
+    "desperdícios": [
+        "nome"
+    ],
+    "destinado": [
+        "participio"
+    ],
+    "destinando-se": [
+        "verbo"
+    ],
+    "destinar": [
+        "verbo"
+    ],
+    "destino": [
+        "nome",
+        "verbo"
+    ],
+    "destruam": [
+        "verbo"
+    ],
+    "detalhados": [
+        "participio"
+    ],
+    "detentor": [
+        "nome"
+    ],
+    "detetados": [
+        "participio"
+    ],
+    "dez": [
+        "numeral",
+        "nome",
+        "adjetivo"
+    ],
+    "diferenciadas": [
+        "participio"
+    ],
+    "diferencial": [
+        "adjetivo",
+        "nome"
+    ],
+    "diferenciações": [
+        "nome"
+    ],
+    "diferente": [
+        "adjetivo"
+    ],
+    "diferença": [
+        "nome",
+        "verbo"
+    ],
+    "dificultado": [
+        "participio"
+    ],
+    "digam": [
+        "verbo"
+    ],
+    "dimensionam": [
+        "verbo"
+    ],
+    "diminuam": [
+        "verbo"
+    ],
+    "diminuem": [
+        "verbo"
+    ],
+    "diminuição": [
+        "nome"
+    ],
+    "diplomas": [
+        "nome",
+        "verbo"
+    ],
+    "direto": [
+        "adjetivo",
+        "adverbio",
+        "nome"
+    ],
+    "diretos": [
+        "adjetivo"
+    ],
+    "diretrizes": [
+        "nome"
+    ],
+    "direção": [
+        "nome"
+    ],
+    "dirigidas": [
+        "participio"
+    ],
+    "discrepância": [
+        "nome"
+    ],
+    "dispensado": [
+        "adjetivo",
+        "participio"
+    ],
+    "dispensar": [
+        "verbo"
+    ],
+    "dispensável": [
+        "adjetivo"
+    ],
+    "dispondo": [
+        "verbo"
+    ],
+    "disponha": [
+        "verbo",
+        "interjeicao"
+    ],
+    "disponham": [
+        "verbo"
+    ],
+    "disponibilidade": [
+        "nome"
+    ],
+    "disponibilizada": [
+        "participio"
+    ],
+    "disponibilize": [
+        "verbo"
+    ],
+    "dispor": [
+        "verbo"
+    ],
+    "disposição": [
+        "nome"
+    ],
+    "dissonância": [
+        "nome"
+    ],
+    "dissonâncias": [
+        "nome"
+    ],
+    "distribuir-se": [
+        "verbo"
+    ],
+    "distribuídas": [
+        "participio"
+    ],
+    "diversa": [
+        "adjetivo"
+    ],
+    "diversas": [
+        "adjetivo"
+    ],
+    "diversificada": [
+        "participio"
+    ],
+    "diverso": [
+        "adjetivo"
+    ],
+    "diversão": [
+        "nome"
+    ],
+    "documental": [
+        "adjetivo"
+    ],
+    "documentos": [
+        "nome"
+    ],
+    "dotada": [
+        "adjetivo",
+        "participio"
+    ],
+    "dotadas": [
+        "adjetivo",
+        "participio"
+    ],
+    "dotados": [
+        "adjetivo",
+        "participio"
+    ],
+    "dotá-los": [
+        "verbo"
+    ],
+    "défice": [
+        "nome"
+    ],
+    "défices": [
+        "nome"
+    ],
+    "ecológicas": [
+        "adjetivo"
+    ],
+    "económico-financeiro": [
+        "nome"
+    ],
+    "edificadas": [
+        "participio"
+    ],
+    "edificatória": [
+        "adjetivo"
+    ],
+    "edificatórias": [
+        "adjetivo"
+    ],
+    "edificatório": [
+        "adjetivo"
+    ],
+    "edificatórios": [
+        "adjetivo"
+    ],
+    "educativas": [
+        "adjetivo"
+    ],
+    "efetiva": [
+        "verbo"
+    ],
+    "efetivamente": [
+        "adverbio"
+    ],
+    "efetivas": [
+        "verbo"
+    ],
+    "efetivo": [
+        "adjetivo",
+        "nome",
+        "verbo"
+    ],
+    "eficaz": [
+        "adjetivo"
+    ],
+    "eficazmente": [
+        "adverbio"
+    ],
+    "eficácia": [
+        "nome"
+    ],
+    "ele": [
+        "pronome",
+        "nome"
+    ],
+    "elegíveis": [
+        "adjetivo"
+    ],
+    "elemento": [
+        "nome"
+    ],
+    "elevações": [
+        "nome"
+    ],
+    "embora": [
+        "adverbio",
+        "conjuncao"
+    ],
+    "emitida": [
+        "participio"
+    ],
+    "emitidas": [
+        "participio"
+    ],
+    "empenas": [
+        "nome",
+        "verbo"
+    ],
+    "empresas": [
+        "nome",
+        "verbo"
+    ],
+    "encerrando": [
+        "verbo"
+    ],
+    "enchimento": [
+        "nome"
+    ],
+    "encontrados": [
+        "adjetivo",
+        "participio"
+    ],
+    "endémicas": [
+        "adjetivo"
+    ],
+    "enquadradas": [
+        "participio"
+    ],
+    "enquadram": [
+        "verbo"
+    ],
+    "enquadrem": [
+        "verbo"
+    ],
+    "entenda": [
+        "verbo"
+    ],
+    "entendam": [
+        "verbo"
+    ],
+    "entendam-se": [
+        "verbo"
+    ],
+    "entendendo-se": [
+        "verbo"
+    ],
+    "entender": [
+        "verbo"
+    ],
+    "enumeradas": [
+        "adjetivo",
+        "participio"
+    ],
+    "enumerados": [
+        "adjetivo",
+        "participio"
+    ],
+    "enunciadas": [
+        "adjetivo"
+    ],
+    "envolvidas": [
+        "participio"
+    ],
+    "equiparadas": [
+        "participio"
+    ],
+    "equiparado": [
+        "participio"
+    ],
+    "equivalência": [
+        "nome"
+    ],
+    "erigidas": [
+        "participio"
+    ],
+    "escassa": [
+        "adjetivo"
+    ],
+    "escolar": [
+        "adjetivo"
+    ],
+    "escritas": [
+        "adjetivo",
+        "nome",
+        "participio"
+    ],
+    "escritos": [
+        "adjetivo",
+        "participio"
+    ],
+    "esfera": [
+        "nome"
+    ],
+    "esgotado": [
+        "adjetivo",
+        "participio"
+    ],
+    "esgotamento": [
+        "nome"
+    ],
+    "esgotem": [
+        "verbo"
+    ],
+    "espacial": [
+        "adjetivo"
+    ],
+    "esparsa": [
+        "adjetivo"
+    ],
+    "espaços-canais": [
+        "nome"
+    ],
+    "especialmente": [
+        "adverbio"
+    ],
+    "especificidades": [
+        "nome"
+    ],
+    "esperados": [
+        "participio"
+    ],
+    "espetáculos": [
+        "nome"
+    ],
+    "essenciais": [
+        "adjetivo"
+    ],
+    "essencialmente": [
+        "adverbio"
+    ],
+    "estabeleçam": [
+        "verbo"
+    ],
+    "estabilizem": [
+        "verbo"
+    ],
+    "estatal": [
+        "adjetivo",
+        "nome"
+    ],
+    "estatuto": [
+        "nome"
+    ],
+    "estipulada": [
+        "adjetivo",
+        "nome",
+        "participio"       
+    ],
+    "estipuladas": [
+        "adjetivo",
+        "nome",
+        "participio"
+    ],
+    "estipulados": [
+        "adjetivo",
+        "nome",
+        "participio"
+    ],
+    "estipular": [
+        "verbo",
+        "adjetivo"
+    ],
+    "estratégias": [
+        "nome"
+    ],
+    "estratégicos": [
+        "adjetivo"
+    ],
+    "estrita": [
+        "adjetivo"
+    ],
+    "estrito": [
+        "adjetivo"
+    ],
+    "estrutura-se": [
+        "verbo"
+    ],
+    "estruturadores": [
+        "verbo"
+    ],
+    "estrutural": [
+        "adjetivo"
+    ],
+    "estábulos": [
+        "nome"
+    ],
+    "estáveis": [
+        "adjetivo",
+        "verbo"
+    ],
+    "estética": [
+        "nome",
+        "adjetivo"
+    ],
+    "evitados": [
+        "participio"
+    ],
+    "evitando": [
+        "verbo"
+    ],
+    "excedam": [
+        "verbo"
+    ],
+    "excedente": [
+        "adjetivo",
+        "nome"
+    ],
+    "excedentário": [
+        "adjetivo"
+    ],
+    "excedentária": [
+        "adjetivo"
+    ],
+    "excedentários": [
+        "adjetivo"
+    ],
+    "excedentárias": [
+        "adjetivo"
+    ],
+    "exceções": [
+        "nome"
+    ],
+    "excluir": [
+        "verbo"
+    ],
+    "exclusiva": [
+        "adjetivo"
+    ],
+    "exclusivo": [
+        "adjetivo"
+    ],
+    "exclusão": [
+        "nome"
+    ],
+    "executada": [
+        "participio"
+    ],
+    "executados": [
+        "participio"
+    ],
+    "exequível": [
+        "adjetivo"
+    ],
+    "exigentes": [
+        "adjetivo"
+    ],
+    "exigirem": [
+        "verbo"
+    ],
+    "exigência": [
+        "nome"
+    ],
+    "exija": [
+        "verbo"
+    ],
+    "existir": [
+        "verbo"
+    ],
+    "existirem": [
+        "verbo"
+    ],
+    "expedição": [
+        "nome"
+    ],
+    "expensas": [
+        "nome"
+    ],
+    "explicitadas": [
+        "adjetivp",
+        "participio"
+    ],
+    "explicitados": [
+        "adjetivp",
+        "participio"
+    ],
+    "explicitada": [
+        "adjetivp",
+        "participio"
+    ],
+    "explicitado": [
+        "adjetivp",
+        "participio"
+    ],
+    "expressa": [
+        "adjetivo",
+        "participio",
+        "verbo"
+    ],
+    "expressamente": [
+        "adverbio"
+    ],
+    "extensiva": [
+        "adjetivo"
+    ],
+    "extensões": [
+        "nome"
+    ],
+    "externa": [
+        "adjetivo",
+        "verbo"
+    ],
+    "extinção": [
+        "nome"
+    ],
+    "faculdades": [
+        "nome"
+    ],
+    "fatores": [
+        "nome",
+        "verbo"
+    ],
+    "fauna": [
+        "nome"
+    ],
+    "favoreçam": [
+        "verbo"
+    ],
+    "faz-se": [
+        "verbo"
+    ],
+    "ficarão": [
+        "verbo"
+    ],
+    "fichas": [
+        "nome",
+        "verbo"
+    ],
+    "figuram": [
+        "verbo"
+    ],
+    "financeiros": [
+        "adjetivo"
+    ],
+    "fiquem": [
+        "verbo"
+    ],
+    "flexibilização": [
+        "nome"
+    ],
+    "flora": [
+        "nome",
+        "verbo"
+    ],
+    "florestas": [
+        "nome",
+        "verbo"
+    ],
+    "fluência": [
+        "nome"
+    ],
+    "focos": [
+        "nome"
+    ],
+    "folhas": [
+        "nome",
+        "verbo"
+    ],
+    "formado": [
+        "adjetivo",
+        "participio"
+    ],
+    "fortemente": [
+        "adverbio"
+    ],
+    "fossas": [
+        "nome",
+        "verbo"
+    ],
+    "fração": [
+        "nome"
+    ],
+    "frações": [
+        "nome"
+    ],
+    "frequente": [
+        "adjetivo",
+        "verbo"
+    ],
+    "fruir": [
+        "verbo"
+    ],
+    "funcionalmente": [
+        "adverbio"
+    ],
+    "fundamentadamente": [
+        "adverbio"
+    ],
+    "fundamentam": [
+        "verbo"
+    ],
+    "fundamentando": [
+        "verbo"
+    ],
+    "fundamento": [
+        "nome",
+        "verbo"
+    ],
+    "fundiário": [
+        "adjetivo"
+    ],
+    "fundiárias": [
+        "adjetivo"
+    ],
+    "fundiários": [
+        "nome"
+    ],
+    "futura": [
+        "adjetivo",
+        "verbo"
+    ],
+    "futuros": [
+        "adjetivo"
+    ],
+    "fé": [
+        "nome"
+    ],
+    "férias": [
+        "nome"
+    ],
+    "físicos": [
+        "adjetivo"
+    ],
+    "garagem": [
+        "nome"
+    ],
+    "garante": [
+        "nome",
+        "verbo"
+    ],
+    "garantir-se": [
+        "verbo"
+    ],
+    "gaveto": [
+        "nome"
+    ],
+    "genericamente": [
+        "adverbio"
+    ],
+    "genérica": [
+        "adjetivo"
+    ],
+    "geométrico": [
+        "adjetivo"
+    ],
+    "geométricos": [
+        "adjetivo"
+    ],
+    "geométrica": [
+        "adjetivo"
+    ],
+    "geométricas": [
+        "adjetivo"
+    ],
+    "geotécnica": [
+        "nome",
+        "adjetivo"
+    ],
+    "geotécnicas": [
+        "nome",
+        "adjetivo"
+    ],
+    "geotécnicos": [
+        "nome",
+        "adjetivo"
+    ],
+    "gerador": [
+        "adjetivo",
+        "nome"
+    ],
+    "geradora": [
+        "adjetivo",
+        "nome"
+    ],
+    "geradoras": [
+        "adjetivo",
+        "nome"
+    ],
+    "geradores": [
+        "adjetivo",
+        "nome"
+    ],
+    "geraram": [
+        "verbo"
+    ],
+    "golfe": [
+        "nome",
+        "verbo"
+    ],
+    "grandes": [
+        "adjetivo"
+    ],
+    "gratuita": [
+        "adjetivo"
+    ],
+    "gráficas": [
+        "adjetivo"
+    ],
+    "gráficos": [
+        "adjetivo",
+        "nome"
+    ],
+    "ha": [
+        "verbo"
+    ],
+    "habilitantes": [
+        "adjetivo"
+    ],
+    "habitat": [
+        "nome"
+    ],
+    "hastas": [
+        "nome"
+    ],
+    "hectare": [
+        "nome"
+    ],
+    "hectares": [
+        "nome"
+    ],
+    "hierarquizam-se": [
+        "verbo"
+    ],
+    "homogeneidade": [
+        "nome"
+    ],
+    "hospitalar": [
+        "adjetivo"
+    ],
+    "hotel": [
+        "nome"
+    ],
+    "hoteleiro": [
+        "adjetivo",
+        "nome"
+    ],
+    "identificam": [
+        "verbo"
+    ],
+    "identificando": [
+        "verbo"
+    ],
+    "identificarem": [
+        "verbo"
+    ],
+    "imediatas": [
+        "adjetivo"
+    ],
+    "imediato": [
+        "adjetivo",
+        "nome"
+    ],
+    "imediações": [
+        "nome"
+    ],
+    "imobiliários": [
+        "adjetivo"
+    ],
+    "impedidas": [
+        "participio"
+    ],
+    "impedimento": [
+        "nome"
+    ],
+    "impedir": [
+        "verbo"
+    ],
+    "imperativa": [
+        "adjetivo"
+    ],
+    "imperativamente": [
+        "adverbio"
+    ],
+    "imperativas": [
+        "adjetivo"
+    ],
+    "impermeabilizar": [
+        "verbo"
+    ],
+    "impeçam": [
+        "verbo"
+    ],
+    "implanta": [
+        "verbo"
+    ],
+    "implique": [
+        "verbo"
+    ],
+    "imposta": [
+        "adjetivo",
+        "participio"
+    ],
+    "imprescindíveis": [
+        "adjetivo"
+    ],
+    "imprescindível": [
+        "adjetivo"
+    ],
+    "inaceitável": [
+        "adjetivo"
+    ],
+    "incentivar": [
+        "verbo"
+    ],
+    "incidam": [
+        "verbo"
+    ],
+    "incidem": [
+        "verbo"
+    ],
+    "incidente": [
+        "adjetivo",
+        "nome"
+    ],
+    "incidentes": [
+        "adjetivo",
+        "nome"
+    ],
+    "incidir": [
+        "verbo"
+    ],
+    "inclusão": [
+        "nome"
+    ],
+    "incluídos": [
+        "participio"
+    ],
+    "incompatível": [
+        "adjetivo"
+    ],
+    "incomportável": [
+        "adjetivo"
+    ],
+    "incomportáveis": [
+        "adjetivo"
+    ],
+    "inconvenientes": [
+        "adjetivo",
+        "nome"
+    ],
+    "incorpora": [
+        "verbo"
+    ],
+    "incorporados": [
+        "participio"
+    ],
+    "incorporar": [
+        "verbo"
+    ],
+    "indicadas": [
+        "participio"
+    ],
+    "indicado": [
+        "participio"
+    ],
+    "indiretos": [
+        "adjetivo"
+    ],
+    "indisponibilidade": [
+        "nome"
+    ],
+    "indústrias": [
+        "nome"
+    ],
+    "inevitavelmente": [
+        "adverbio"
+    ],
+    "inferiores": [
+        "adjetivo"
+    ],
+    "informações": [
+        "nome"
+    ],
+    "infraestrutural": [
+        "adjetivo"
+    ],
+    "iniciativa": [
+        "adjetivo",
+        "nome"
+    ],
+    "insalubre": [
+        "adjetivo"
+    ],
+    "inserida": [
+        "participio"
+    ],
+    "inseridos": [
+        "participio"
+    ],
+    "inserindo": [
+        "verbo"
+    ],
+    "instalam": [
+        "verbo"
+    ],
+    "instalar-se": [
+        "verbo"
+    ],
+    "instituir": [
+        "verbo"
+    ],
+    "instituídas": [
+        "participio"
+    ],
+    "instituídos": [
+        "participio"
+    ],
+    "insuficiente": [
+        "adjetivo"
+    ],
+    "insuscetíveis": [
+        "adjetivo"
+    ],
+    "insuscetível": [
+        "adjetivo"
+    ],
+    "integralmente": [
+        "adverbio"
+    ],
+    "integrantes": [
+        "nome"
+    ],
+    "integridade": [
+        "nome"
+    ],
+    "integrável": [
+        "adjetivo"
+    ],
+    "inteiro": [
+        "adjetivo",
+        "nome",
+        "verbo"
+    ],
+    "intensidade": [
+        "nome"
+    ],
+    "interdições": [
+        "nome"
+    ],
+    "interessado": [
+        "participio"
+    ],
+    "interesses": [
+        "nome",
+        "verbo"
+    ],
+    "internas": [
+        "adjetivo",
+        "verbo"
+    ],
+    "intraplano": [
+        "nome"
+    ],
+    "introduzido": [
+        "participio"
+    ],
+    "inventariação": [
+        "nome"
+    ],
+    "inviabilidade": [
+        "nome"
+    ],
+    "inviabilizado": [
+        "adjetivo",
+        "participio"
+    ],
+    "inviabilizados": [
+        "adjetivo",
+        "participio"
+    ],
+    "inviabilização": [
+        "nome"
+    ],
+    "irregular": [
+        "adjetivo"
+    ],
+    "isentas": [
+        "adjetivo",
+        "verbo"
+    ],
+    "isolada": [
+        "adjetivo",
+        "participio"
+    ],
+    "isoladas": [
+        "adjetivo",
+        "participio"
+    ],
+    "juridicamente": [
+        "adverbio"
+    ],
+    "jurídica": [
+        "adjetivo"
+    ],
+    "jurídicos": [
+        "adjetivo"
+    ],
+    "justifica": [
+        "verbo"
+    ],
+    "justificados": [
+        "adjetivo"
+    ],
+    "justificativas": [
+        "nome"
+    ],
+    "justifiquem": [
+        "verbo"
+    ],
+    "laboração": [
+        "nome"
+    ],
+    "laterais": [
+        "adjetivo"
+    ],
+    "lateralmente": [
+        "adverbio"
+    ],
+    "levar": [
+        "verbo"
+    ],
+    "limitar": [
+        "verbo"
+    ],
+    "limitar-se": [
+        "verbo"
+    ],
+    "limitem": [
+        "verbo"
+    ],
+    "limítrofes": [
+        "adjetivo"
+    ],
+    "localiza": [
+        "verbo"
+    ],
+    "localizar-se": [
+        "verbo"
+    ],
+    "localize": [
+        "verbo"
+    ],
+    "lotação": [
+        "nome"
+    ],
+    "lote": [
+        "nome",
+        "verbo"
+    ],
+    "líquido": [
+        "nome"
+    ],
+    "m": [
+        "letra"
+    ],
+    "maciços": [
+        "nome"
+    ],
+    "maiores": [
+        "adjetivo"
+    ],
+    "manchas": [
+        "nome",
+        "verbo"
+    ],
+    "manda": [
+        "verbo"
+    ],
+    "manter-se": [
+        "verbo"
+    ],
+    "mantida": [
+        "participio"
+    ],
+    "mantêm": [
+        "verbo"
+    ],
+    "marginais": [
+        "adjetivo",
+        "nome"
+    ],
+    "marginal": [
+        "adjetivo",
+        "nome"
+    ],
+    "mas": [
+        "conjuncao",
+        "adverbio",
+        "nome",
+        "contracao"
+    ],
+    "materializa": [
+        "verbo"
+    ],
+    "materializa-se": [
+        "verbo"
+    ],
+    "materializado": [
+        "adjetivo",
+        "participio"
+    ],
+    "materializada": [
+        "adjetivo",
+        "participio"
+    ],
+    "materializados": [
+        "adjetivo",
+        "participio"
+    ],
+    "materializadas": [
+        "adjetivo",
+        "participio"
+    ],
+    "materializar-se": [
+        "verbo"
+    ],
+    "materialização": [
+        "nome"
+    ],
+    "materialmente": [
+        "adverbio"
+    ],
+    "matérias": [
+        "nome"
+    ],
+    "matérias-primas": [
+        "nome"
+    ],
+    "medeiam": [
+        "verbo"
+    ],
+    "medido": [
+        "participio"
+    ],
+    "melhor": [
+        "adjetivo",
+        "adverbio"
+    ],
+    "melhores": [
+        "verbo",
+        "adjetivo"
+    ],
+    "mencionada": [
+        "participio"
+    ],
+    "mencionadas": [
+        "participio"
+    ],
+    "mera": [
+        "adjetivo"
+    ],
+    "mero": [
+        "adjetivo"
+    ],
+    "mineiros": [
+        "nome"
+    ],
+    "miscigenada": [
+        "adjetivo",
+        "participio"
+    ],
+    "mistos": [
+        "adjetivo"
+    ],
+    "modificações": [
+        "nome"
+    ],
+    "moldes": [
+        "verbo"
+    ],
+    "momento": [
+        "nome"
+    ],
+    "monetário": [
+        "adjetivo",
+        "nome"
+    ],
+    "motivado": [
+        "adjetivo",
+        "participio"
+    ],
+    "motivo": [
+        "nome",
+        "verbo"
+    ],
+    "motivos": [
+        "nome"
+    ],
+    "motociclo": [
+        "nome"
+    ],
+    "motociclos": [
+        "nome"
+    ],
+    "motores": [
+        "adjetivo",
+        "nome"
+    ],
+    "motorizado": [
+        "adjetivo"
+    ],
+    "motorizados": [
+        "adjetivo"
+    ],
+    "motorizadas": [
+        "adjetivo",
+        "nome"
+    ],
+    "movimento": [
+        "nome",
+        "verbo"
+    ],
+    "multifuncional": [
+        "adjetivo"
+    ],
+    "máximos": [
+        "adjetivo",
+        "nome"
+    ],
+    "múltipla": [
+        "adjetivo"
+    ],
+    "nalgum": [
+        "contracao"
+    ],
+    "naquela": [
+        "contracao"
+    ],
+    "negativo": [
+        "adjetivo",
+        "nome",
+        "adverbio",
+        "verbo"
+    ],
+    "nele": [
+        "contracao",
+        "nome"
+    ],
+    "nem": [
+        "adverbio",
+        "conjuncao",
+        "interjeicao"
+    ],
+    "nenhum": [
+        "pronome"
+    ],
+    "nenhuma": [
+        "pronome"
+    ],
+    "nenhumas": [
+        "pronome"
+    ],
+    "nessa": [
+        "contracao"
+    ],
+    "nessas": [
+        "contracao"
+    ],
+    "normal": [
+        "adjetivo"
+    ],
+    "normativa": [
+        "adjetivo"
+    ],
+    "noutra": [
+        "contracao"
+    ],
+    "noutras": [
+        "contracao"
+    ],
+    "numérico": [
+        "adjetivo"
+    ],
+    "numéricos": [
+        "adjetivo"
+    ],
+    "obedeçam": [
+        "verbo"
+    ],
+    "obrigado": [
+        "interjeicao",
+        "adjetivo",
+        "nome",
+        "participio"
+    ],
+    "obrigação": [
+        "nome"
+    ],
+    "obrigações": [
+        "nome"
+    ],
+    "observatórios": [
+        "nome"
+    ],
+    "obtido": [
+        "participio"
+    ],
+    "ocorra": [
+        "verbo"
+    ],
+    "ocorre": [
+        "verbo"
+    ],
+    "ocupadas": [
+        "participio"
+    ],
+    "ocupam": [
+        "verbo"
+    ],
+    "ocupantes": [
+        "adjetivo",
+        "nome"
+    ],
+    "ocupava": [
+        "verbo"
+    ],
+    "oferta": [
+        "nome"
+    ],
+    "oficiais": [
+        "nome",
+        "adjetivo",
+        "verbo"
+    ],
+    "oficina": [
+        "nome"
+    ],
+    "omissa": [
+        "adjetivo",
+        "participio"
+    ],
+    "omissos": [
+        "adjetivo",
+        "participio"
+    ],
+    "onerosa": [
+        "adjetivo"
+    ],
+    "operacionalizar": [
+        "verbo"
+    ],
+    "operativamente": [
+        "adverbio"
+    ],
+    "operem": [
+        "verbo"
+    ],
+    "oportunidade": [
+        "nome"
+    ],
+    "opostas": [
+        "adjetivo",
+        "participio"
+    ],
+    "ordenha": [
+        "nome",
+        "verbo"
+    ],
+    "ordinária": [
+        "adjetivo"
+    ],
+    "organizadores": [
+        "nome"
+    ],
+    "originadas": [
+        "participio"
+    ],
+    "originam": [
+        "verbo"
+    ],
+    "orçamentos": [
+        "nome"
+    ],
+    "paga": [
+        "nome",
+        "adjetivo",
+        "participio",
+        "verbo"
+    ],
+    "pagam": [
+        "verbo"
+    ],
+    "paisagens": [
+        "nome"
+    ],
+    "paralela": [
+        "adjetivo"
+    ],
+    "parametrização": [
+        "nome"
+    ],
+    "partes": [
+        "nome",
+        "verbo"
+    ],
+    "participação": [
+        "nome"
+    ],
+    "particular": [
+        "adjetivo"
+    ],
+    "particularmente": [
+        "adverbio"
+    ],
+    "partilha": [
+        "nome",
+        "verbo"
+    ],
+    "partilhadas": [
+        "participio"
+    ],
+    "passam": [
+        "verbo"
+    ],
+    "passem": [
+        "verbo"
+    ],
+    "pavimentada": [
+        "participio"
+    ],
+    "pavimentado": [
+        "participio"
+    ],
+    "pavimento": [
+        "nome",
+        "verbo"
+    ],
+    "pecuários": [
+        "adjetivo"
+    ],
+    "pedidos": [
+        "adjetivo",
+        "nome",
+        "participio"
+    ],
+    "perante": [
+        "preposicao"
+    ],
+    "perdurar": [
+        "verbo"
+    ],
+    "periférica": [
+        "adjetivo"
+    ],
+    "periféricas": [
+        "adjetivo"
+    ],
+    "periférico": [
+        "adjetivo",
+        "nome"
+    ],
+    "periféricos": [
+        "adjetivo",
+        "nome"
+    ],
+    "perigoso": [
+        "adjetivo"
+    ],
+    "permanente": [
+        "adjetivo",
+        "nome"
+    ],
+    "permissão": [
+        "nome"
+    ],
+    "permitem": [
+        "verbo"
+    ],
+    "perspetiva": [
+        "nome",
+        "verbo"
+    ],
+    "pertençam": [
+        "verbo"
+    ],
+    "pertinente": [
+        "adjetivo"
+    ],
+    "pertinentes": [
+        "adjetivo"
+    ],
+    "pertinência": [
+        "nome"
+    ],
+    "pesados": [
+        "adjetivo"
+    ],
+    "pessoal": [
+        "adjetivo",
+        "nome"
+    ],
+    "peões": [
+        "nome"
+    ],
+    "plantas": [
+        "nome",
+        "verbo"
+    ],
+    "plenamente": [
+        "adverbio"
+    ],
+    "pleno": [
+        "adjetivo"
+    ],
+    "poder": [
+        "verbo",
+        "nome"
+    ],
+    "poderes": [
+        "verbo",
+        "nome"
+    ],
+    "poderiam": [
+        "verbo"
+    ],
+    "polígonos": [
+        "nome"
+    ],
+    "ponderada": [
+        "participio"
+    ],
+    "populações": [
+        "nome"
+    ],
+    "porém": [
+        "adverbio",
+        "conjuncao",
+        "nome"
+    ],
+    "positivo": [
+        "adjetivo",
+        "adverbio"
+    ],
+    "posição": [
+        "nome"
+    ],
+    "possibilitadas": [
+        "participio"
+    ],
+    "possibilite": [
+        "verbo"
+    ],
+    "possua": [
+        "verbo"
+    ],
+    "possuidoras": [
+        "nome"
+    ],
+    "posterior": [
+        "adjetivo"
+    ],
+    "posto": [
+        "participio",
+        "nome",
+        "verbo"
+    ],
+    "potencialmente": [
+        "adverbio"
+    ],
+    "potenciação": [
+        "nome"
+    ],
+    "potável": [
+        "adjetivo"
+    ],
+    "povoações": [
+        "nome"
+    ],
+    "preconizadas": [
+        "participio"
+    ],
+    "predomina": [
+        "verbo"
+    ],
+    "predominantemente": [
+        "adverbio"
+    ],
+    "preexistência": [
+        "nome"
+    ],
+    "preferentemente": [
+        "adverbio"
+    ],
+    "prejudica": [
+        "verbo"
+    ],
+    "prejudicada": [
+        "participio"
+    ],
+    "prejudicam": [
+        "verbo"
+    ],
+    "prejudicar": [
+        "verbo"
+    ],
+    "prejudique": [
+        "verbo"
+    ],
+    "preparados": [
+        "adjetivo",
+        "nome",
+        "participio"
+    ],
+    "prescinde": [
+        "verbo"
+    ],
+    "prescritos": [
+        "adjetivo"
+    ],
+    "prestação": [
+        "nome"
+    ],
+    "pretendem": [
+        "verbo"
+    ],
+    "pretendida": [
+        "adjetivo",
+        "participio"
+    ],
+    "pretendidos": [
+        "adjetivo",
+        "participio"
+    ],
+    "pretensões": [
+        "nome"
+    ],
+    "prevalecem": [
+        "verbo"
+    ],
+    "prevalecendo": [
+        "verbo"
+    ],
+    "prevalecente": [
+        "adjetivo"
+    ],
+    "prevalecentes": [
+        "adjetivo"
+    ],
+    "prevalência": [
+        "nome"
+    ],
+    "primeiros": [
+        "adjetivo"
+    ],
+    "prioritária": [
+        "adjetivo"
+    ],
+    "prioritário": [
+        "adjetivo"
+    ],
+    "privativo": [
+        "adjetivo"
+    ],
+    "privilegiadas": [
+        "participio"
+    ],
+    "privilegiam": [
+        "verbo"
+    ],
+    "procedem": [
+        "verbo"
+    ],
+    "procedimento": [
+        "nome"
+    ],
+    "processual": [
+        "adjetivo"
+    ],
+    "produzam": [
+        "verbo"
+    ],
+    "produzidos": [
+        "adjetivo",
+        "participio"
+    ],
+    "profundidade": [
+        "nome"
+    ],
+    "proibidos": [
+        "adjetivo",
+        "participio"
+    ],
+    "pronta": [
+        "adjetivo"
+    ],
+    "proporcional": [
+        "adjetivo"
+    ],
+    "proporcionalmente": [
+        "adverbio"
+    ],
+    "proporções": [
+        "nome"
+    ],
+    "proprietárias": [
+        "adjetivo"
+    ],
+    "prossecução": [
+        "nome"
+    ],
+    "prossegue": [
+        "verbo"
+    ],
+    "prova": [
+        "nome",
+        "verbo"
+    ],
+    "provisão": [
+        "nome"
+    ],
+    "provocado": [
+        "participio"
+    ],
+    "provocariam": [
+        "verbo"
+    ],
+    "próprias": [
+        "adjetivo"
+    ],
+    "próximas": [
+        "adjetivo",
+        "nome"
+    ],
+    "próximo": [
+        "adjetivo",
+        "adverbio",
+        "nome"
+    ],
+    "publicado": [
+        "participio"
+    ],
+    "publicar": [
+        "verbo"
+    ],
+    "publicitação": [
+        "nome"
+    ],
+    "publicitações": [
+        "nome"
+    ],
+    "pérgulas": [
+        "nome"
+    ],
+    "põe": [
+        "verbo"
+    ],
+    "qualifica-se": [
+        "verbo"
+    ],
+    "qualificado": [
+        "adjetivo",
+        "participio"
+    ],
+    "quantificada": [
+        "adjetivo"
+    ],
+    "quantificado": [
+        "participio",
+        "adjetivo"
+    ],
+    "questão": [
+        "nome"
+    ],
+    "quotas": [
+        "nome"
+    ],
+    "raio": [
+        "nome",
+        "verbo"
+    ],
+    "realizarem": [
+        "verbo"
+    ],
+    "realizem": [
+        "verbo"
+    ],
+    "recarga": [
+        "nome"
+    ],
+    "recebe": [
+        "verbo"
+    ],
+    "receber": [
+        "verbo"
+    ],
+    "recebimento": [
+        "nome"
+    ],
+    "receita": [
+        "nome",
+        "verbo"
+    ],
+    "recintos": [
+        "nome"
+    ],
+    "reconfiguração": [
+        "nome"
+    ],
+    "reconhecida": [
+        "participio"
+    ],
+    "reconhecidas": [
+        "participio"
+    ],
+    "reconhecimento": [
+        "nome"
+    ],
+    "recorra": [
+        "verbo"
+    ],
+    "recuadas": [
+        "participio"
+    ],
+    "recuado": [
+        "participio"
+    ],
+    "refere-se": [
+        "verbo"
+    ],
+    "referencial": [
+        "adjetivo",
+        "nome"
+    ],
+    "reformulados": [
+        "participio"
+    ],
+    "rege": [
+        "verbo"
+    ],
+    "regionais": [
+        "adjetivo"
+    ],
+    "registado": [
+        "adjetivo",
+        "participio"       
+    ],
+    "registo": [
+        "nome",
+        "verbo"
+    ],
+    "regulado": [
+        "participio"
+    ],
+    "regulamentar": [
+        "verbo"
+    ],
+    "regulamentos": [
+        "nome"
+    ],
+    "rejeitadas": [
+        "participio"
+    ],
+    "relativos": [
+        "adjetivo"
+    ],
+    "relatórios": [
+        "nome"
+    ],
+    "releva": [
+        "verbo"
+    ],
+    "relevando": [
+        "verbo"
+    ],
+    "relevem": [
+        "verbo"
+    ],
+    "religiosa": [
+        "adjetivo"
+    ],
+    "relva": [
+        "nome",
+        "verbo"
+    ],
+    "relógio": [
+        "nome"
+    ],
+    "remanescente": [
+        "adjetivo",
+        "nome"
+    ],
+    "reparação": [
+        "nome"
+    ],
+    "reparta": [
+        "verbo"
+    ],
+    "repartindo-o": [
+        "verbo"
+    ],
+    "repartir": [
+        "verbo"
+    ],
+    "reproduzidos": [
+        "participio"
+    ],
+    "requerem": [
+        "verbo"
+    ],
+    "requisito": [
+        "nome",
+        "verbo"
+    ],
+    "reservados": [
+        "adjetivo",
+        "participio"
+    ],
+    "reservatórios": [
+        "nome"
+    ],
+    "resolvam": [
+        "verbo"
+    ],
+    "respeitadas": [
+        "participio"
+    ],
+    "respeitados": [
+        "participio"
+    ],
+    "respeitarem": [
+        "verbo"
+    ],
+    "respeitaria": [
+        "verbo"
+    ],
+    "responsabilidade": [
+        "nome"
+    ],
+    "resposta": [
+        "nome"
+    ],
+    "ressarcido": [
+        "adjetivo",
+        "participio"
+    ],
+    "ressarcidos": [
+        "adjetivo",
+        "participio"
+    ],
+    "ressarcida": [
+        "adjetivo",
+        "participio"        
+    ],
+    "ressarcidas": [
+        "adjetivo",
+        "participio"        
+    ],
+    "ressarcimento": [
+        "nome"
+    ],
+    "restabelecer": [
+        "verbo"
+    ],
+    "restauração": [
+        "nome"
+    ],
+    "restringidos": [
+        "participio"
+    ],
+    "restringir": [
+        "verbo"
+    ],
+    "restritivas": [
+        "adjetivo"
+    ],
+    "restritivos": [
+        "adjetivo"
+    ],
+    "resultado": [
+        "nome",
+        "participio"
+    ],
+    "resultam": [
+        "verbo"
+    ],
+    "resultar": [
+        "verbo"
+    ],
+    "resultarão": [
+        "verbo"
+    ],
+    "retilíneos": [
+        "nome"
+    ],
+    "revelar": [
+        "verbo"
+    ],
+    "revele": [
+        "verbo"
+    ],
+    "revelem": [
+        "verbo"
+    ],
+    "reversão": [
+        "nome"
+    ],
+    "revertendo": [
+        "verbo"
+    ],
+    "reverter": [
+        "verbo"
+    ],
+    "reveste": [
+        "verbo"
+    ],
+    "revisto": [
+        "participio",
+        "verbo"
+    ],
+    "revogado": [
+        "participio"
+    ],
+    "revogação": [
+        "nome"
+    ],
+    "roturas": [
+        "nome"
+    ],
+    "salas": [
+        "nome"
+    ],
+    "secção": [
+        "nome"
+    ],
+    "secções": [
+        "nome"
+    ],
+    "seguir": [
+        "verbo"
+    ],
+    "segundo": [
+        "adjetivo",
+        "nome",
+        "adverbio",
+        "preposicao",
+        "conjuncao",
+        "verbo"
+    ],
+    "selvagens": [
+        "nome",
+        "adjetivo"
+    ],
+    "sem": [
+        "preposicao"
+    ],
+    "semelhantes": [
+        "adjetivo"
+    ],
+    "ser-lhes": [
+        "verbo"
+    ],
+    "seriam": [
+        "verbo"
+    ],
+    "seriamente": [
+        "adverbio"
+    ],
+    "serve": [
+        "verbo"
+    ],
+    "serventia": [
+        "nome"
+    ],
+    "servida": [
+        "participio"
+    ],
+    "servidas": [
+        "participio"
+    ],
+    "servido": [
+        "participio"
+    ],
+    "servidos": [
+        "participio"
+    ],
+    "servindo": [
+        "verbo"
+    ],
+    "seu": [
+        "determinante",
+        "pronome",
+        "nome"
+    ],
+    "significativos": [
+        "adjetivo"
+    ],
+    "silvopastoris": [
+        "adjetivo"        
+    ],
+    "silvopastoril": [
+        "adjetivo"        
+    ],
+    "silvícola": [
+        "adjetivo"          
+    ],
+    "silvícolas": [
+        "adjetivo"          
+    ],
+    "similar": [
+        "adjetivo"
+    ],
+    "similares": [
+        "adjetivo"
+    ],
+    "situados": [
+        "participio"
+    ],
+    "situada": [
+        "participio"
+    ],
+    "situar": [
+        "verbo"
+    ],
+    "situarem": [
+        "verbo"
+    ],
+    "situarem-se": [
+        "verbo"
+    ],
+    "situem": [
+        "verbo"
+    ],
+    "sobrante": [
+        "adjetivo"
+    ],
+    "sobredimensionamento": [
+        "nome"
+    ],
+    "sobrelarguras": [
+        "nome"
+    ],
+    "sobrepostos": [
+        "adjetivo",
+        "participio"
+    ],
+    "sobrepõem": [
+        "verbo"
+    ],
+    "sobro": [
+        "verbo"
+    ],
+    "soma": [
+        "nome",
+        "verbo"
+    ],
+    "subdivide": [
+        "verbo"
+    ],
+    "subdividem-se": [
+        "verbo"
+    ],
+    "submeter": [
+        "verbo"
+    ],
+    "submetidas": [
+        "adjetivo"
+    ],
+    "subordina": [
+        "verbo"
+    ],
+    "subordinadas": [
+        "adjetivo",
+        "nome",
+        "participio"
+    ],
+    "subordinam-se": [
+        "verbo"
+    ],
+    "subprodutos": [
+        "nome"
+    ],
+    "subproduto": [
+        "nome"
+    ],
+    "subsecção": [
+        "nome"
+    ],
+    "subtrair": [
+        "verbo"
+    ],
+    "suficientes": [
+        "adjetivo"
+    ],
+    "superiores": [
+        "adjetivo",
+        "nome"
+    ],
+    "supletivamente": [
+        "adverbio"
+    ],
+    "suportado": [
+        "participio"
+    ],
+    "suportar": [
+        "verbo"
+    ],
+    "supressão": [
+        "nome"
+    ],
+    "suscetível": [
+        "adjetivo"
+    ],
+    "suscita": [
+        "verbo"
+    ],
+    "sustentação": [
+        "nome"
+    ],
+    "sépticas": [
+        "adjetivo"
+    ],
+    "série": [
+        "nome"
+    ],
+    "só": [
+        "adjetivo",
+        "adverbio"
+    ],
+    "tardoz": [
+        "nome"
+    ],
+    "taxas": [
+        "nome",
+        "verbo"
+    ],
+    "taxativamente": [
+        "adverbio"
+    ],
+    "taxação": [
+        "nome"
+    ],
+    "tecnológicos": [
+        "adjetivo"
+    ],
+    "temáticas": [
+        "adjetivo"
+    ],
+    "terços": [
+        "nome"
+    ],
+    "tipificados": [
+        "participio"
+    ],
+    "tipificação": [
+        "nome"
+    ],
+    "toma": [
+        "verbo"
+    ],
+    "tomada": [
+        "adjetivo",
+        "nome",
+        "participio"
+    ],
+    "tomadas": [
+        "adjetivo",
+        "nome",
+        "participio"
+    ],
+    "tomado": [
+        "adjetivo",
+        "participio"
+    ],
+    "tomados": [
+        "adjetivo",
+        "nome",
+        "participio"
+    ],
+    "tomando": [
+        "verbo"
+    ],
+    "tomando-se": [
+        "verbo"
+    ],
+    "tomar": [
+        "verbo"
+    ],
+    "tomá-la": [
+        "verbo"
+    ],
+    "tornado": [
+        "nome",
+        "participio"
+    ],
+    "tornam": [
+        "verbo"
+    ],
+    "torre": [
+        "nome",
+        "verbo"
+    ],
+    "trabalhadores": [
+        "nome"
+    ],
+
+    "traduz": [
+        "verbo"
+    ],
+    "traduzem": [
+        "verbo"
+    ],
+    "traduzida": [
+        "participio"
+    ],
+    "tramitação": [
+        "nome"
+    ],
+    "transcritas": [
+        "adjetivo",
+        "participio"
+    ],
+    "transferida": [
+        "adjetivo",
+        "participio"
+    ],
+    "transferidas": [
+        "adjetivo",
+        "participio"
+    ],
+    "transferido": [
+        "adjetivo",
+        "participio"
+    ],
+    "transferidos": [
+        "adjetivo",
+        "participio"
+    ],
+    "transformadoras": [
+        "nome"
+    ],
+    "transformadores": [
+        "nome"
+    ],
+    "transformações": [
+        "nome"
+    ],
+    "transpostas": [
+        "verbo"
+    ],
+    "transpõem": [
+        "verbo"
+    ],
+    "tratando-se": [
+        "verbo"
+    ],
+    "tratar": [
+        "verbo"
+    ],
+    "trincheiras": [
+        "nome"
+    ],
+    "troços": [
+        "nome"
+    ],
+    "térreo": [
+        "adjetivo",
+        "nome"
+    ],
+    "ultrapassar": [
+        "verbo"
+    ],
+    "unanimemente": [
+        "adverbio"
+    ],
+    "unanimidade": [
+        "nome"
+    ],
+    "unicamente": [
+        "adverbio"
+    ],
+    "urbanizado": [
+        "participio"
+    ],
+    "urbanizar": [
+        "verbo"
+    ],
+    "utilizada": [
+        "adjetivo",
+        "participio"
+    ],
+    "utilizadoras": [
+        "nome"
+    ],
+    "valendo": [
+        "verbo"
+    ],
+    "valetas": [
+        "nome"
+    ],
+    "vedadas": [
+        "participio"
+    ],
+    "vender": [
+        "verbo"
+    ],
+    "venha": [
+        "verbo"
+    ],
+    "verdade": [
+        "nome",
+        "interjeicao"
+    ],
+    "verifica": [
+        "verbo"
+    ],
+    "verificar": [
+        "verbo"
+    ],
+    "verificarem": [
+        "verbo"
+    ],
+    "verificação": [
+        "nome"
+    ],
+    "verifiquem": [
+        "verbo"
+    ],
+    "versão": [
+        "nome"
+    ],
+    "viabilizado": [
+        "adjetivo",
+        "participio"
+    ],
+    "viabilizados": [
+        "adjetivo",
+        "participio"
+    ],
+    "viabilizada": [
+        "adjetivo",
+        "participio"
+    ],
+    "viabilizadas": [
+        "adjetivo",
+        "participio"
+    ],
+    "viabilizar": [
+        "verbo"
+    ],
+    "viabilizáveis": [
+        "verbo"
+    ],
+    "viabilizável": [
+        "adjetivo"
+    ],
+    "viadutos": [
+        "nome"
+    ],
+    "viaturas": [
+        "nome"
+    ],
+    "virada": [
+        "nome",
+        "participio"
+    ],
+    "virem": [
+        "verbo"
+    ],
+    "vocacionada": [
+        "adjetivo",
+        "nome",
+        "particpio"
+    ],
+    "vocacionadas": [
+        "adjetivo",
+        "nome",
+        "particpio"        
+    ],
+    "vocacionado": [
+        "adjetivo",
+        "nome",
+        "particpio"
+    ],
+    "vocacionados": [
+        "adjetivo",
+        "nome",
+        "particpio"        
+    ],
+    "vocação": [
+        "nome"
+    ],
+    "voltadas": [
+        "participio"
+    ],
+    "volumetrias": [
+        "nome"
+    ],
+    "válida": [
+        "adjetivo"
+    ],
+    "válido": [
+        "adjetivo"
+    ],
+    "vários": [
+        "determinante",
+        "pronome"
+    ],
+    "vão": [
+        "nome"
+    ],
+    "zero": [
+        "nome",
+        "numeral"
+    ],
+    "àquela": [
+        "contracao"
+    ],
+    "àquele": [
+        "contracao"
+    ],
+    "àqueles": [
+        "contracao"
+    ],
+    "índole": [
+        "nome"
+    ],
+    "ónus": [
+        "nome"
+    ],
+    "último": [
+        "adjetivo"
+    ],
+    "única": [
+        "adjetivo"
+    ],
+    "abrangem": [
+        "verbo"
+    ],
+    "acautelar": [
+        "verbo"
+    ],
+    "aceitável": [
+        "adjetivo"
+    ],
+    "acolher": [
+        "verbo"
+    ],
+    "acompanhado": [
+        "adjetivo",
+        "participio"
+    ],
+    "acresce": [
+        "verbo"
+    ],
+    "acrescidas": [
+        "adjetivo",
+        "particpio"
+    ],
+    "adendas": [
+        "nome"
+    ],
+    "adequando-a": [
+        "verbo"
+    ],
+    "adiante": [
+        "adverbio",
+        "verbo"
+    ],
+    "afetações": [
+        "nome"
+    ],
+    "agosto": [
+        "nome"
+    ],
+    "agroindustrial": [
+        "adjetivo"
+    ],
+    "agroturismo": [
+        "nome"
+    ],
+    "albedo": [
+        "nome"
+    ],
+    "alimentos": [
+        "nome"
+    ],
+    "alterados": [
+        "participio"
+    ],
+    "ampliados": [
+        "participio"
+    ],
+    "ampliar": [
+        "verbo"
+    ],
+    "anormais": [
+        "adjetivo",
+        "nome"
+    ],
+    "antecedida": [
+        "verbo"
+    ],
+    "antiguidade": [],
+    "antrópica": [
+        "nome"
+    ],
+    "antrópico": [
         "nome"
     ]
 }
