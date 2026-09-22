@@ -39,9 +39,8 @@ def ler_entre_branco_file(p_path, p_from_line_num):
 			if len(ln.strip()) > 0:
 				started = True
 				tmp.append(ln.strip())
-			else:
-				if started:
-					break
+			if started:
+				break
 
 	if len(tmp) > 0:
 		ret = r'\n'.join(tmp).strip()
@@ -127,7 +126,7 @@ def ler_entre_linhas(p_text, p_line_num_start, line_num_stop=None):
 		line_num_stop -- número de linha final
 	"""
 
-	assert line_num_stop is None or line_num_stop > p_line_num_start, f"erro ler_entre_linhas, start:{p_line_num_start} stop:{line_num_stop}"
+	assert line_num_stop is None or line_num_stop >= p_line_num_start, f"erro ler_entre_linhas, start:{p_line_num_start} stop:{line_num_stop}"
 	ret = None
 	tmp = []
 	cnt = 0
@@ -192,15 +191,21 @@ def extrair_artigos(p_txt_content) -> list:
 		p_txt_content -- string contendo o texto a processar
 	"""
 
+	print("extrair_artigos> txt_cont:", p_txt_content[:65], '...', p_txt_content[-65:])
+
 	blocos = []
 	for li, ln in enumerate(p_txt_content.split(r"\n")):
-		# print("----", ln)
+		print("----", li, len(blocos), ln[:40])
 		if ln.startswith('Art.') or ln.startswith('Artigo'):
-			num_str_mo = re.search(r'([\d]+).º', ln, re.I)
-			# print(num_str_mo.groups(1))
-			num_art = int(num_str_mo.group(1))
+			num_str_mo = re.search(r'([\d]+).º?', ln, re.I)
+			print("    groups:", num_str_mo.groups(1))
+			try:
+				num_art = int(num_str_mo.group(1))
+			except AttributeError:
+				print("ln:", ln)
+				raise
 			if len(blocos) == 0:
-				if li > 0:
+				if li > 1:
 					blocos.append({'start': 1, 'end': li})
 				blocos.append({'start': li+2, 'end': None, 'num_art': num_art})
 			else:
@@ -210,9 +215,15 @@ def extrair_artigos(p_txt_content) -> list:
 	# print(blocos)
 
 	artigos = []
+	print("blocos:", blocos)
 	for bloco in blocos:
 
+
 		text = ler_entre_linhas(p_txt_content, bloco['start'], line_num_stop=bloco['end'])
+
+		print('text:', text[:35])
+		print("bloco", bloco)
+
 		dz_sz, dz_txt = ler_entre_branco(text, 1)
 
 		effective_text = text.split(r"\n")[dz_sz:]
@@ -238,7 +249,10 @@ def parsing_sequencias_artigo(p_conteudo, num=None) -> dict:
 	patt_ponto = r'([\d]+) \- '
 	patt_alinea = r'([a-z])\) '
 
+	print("->", p_conteudo[:80])
+
 	for ln in p_conteudo.split(r'\n'):
+		print("ln a:", ln)
 		if len(ln) < 1:
 			continue
 		mo = re.match(patt_ponto, ln)
@@ -247,6 +261,7 @@ def parsing_sequencias_artigo(p_conteudo, num=None) -> dict:
 
 	if not seqcias:
 		for ln in p_conteudo.split(r'\n'):
+			print("ln b:", ln)
 			if len(ln) < 1:
 				continue
 			mo = re.match(patt_alinea, ln)
@@ -255,12 +270,14 @@ def parsing_sequencias_artigo(p_conteudo, num=None) -> dict:
 
 	if not seqcias:
 		return None
+
+	print(">>>", seqcias.keys())
 	
-	chaves = [k for k in seqcias.keys()]
+	chaves = list(seqcias.keys())
 
 	if isinstance(chaves[0], int):
 		# Sequencia de PONTOS, garantir ordem
-		assert chaves[0] == 1
+		assert chaves[0] == 1, chaves
 		kprev = None
 		for k in chaves:
 			if not kprev is None and k - kprev > 1:
@@ -270,7 +287,7 @@ def parsing_sequencias_artigo(p_conteudo, num=None) -> dict:
 
 	else:
 		# Sequencia primária de alíneas em substituição de pontos, garantir ordem
-		assert chaves[0] == 'a'
+		assert chaves[0] == 'a', chaves
 
 		# garantir que alineas contem apenas uma letra
 		for k in chaves:
@@ -709,117 +726,6 @@ def parsing_artigo(p_conteudo, num=None) -> dict:
 
 	return ret
 
-def processar_documento_regulamentar(p_caminho_entrada: str, p_caminho_saida: str, ident_ato_normativo: str | None) -> None:
-	"""Processar conteúdo textual de um ato normativo para estrutura JSON de Documento Regulamentar DocNode.
-
-		p_caminho_entrada -- caminho completo para o ficheiro TXT de entrada
-		p_caminho_saida -- caminho completo para o ficheiro JSON de saída
-	"""
-
-	first_class_types = ["TÍTULO", "ANEXO"]
-	
-	# Listar posições dos TÍTULOS terminados com número em notação romana
-	posicoes_titulos_maiusc = titulos_maiusculas_com_romano_final(p_caminho_entrada)
-
-	porcoes = []
-	prev_start = None
-	prev_tit = None
-	prev_titlvl = None
-	for start_line, titlvl, tit in posicoes_titulos_maiusc:
-
-		if prev_start is None:
-			if start_line > 1:
-				porcoes.append({
-					'start': 1,
-					'stop': start_line-1,
-					'tit': None,
-					'titlevel': 'INTRO'
-				})
-		else:
-			porcoes.append({
-				'start': prev_start,
-				'stop': start_line-1,
-				'tit': prev_tit,
-				'titlevel': prev_titlvl
-			})
-		prev_start = start_line
-		prev_tit = tit
-		prev_titlvl = titlvl
-	porcoes.append({
-		'start': prev_start,
-		'stop': None,
-		'tit': prev_tit,
-		'titlevel': prev_titlvl
-	})
-
-	tree_root = DocNode()
-
-	if not ident_ato_normativo is None:
-		tree_root.setIdentAto(ident_ato_normativo)
-
-	current_node = tree_root
-
-	for porcao in porcoes:
-
-		hier = current_node.typeHierarchy()
-		stypes = current_node.siblingTypes()
-
-		if porcao['titlevel'] in first_class_types:
-			current_node = tree_root
-			current_node.addEmptySibling(porcao['titlevel'])
-		else:
-			if len(stypes) == 0 or porcao['titlevel'] == stypes[-1]:
-				current_node.addEmptySibling(porcao['titlevel'])
-			else:
-				if porcao['titlevel'] not in hier:
-					current_node = current_node.addEmptySibling2LastSibling(porcao['titlevel'])
-				else:
-					while porcao['titlevel'] != current_node.typestr:
-						current_node = current_node.parent
-					current_node = current_node.parent
-					current_node.addEmptySibling(porcao['titlevel'])
-
-		attrs_to_store = {
-			'start': porcao['start'],
-			'stop': porcao['stop'],
-			'tit': porcao['tit']
-		}
-
-		if porcao['tit'] is None:
-			dz_sz, dz_txt = ler_entre_branco_file(p_caminho_entrada, porcao['start'])
-		else:
-			dz_sz, dz_txt = ler_entre_branco_file(p_caminho_entrada, porcao['start']+1)
-
-		if porcao['titlevel'] == 'INTRO':
-			# Passar designacao a designacao do documento
-			if tree_root.attrs is None:
-				tree_root.attrs = {}
-			tree_root.attrs['design'] = dz_txt
-		else:
-			attrs_to_store['design'] = dz_txt
-
-		if porcao['stop'] is None or porcao['stop'] > porcao['start']+dz_sz:
-			
-			txt = ler_entre_linhas_file(p_caminho_entrada, porcao['start']+dz_sz, line_num_stop=porcao['stop'])
-			artigos = extrair_artigos(txt)
-			if len(artigos) > 0:
-
-				if artigos[0]['start'] > 2:
-					# Nó com lista de artigos, com parágrafo(s) de texto em preâmbulo antes dos artigos
-					# print("cont + artigos, num artigo:", artigos[0]['num'])
-					attrs_to_store['cont'] = txt[:artigos[0]['start']-1]
-
-				attrs_to_store['artigos'] = [{'num': a['num'], 'id': str(uuid4()), 'atit': a['tit'], 'cont': parsing_artigo(a['cont'], num=a['num']) } for a in artigos]
-
-			else:
-				attrs_to_store['cont'] = txt
-		
-		current_node.setLastSiblingAttrs(attrs_to_store)
-
-	with open(p_caminho_saida, 'w', encoding='utf-8') as fp: 
-		json.dump(tree_root.toJSON(), fp, indent=4, ensure_ascii=False)
-
-
 def traverseNodes(p_out_dict, p_node, path=None, typestr_filter_list=None, maxdepth=None, maxchildren=None, scrap_attributes=None): #get_path=False):
 	
 	assert typestr_filter_list is None or isinstance(typestr_filter_list, list)
@@ -964,9 +870,139 @@ def dump_docnodes(p_infile, p_outfile):
 
 def processar_documento(p_in_path, p_out_path):
 
+	tree_root = DocNode()
+	current_node = tree_root
+
+	current_titulo = None
+	current_artigo = None
+	current_numero = None
+
+	PATT = {
+		"aviso": (r"^aviso[\s]+n[\.]?º", re.I),
+		"titulo": (r"^título[\s]+[IVX]+", re.I),
+		"anexo": (r"^ANEXO[\s]+.*",),
+		"artigo": (r"^artigo[\s]+([\d]+)[\.]?º", re.I),
+		"numdentroartigo": (r"^([\d]+)[\s]?\-[\s]?(.*)",),
+		"alinea": (r"^[a-b]?([a-z])\)[\s]+(.*)",)
+	}
+
+	with open(p_in_path, 'r', encoding='utf-8') as fp:
+		
+		for _lnidx, ln in enumerate(fp):
+
+			lnidx = _lnidx + 1
+
+			strp_line = ln.strip()
+			if len(strp_line) == 0:
+				continue
+
+			if lnidx > 30:
+				break
+
+			for k, v in PATT.items():
+				if len(v) == 2:				
+					patt, flag = v
+				else:
+					patt = v[0]
+					flag = None
+				if flag is None:
+					mo = re.match(patt, strp_line)
+				else:
+					mo = re.match(patt, strp_line, flag)
+				if not mo is None:
+					break
+
+			if mo is None:
+				if strp_line[0].isupper(): # Carater inicial maiúsculo
+
+					if not current_artigo is None:
+
+						if not 'atit' in current_artigo.attrs.keys():
+							current_artigo.attrs['atit'] = strp_line
+
+					else:
+
+						if current_node.attrs is None or not 'design' in current_node.attrs.keys():
+							if current_node.attrs is None:
+								current_node.attrs = {}
+							if current_node.typestr in ('ROOT', 'TÍTULO'):
+								current_node.attrs['design'] = strp_line
+							elif current_node.typestr == 'INTRO':
+								if not 'cont' in current_node.attrs.keys() and len(strp_line) < 60:
+									current_node.attrs['tit'] = strp_line
+								else:
+									current_node.attrs.setdefault('cont', [])
+									if len(current_node.attrs['cont']) == 0:
+										current_node.attrs['start'] = lnidx
+									current_node.attrs['cont'].append(strp_line)	
+									current_node.attrs['end'] = lnidx							
+						else:
+
+							if current_node.typestr == 'ROOT':
+								current_node = current_node.addEmptySibling('INTRO')
+							if current_node.attrs is None:
+								current_node.attrs = {}
+							current_node.attrs.setdefault('cont', [])
+							if len(current_node.attrs['cont']) == 0:
+								current_node.attrs['start'] = lnidx
+							current_node.attrs['cont'].append(strp_line)
+
+			else:
+				if k == "aviso":
+					if current_node.attrs is None or not 'ato' in current_node.attrs.keys():
+						if current_node.attrs is None:
+							current_node.attrs = {}
+						current_node.attrs['ato'] = strp_line
+					else:
+						raise RuntimeError(f"'Aviso ...' em início de linha interior {strp_line[:50]} ... ln:{lnidx}")
+				elif k == "titulo":
+					current_node = tree_root.addEmptySibling('TÍTULO')
+					if current_node.attrs is None:
+						current_node.attrs = {}
+					current_node.attrs['tit'] = strp_line
+					current_titulo = current_node
+					current_artigo = None
+					current_numero = None
+				elif k == "anexo":
+					current_node = tree_root.addEmptySibling('ANEXO')
+					if current_node.attrs is None:
+						current_node.attrs = {}
+					current_node.attrs['tit'] = strp_line
+				elif k == "artigo":
+					assert not current_titulo is None
+					current_node = current_titulo.addEmptySibling('ARTIGO')
+					if current_node.attrs is None:
+						current_node.attrs = {}
+					current_node.attrs['num'] = mo.group(1)
+					# current_node.attrs['atit'] = strp_line
+					current_artigo = current_node
+					current_numero = None
+				elif k == "numdentroartigo":
+					assert not current_artigo is None
+					if not 'cont' in current_artigo.attrs.keys():
+						current_artigo.attrs['cont'] = {}
+					print(mo.groups(), current_artigo)
+					current_artigo.attrs['cont'][mo.group(1)] = { "txt": mo.group(2) }
+					current_numero = current_artigo.attrs['cont'][mo.group(1)]
+				elif k == "alinea":
+					assert not current_numero is None
+					if not 'children' in current_numero.keys():
+						current_numero['children'] = {}
+					current_numero['children'][mo.group(1)] = { "txt": mo.group(2) }
+
+			#print(strp_line)
+
+	with open(p_out_path, 'w', encoding='utf-8') as fp: 
+		json.dump(tree_root.toJSON(), fp, indent=4, ensure_ascii=False)			
+
+
+def processar_documento_old(p_in_path, p_out_path):
+
 	first_class_types = ["TÍTULO", "ANEXO"]
 	
 	posicoes_titulos_maiusc = titulos_maiusculas_com_romano_final(p_in_path)
+
+	#print("posicoes_titulos_maiusc:", posicoes_titulos_maiusc)
 
 	porcoes = []
 	prev_start = None
@@ -1028,10 +1064,14 @@ def processar_documento(p_in_path, p_out_path):
 			'tit': porcao['tit']
 		}
 
+		print("\n>>> porcao", porcao, 'tit:', porcao['tit'], porcao['start'])
+
 		if porcao['tit'] is None:
 			dz_sz, dz_txt = ler_entre_branco_file(p_in_path, porcao['start'])
 		else:
 			dz_sz, dz_txt = ler_entre_branco_file(p_in_path, porcao['start']+1)
+
+		print(">>", porcao['titlevel'], "dz_sz:", dz_sz, "dz_txt:", dz_txt)
 
 		if porcao['titlevel'] == 'INTRO':
 			# Passar designacao a designacao do documento
@@ -1041,9 +1081,13 @@ def processar_documento(p_in_path, p_out_path):
 		else:
 			attrs_to_store['design'] = dz_txt
 
+		# print("> test:", porcao['stop'] is None, "or", porcao['stop'] > porcao['start']+dz_sz)
+
 		if porcao['stop'] is None or porcao['stop'] > porcao['start']+dz_sz:
 			
+			print("> ler start:", porcao['start']+dz_sz, "stop", porcao['stop'])
 			txt = ler_entre_linhas_file(p_in_path, porcao['start']+dz_sz, line_num_stop=porcao['stop'])
+			print("> txt:", txt[:45], '...', txt[-45:])
 			artigos = extrair_artigos(txt)
 			if len(artigos) > 0:
 
@@ -1060,5 +1104,5 @@ def processar_documento(p_in_path, p_out_path):
 		current_node.setLastSiblingAttrs(attrs_to_store)
 
 	with open(p_out_path, 'w', encoding='utf-8') as fp: 
-		json.dump(tree_root.toJSON(), fp, indent=4)
+		json.dump(tree_root.toJSON(), fp, indent=4, ensure_ascii=False)
 

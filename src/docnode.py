@@ -82,18 +82,19 @@ class DocNode(object):
 		self.children = []
 	def setID(self, p_id):
 		self.id = p_id
-	def setIdentAto(self, p_ident: str):
-		self.ident_ato = p_ident
+	# def setIdentAto(self, p_ident: str):
+	# 	self.ident_ato = p_ident
 	def setParent(self, p_parent_node):
 		self.parent = p_parent_node
 	def addSiblingFromJSON(self, p_json_node):
 		self.children.append(DocNode.fromJSON(p_json_node))
 		newnode = self.children[-1]
 		newnode.setParent(self)
-	def addEmptySibling(self, p_typestr):
-		if len(self.children) > 0 and self.children[-1].attrs is None:
-			raise RuntimeError("já tem último filho vazio")
-		self.children.append(DocNode(self, p_typestr))
+	def addEmptySibling(self, typestr=None):
+		# if len(self.children) > 0 and self.children[-1].attrs is None:
+		# 	raise RuntimeError("já tem último filho vazio")
+		self.children.append(DocNode(self, typestr=typestr))
+		return self.children[-1]
 	def addEmptySibling2LastSibling(self, p_typestr):
 		current = self.children[-1]
 		if len(current.children) > 0 and current.children[-1].attrs is None:
@@ -112,8 +113,8 @@ class DocNode(object):
 		if self.typestr == "ROOT":
 			ret.setdefault('metadados', {})
 			ret["metadados"]["assinatura"] = f"Documento DocNode, versão {VERSION}"
-			if not self.ident_ato is None:
-				ret["metadados"]["ato_normativo"] = self.ident_ato
+			# if not self.ident_ato is None:
+			# 	ret["metadados"]["ato_normativo"] = self.ident_ato
 
 			ret["metadados"]["timestamp_geracao"] = datetime.now().isoformat()
 
