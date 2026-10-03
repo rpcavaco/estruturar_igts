@@ -1,8 +1,10 @@
 
 import os
 
+from doctree import DocNode, parseFromText
 
-from documento_regulamentar import processar_documento
+
+# from documento_regulamentar import processar_documento
 
 def run(p_versao_concelho):
 
@@ -15,7 +17,12 @@ def run(p_versao_concelho):
 
 	assert os.path.exists(out_dir)
 
-	processar_documento(in_path, os.path.join(out_dir, "NOVO_regulamento.json"))
+	out_path = os.path.join(out_dir, "NOVO_regulamento.json")
+
+	dn = DocNode()
+	parseFromText(in_path, out_path, dn)
+
+	# processar_documento(in_path, os.path.join(out_dir, "NOVO_regulamento.json"))
 
 if __name__ == "__main__":
 	# run('../dados/Maia_1306/2_revisao_AVISO_4731_2025_2')
