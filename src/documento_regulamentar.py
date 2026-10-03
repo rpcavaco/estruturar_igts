@@ -883,7 +883,8 @@ def processar_documento(p_in_path, p_out_path):
 		"anexo": (r"^ANEXO[\s]+.*",),
 		"artigo": (r"^artigo[\s]+([\d]+)[\.]?º", re.I),
 		"numdentroartigo": (r"^([\d]+)[\s]?\-[\s]?(.*)",),
-		"alinea": (r"^[a-b]?([a-z])\)[\s]+(.*)",)
+		"alinea": (r"^([a-b]?[a-z])\)[\s]+(.*)",),
+		"subalinea": (r"^([ivx]+)\)[\s]+(.*)",)  # Atenção: confunde-se com a 'alínea' no caso 'i)'
 	}
 
 	with open(p_in_path, 'r', encoding='utf-8') as fp:
