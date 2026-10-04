@@ -13,6 +13,8 @@ VERSION = 0.2
 
 COMPRIM_MAX_TITULO_INTRO = 60
 
+ALFACHARS = "abcdefghijklmnopqrstuvwxyz"
+
 class DocTextParser(object):
 
 	def __init__(self):
@@ -74,7 +76,7 @@ class DocNode(object):
 		self._numerostr = None
 		self._tipoato = None
 		self._numeroato = None
-		self._ordem = 0
+		self._ordem = -1
 
 		self.start = -1
 		self.stop = -1
@@ -139,15 +141,9 @@ class DocNode(object):
 		ret = None
 
 		current = p_this
+
 		while not current.prevnode is None:
-			stops = [ch.stop for ch in current.children]
-			if len(stops) > 0:
-				maxstop = max([ch.stop for ch in current.children])
-			else:
-				maxstop = 0
 			current = current.prevnode
-			if maxstop > 0:
-				current.stop = maxstop
 			if current._typestr in p_types:
 				ret = current
 				break
@@ -155,7 +151,7 @@ class DocNode(object):
 		return ret
 
 
-	def addTextString(self, p_text: str, p_line_index: int) -> 'DocNode':
+	def addTextString(self, p_alinea_itens: List[str], p_text: str, p_line_index: int) -> 'DocNode':
 
 		ret = None
 		strip_text = p_text.strip()
@@ -213,18 +209,28 @@ class DocNode(object):
 				text_line, titulo_num_str = mvalues
 				assert self.roman_nr.checkIsRoman(titulo_num_str), text_line
 
-				self.children.append(DocNode('TITULO'))
-				ret = self.children[-1]
-				ret.prevnode = self
+				if self._typestr != 'ROOT':
+					anc = self.backToAncestorOfTypes(self, ['ROOT'])
+					assert not anc is None
+					anc.children.append(DocNode('TITULO'))
+					ret = anc.children[-1]
+					ret.prevnode = anc
+				else:
+					self.children.append(DocNode('TITULO'))
+					ret = self.children[-1]
+					ret.prevnode = self
 
 				ret.start = p_line_index
 				ret.stop = p_line_index
 				ret._numerostr = titulo_num_str
 				ret._titlestr = text_line
 
-			elif mk == 'artigo':
+			elif mk == 'artigo' or mk == 'artigo_com_tit':
 
-				text_line, art_num_str = mvalues
+				if mk == 'artigo_com_tit':
+					text_line, art_num_str, art_tit = mvalues
+				else:
+					text_line, art_num_str = mvalues
 
 				if self._typestr != 'TITULO':
 					anc = self.backToAncestorOfTypes(self, ['TITULO'])
@@ -242,26 +248,8 @@ class DocNode(object):
 				ret._numerostr = art_num_str
 				ret._titlestr = f"Artigo {art_num_str}.º"
 
-			elif mk == 'artigo_com_tit':
-
-				text_line, art_num_str, art_tit = mvalues
-
-				if self._typestr != 'TITULO':
-					anc = self.backToAncestorOfTypes(self, ['TITULO'])
-					assert not anc is None
-					anc.children.append(DocNode('ARTIGO'))
-					ret = anc.children[-1]
-					ret.prevnode = anc
-				else:
-					self.children.append(DocNode('ARTIGO'))
-					ret = self.children[-1]
-					ret.prevnode = self
-
-				ret.start = p_line_index
-				ret.stop = p_line_index
-				ret._numerostr = art_num_str
-				ret._titlestr = f"Artigo {art_num_str}.º"
-				ret.designacao = art_tit
+				if mk == 'artigo_com_tit':
+					ret.designacao = art_tit
 
 			elif mk == 'numdentroartigo':
 
@@ -288,6 +276,8 @@ class DocNode(object):
 
 				text_line, num_str, num_txt = mvalues
 
+				ordval = p_alinea_itens.index(num_str) + 1
+
 				if not self._typestr in ['ARTIGO', 'NUMERO']:
 					anc = self.backToAncestorOfTypes(self, ['ARTIGO', 'NUMERO'])
 					assert not anc is None
@@ -302,6 +292,8 @@ class DocNode(object):
 				ret.start = p_line_index
 				ret.stop = p_line_index
 				ret._numerostr = num_str
+				if ordval > 0:
+					ret._ordem = ordval
 
 				ret.textlines.append(num_txt)
 
@@ -326,6 +318,9 @@ class DocNode(object):
 
 		if not self._numerostr is None:
 			ret["numero"] = self._numerostr
+
+		if self._ordem > 0:
+			ret["ordem"] = self._ordem
 
 		if self._typestr == "ROOT":
 			ret.setdefault('metadados', {})
@@ -355,12 +350,26 @@ class DocNode(object):
 
 		return ret
 
+def walkSetAncestorStop(p_node):
+
+	if len(p_node.children) > 0:
+		for pt in p_node.children:
+			walkSetAncestorStop(pt)
+
+	if not p_node.prevnode is None:
+		p_node.prevnode.stop = max(p_node.stop, p_node.prevnode.stop)
+
 
 def parseFromText(p_in_path: str, p_out_path: str, p_root_node: 'DocNode', limit: Optional[int] = 0):
 
 	assert not p_root_node is None
 
 	curr_node = p_root_node
+
+	alinea_itens = [c for c in ALFACHARS]
+	for c in ALFACHARS:
+		for d in ALFACHARS:
+			alinea_itens.append(c+d)
 
 	with open(p_in_path, 'r', encoding='utf-8') as fp:
 		
@@ -378,9 +387,12 @@ def parseFromText(p_in_path: str, p_out_path: str, p_root_node: 'DocNode', limit
 			if limit > 0 and lnidx > limit:
 				break
 
-			curr_node = curr_node.addTextString(strp_line, lnidx)
+			curr_node = curr_node.addTextString(alinea_itens, strp_line, lnidx)
 
 	if not p_root_node is None:
+
+		# ajustar os valores de stop
+		walkSetAncestorStop(p_root_node)
 
 		with open(p_out_path, 'w', encoding='utf-8') as fp:
 			json.dump(p_root_node.toJSON(), fp, indent=4, ensure_ascii=False, cls=DocNode.Encoder)
