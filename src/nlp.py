@@ -71,8 +71,9 @@ FORMAS_VERBAIS_AUXILIARES = {
 }
 
 PATT_NUMERO = {
-	"int": r"^([0-9]+$)",	
-	"item": (r"^([0-9]+[\./]+[0-9]+[\./]+[0-9]+$)", r"^([0-9]+[\./]+[0-9]+$)"),
+	"int": r"^([0-9]+)$",	
+	"area": r"^([0-9]+)m2$",
+	"item": (r"^([0-9]+[\.\-/]+[0-9]+[\./]+[0-9]+$)", r"^([0-9]+[\.\-/]+[0-9]+$)"),
 	"float": r"^([0-9]+[\,]+[0-9]+$)",
 	"ord": r'^([0-9]+[\. ]?[ºª])',
 	"alinea": r'^([a-cA-C]?[a-zA-Z]\))'
@@ -212,7 +213,7 @@ def genSepararSeparadoresColados(p_the_string: str):
 	postlist = []
 
 	# remover inicios estranhos a uma palavra
-	while len(the_string) > 0 and the_string[0] in ('“', '”',  '"', "'", '(', '«'):
+	while len(the_string) > 0 and the_string[0] in ('“', '”',  '"', "'", '(', '«', '.'):
 		the_char = the_string[0]
 		the_string = the_string[1:]
 		if the_char in ('“', '”',  '"', "'"):
@@ -227,7 +228,7 @@ def genSepararSeparadoresColados(p_the_string: str):
 
 	# remover terminações estranhas a uma palavra
 	sep_chars = []
-	while len(the_string) > 0 and the_string[-1] in ('.', ',', ':', ';', '”', '“', '"', "'", ')', '»'):
+	while len(the_string) > 0 and the_string[-1] in ('.', ',', ':', ';', '”', '“', '"', "'", ')', '»', '-'):
 		the_char = the_string[-1]
 		the_string = the_string[:-1]
 		sep_chars.append(the_char)

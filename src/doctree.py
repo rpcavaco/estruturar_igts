@@ -619,4 +619,29 @@ def parseFromText(p_in_path: str, p_out_path: str, p_root_node: 'DocNode', tipo_
 			json.dump(p_root_node.toJSON(), fp, indent=4, ensure_ascii=False, cls=DocNode.Encoder)
 
 
+def traverseNodes(p_node, p_out_dict, the_path=None, level=0):
+
+	nextkey = len(p_out_dict.keys()) + 1
+
+	p_out_dict[nextkey] = { "p": [], "c": []}
+
+	if not the_path is None:
+		p_out_dict[nextkey]["p"].extend(the_path)
+
+	p_out_dict[nextkey]["p"].append(p_node["id"])
+
+	if "attrs" in p_node.keys():
+		if "titulo" in p_node["attrs"].keys():
+			p_out_dict[nextkey]["c"].append(p_node["attrs"]["titulo"])
+		if "designacao" in p_node["attrs"].keys():
+			p_out_dict[nextkey]["c"].append(p_node["attrs"]["designacao"])
+
+	if "texto" in p_node.keys():
+		for ln in p_node["texto"]:
+			p_out_dict[nextkey]["c"].append(ln)
+
+	if "children" in p_node.keys():
+		for ci, chld_node in enumerate(p_node["children"]):
+			traverseNodes(chld_node, p_out_dict, the_path=p_out_dict[nextkey]["p"], level=level+1)
+
 

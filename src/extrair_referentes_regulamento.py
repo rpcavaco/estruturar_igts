@@ -6,7 +6,6 @@ from typing import Optional, List
 
 from json_helpers import find_unserializable
 from referentes import ReconhecimentoReferentes
-from documento_regulamentar import dump_docnodes
 from dict_list_manager import DictListManager
 from nlp import update_parts_of_speech_dict
 
@@ -14,18 +13,21 @@ from tqdm import tqdm
 
 def main(p_versao_concelho, p_output_file, preserve_tokens_ords: Optional[List[int]] = None, update_pos: Optional[bool] = False, limit: Optional[int] = 0, reverse_limit: Optional[bool] = False) -> None:
 
-	wrkdir = os.path.join(p_versao_concelho, "output")
-	infile = os.path.join(wrkdir, "regulamento.json")
-	outfile = os.path.join(wrkdir, 'docnodes_regulamento.json')
 
-	# Gerar lista serial de nós, com backup em disco
-	out_dict = dump_docnodes(infile, outfile)
+	wrkdir = os.path.join(p_versao_concelho, "output")
+	infile = os.path.join(wrkdir, 'docnodes_regulamento.json')
+
+	nodes_dict = None
+	with open(infile, 'r', encoding='utf-8') as fp:
+		nodes_dict = json.load(fp)
+
+	assert not nodes_dict is None
 
 	rref = ReconhecimentoReferentes()
 	ret = {}
 	janela_dict = {}
 
-	for i, item in enumerate(tqdm(out_dict.items())):
+	for i, item in enumerate(tqdm(nodes_dict.items())):
 		if limit > 0:
 			if reverse_limit:
 				if i < limit:
@@ -39,8 +41,8 @@ def main(p_versao_concelho, p_output_file, preserve_tokens_ords: Optional[List[i
 				rref.reconhecerEmJanela(instr, janela_dict)
 				janela_dict['ord'] = i + 1
 				janela_dict['p'] = copy(val['p'])
-				if len(val['p']) > 0:
-					janela_dict['p'].append(j)
+				# if len(val['p']) > 0:
+				# 	janela_dict['p'].append(j)
 				janela_dict['input'] = instr
 				ret.setdefault('nodes', [])
 				if not preserve_tokens_ords is None and not i+1 in preserve_tokens_ords:
@@ -67,6 +69,35 @@ def main(p_versao_concelho, p_output_file, preserve_tokens_ords: Optional[List[i
 		print(f"Ver {p_output_file} em 'output'")
 		json.dump(ret, fp, indent=4, ensure_ascii=False, cls=DictListManager.Encoder)
 
+def matches_faceis(p_versao_concelho, p_referentes_file) -> None:
+
+	wrkdir = os.path.join(p_versao_concelho, "output")
+
+	referentes_dict = None
+	with open(os.path.join(wrkdir, p_referentes_file), 'r') as fp:
+		referentes_dict = json.load(fp)
+
+	assert not referentes_dict is None
+
+	part_of_speech_dict = None
+	with open(os.path.join('setup', 'part_of_speech.json'), 'r', encoding='utf-8') as fp: 
+		part_of_speech_dict = json.load(fp)	
+
+	assert not part_of_speech_dict is None
+
+	print(f"{len(referentes_dict["faltas"])} palavras em falta")
+
+	found = 0
+	for wrd in referentes_dict["faltas"]:
+		if not wrd.endswith('s'):
+			if wrd + 's' in part_of_speech_dict.keys():
+				found += 1
+		else:
+			if wrd[:-1] in part_of_speech_dict.keys():
+				found += 1
+
+	print(f"{found} faltas recuperáveis pelos plurais")
+
 if __name__ == "__main0__":
 	main('../dados/Maia_1306/2_revisao_AVISO_4731_2025_2', 'referentes_regulamento_maia.json', preserve_tokens_ords=[1102])
 
@@ -74,4 +105,7 @@ if __name__ == "__main1__":
 	main('../dados/Alfandega_Fe_0401/2_revisao_AVISO_23096_2025_2', 'referentes_regulamento.json', preserve_tokens_ords=[], update_pos=True, limit=0, reverse_limit=False)
 
 if __name__ == "__main__":
-	main('../dados/Sernancelhe_1818/2_revisao_AVISO_11229_2025_2', 'referentes_regulamento.json', preserve_tokens_ords=[], update_pos=True, limit=0, reverse_limit=False)
+	main('../dados/Sernancelhe_1818/2_revisao_AVISO_11229_2025_2', 'referentes_regulamento.json', preserve_tokens_ords=[], update_pos=False, limit=0, reverse_limit=False)
+
+if __name__ == "__main2__":
+	matches_faceis('../dados/Sernancelhe_1818/2_revisao_AVISO_11229_2025_2', 'referentes_regulamento.json')

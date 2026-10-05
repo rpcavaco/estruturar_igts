@@ -14235,7 +14235,9 @@
     "antecedida": [
         "verbo"
     ],
-    "antiguidade": [],
+    "antiguidade": [
+        "nome"
+    ],
     "antrópica": [
         "nome"
     ],
