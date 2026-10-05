@@ -1,5 +1,6 @@
 
 import os
+import json
 
 from doctree import DocNode, parseFromText
 
@@ -18,9 +19,17 @@ def run(p_versao_concelho, p_tipo_numeracao_alineas, limite = 0):
 	assert os.path.exists(out_dir)
 
 	out_path = os.path.join(out_dir, "NOVO_regulamento.json")
+	out_path2 = os.path.join(out_dir, "NOVO_regulamento_2.json")
 
 	dn = DocNode()
 	parseFromText(in_path, out_path, dn, tipo_numeracao_alineas=p_tipo_numeracao_alineas, limit=limite)
+
+	with open(out_path, 'r', encoding='utf-8') as fp:
+		json_root = json.load(fp)
+		new_dn = DocNode.fromJSON(json_root)
+
+	with open(out_path2, 'w', encoding='utf-8') as fp:
+		json.dump(new_dn.toJSON(), fp, indent=4, ensure_ascii=False, cls=DocNode.Encoder)	
 
 	# processar_documento(in_path, os.path.join(out_dir, "NOVO_regulamento.json"))
 

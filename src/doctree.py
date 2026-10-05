@@ -93,6 +93,21 @@ class DocNode(object):
 
 		return ret
 
+	@classmethod
+	def backToAncestorOfTypes(cls, p_this: 'DocNode', p_types: List[str]) -> Union['DocNode', None]:
+
+		ret = None
+
+		current = p_this
+
+		while not current.prevnode is None:
+			current = current.prevnode
+			if current._typestr in p_types:
+				ret = current
+				break
+
+		return ret
+
 	def __init__(self, typestr: Optional[str] = None):
 
 		self.id = uuid4()
@@ -166,20 +181,6 @@ class DocNode(object):
 		def ordem(self, value: int):
 			self._ordem = value
 
-	def backToAncestorOfTypes(self, p_this: 'DocNode', p_types: List[str]) -> Union['DocNode', None]:
-
-		ret = None
-
-		current = p_this
-
-		while not current.prevnode is None:
-			current = current.prevnode
-			if current._typestr in p_types:
-				ret = current
-				break
-
-		return ret
-
 	def addTextString(self, p_alinea_itens: List[str], p_text: str, p_line_index: int) -> 'DocNode':
 
 		ret = None
@@ -242,7 +243,7 @@ class DocNode(object):
 			assert self.roman_nr.checkIsRoman(titulo_num_str), text_line
 
 			if self._typestr != 'ROOT':
-				anc = self.backToAncestorOfTypes(self, ['ROOT'])
+				anc = DocNode.backToAncestorOfTypes(self, ['ROOT'])
 				assert not anc is None
 			else:
 				anc = self
@@ -264,7 +265,7 @@ class DocNode(object):
 			assert self.roman_nr.checkIsRoman(titulo_num_str), text_line
 
 			if self._typestr not in ['ROOT', 'TITULO']:
-				anc = self.backToAncestorOfTypes(self, ['ROOT', 'TITULO'])
+				anc = DocNode.backToAncestorOfTypes(self, ['ROOT', 'TITULO'])
 				assert not anc is None
 			else:
 				anc = self
@@ -286,7 +287,7 @@ class DocNode(object):
 			assert self.roman_nr.checkIsRoman(num_str), text_line
 
 			if self._typestr != 'ROOT':
-				anc = self.backToAncestorOfTypes(self, ['ROOT'])
+				anc = DocNode.backToAncestorOfTypes(self, ['ROOT'])
 				assert not anc is None
 			else:
 				anc = self
@@ -308,7 +309,7 @@ class DocNode(object):
 				text_line, art_num_str = match_dict['artigo']
 
 			if self._typestr not in ('TITULO', 'CAPITULO'):
-				anc = self.backToAncestorOfTypes(self, ['TITULO', 'CAPITULO'])
+				anc = DocNode.backToAncestorOfTypes(self, ['TITULO', 'CAPITULO'])
 				assert not anc is None, f"Ascendente nulo em 'artigo', tipo '{self._typestr}', chaves parsing: {mkeys}, linha de texto: {text_line}"
 			else:
 				anc = self
@@ -332,7 +333,7 @@ class DocNode(object):
 			text_line, num_str, num_txt = mvalues
 
 			if self._typestr not in ('ANEXO', 'ARTIGO'):
-				anc = self.backToAncestorOfTypes(self, ['ANEXO', 'ARTIGO'])
+				anc = DocNode.backToAncestorOfTypes(self, ['ANEXO', 'ARTIGO'])
 				assert not anc is None, f"numero: {self.id} {text_line}"
 			else:
 				anc = self
@@ -456,6 +457,56 @@ class DocNode(object):
 
 		return ret
 
+
+	@classmethod
+	def fromJSON(cls, p_json_obj):
+
+		if p_json_obj['tipo'] == 'ROOT':
+			current_node = DocNode()
+		else:
+			current_node = DocNode(typestr=p_json_obj['tipo'])
+
+		for item in [
+			   "id", "start", "stop", "numero"
+			   # "subalinea_level"
+			 ]:
+			if item in p_json_obj.keys():
+				setattr(current_node, item, p_json_obj[item])
+
+		if "numero" in p_json_obj.keys():
+			current_node._numerostr = p_json_obj["numero"]
+
+		if "ordem" in p_json_obj.keys():
+			current_node._ordem = p_json_obj["ordem"]
+
+		if "tipo_numeracao" in p_json_obj.keys():
+			current_node.tipo_numeracao = p_json_obj["tipo_numeracao"]
+
+		if 'attrs' in p_json_obj.keys():
+
+			if "tipo_ato_normativo" in p_json_obj['attrs'].keys():
+				current_node._tipoato = p_json_obj['attrs']["tipo_ato_normativo"]
+
+			if "numero_ato_normativo" in p_json_obj['attrs'].keys():
+				current_node._numeroato = p_json_obj['attrs']["numero_ato_normativo"]
+
+			if "titulo" in p_json_obj['attrs'].keys():
+				current_node._titlestr = p_json_obj['attrs']["titulo"]
+
+			if "designacao" in p_json_obj['attrs'].keys():
+				current_node.designacao = p_json_obj['attrs']["designacao"]
+
+		if 'children' in p_json_obj.keys():
+			for chld in p_json_obj['children']:
+				chld_node = DocNode.fromJSON(chld)
+				chld_node.prevnode = current_node
+				current_node.children.append(chld_node)
+		if "texto" in p_json_obj.keys():
+			for ln in p_json_obj["texto"]:
+				current_node.textlines.append(ln)
+
+		return current_node
+
 	def toJSON(self):
 
 		assert not self._typestr is None
@@ -478,8 +529,12 @@ class DocNode(object):
 		if self._ordem > 0:
 			ret["ordem"] = self._ordem
 
-		if self.subalinea_level > 0:
-			ret["subalinea_level"] = self.subalinea_level
+		try:
+			if self.subalinea_level > 0:
+				ret["subalinea_level"] = self.subalinea_level
+		except: 
+			print("subalinea_level:", self.subalinea_level)
+			raise
 
 		if self._typestr == "ROOT":
 			ret.setdefault('metadados', {})
