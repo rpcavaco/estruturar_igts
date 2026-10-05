@@ -119,18 +119,18 @@ class NumeracaoRomana(object):
 	"""Classe para leitura e verificação de números em notação romana
 	"""
 
+	@classmethod
+	def to_roman(cls, n: int) -> str:
+		vals = [(100, "C"), (90, "XC"), (50, "L"), (40, "XL"),
+				(10, "X"), (9, "IX"), (5, "V"), (4, "IV"), (1, "I")]
+		out = []
+		for value, symbol in vals:
+			count, n = divmod(n, value)
+			out.append(symbol * count)
+		return "".join(out)
+
 	def __init__(self):
-		self.nr = ['I', 'II', 'III', 'IV','V','VI','VII','VIII', 'IX', 
-			'X', 'XI', 'XII', 'XIII', 'XIV','XV','XVI','XVII','XVIII', 'XIX',
-			'XX', 'XXI', 'XXII', 'XXIII', 'XXIV','XXV','XXVI','XXVII','XXVIII', 'XXIX',
-			'XXX', 'XXXI', 'XXXII', 'XXXIII', 'XXXIV','XXXV','XXXVI','XXXVII','XXXVIII', 'XXXIX',
-			'XL', 'XLI', 'XLII', 'XLIII', 'XLIV','XLV','XLVI','XLVII','XLVIII', 'XLIX',
-			'L', 'LI', 'LII', 'LIII', 'LIV','LV','LVI','LVII','LVIII', 'LIX',
-			'LX', 'LXI', 'LXII', 'LXIII', 'LXIV','LXV','LXVI','LXVII','LXVIII', 'LXIX',
-			'LXX', 'LXXI', 'LXXII', 'LXXIII', 'LXXIV','LXXV','LXXVI','LXXVII','LXXVIII', 'LXXIX',
-			'LXXX', 'LXXXI', 'LXXXII', 'LXXXIII', 'LXXXIV','LXXXV','LXXXVI','LXXXVII','LXXXVIII', 'LXXXIX',
-			'XC', 'XCI', 'XCII', 'XCIII', 'XCIV','XCV','XCVI','XCVII','XCVIII', 'XCIX'
-		]
+		self.nr = [NumeracaoRomana.to_roman(i) for i in range(1, 101)]
 		
 	def fromRomanStr(self, p_in_str) -> int | None:
 		try:

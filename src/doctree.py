@@ -1,6 +1,7 @@
 
 import re
 import json
+import traceback
 
 from uuid import uuid4
 from typing import Optional, Union, List
@@ -20,13 +21,14 @@ class DocTextParser(object):
 	def __init__(self):
 		self.patt = {
 			"aviso": (r"^aviso[\s]+n[\.]?º[\s]+(\S+)", re.I),
-			"titulo": (r"^título[\s]+([LCIVX]+)", re.I),
-			"anexo": (r"^ANEXO[\s]+.*",),
+			"titulo": (r"^título[\s]+([cilmvx]+)", re.I),
+			"capitulo": (r"^capítulo[\s]+([cilmvx]+)", re.I),
+			"anexo": (r"^anexo[\s]+.*", re.I),
 			"artigo_com_tit": (r"^artigo[\s]+([\d]+)[\.]?º[\s]+[\-]?[\s]?(.*)$", re.I),
-			"artigo": (r"^artigo[\s]+([\d]+)[\.]?º", re.I),
+			"artigo": (r"^artigo[\s]+([\d]+)[\.]?º?", re.I),
 			"numdentroartigo": (r"^([\d]+)[\s]?\-[\s]?(.*)",),
 			"alinea": (r"^([a-b]?[a-z])\)[\s]+(.*)",),
-			"subalinea": (r"^([ivx]+)\)[\s]+(.*)",)  # Atenção: confunde-se com a 'alínea' no caso 'i)'
+			"alinea_romana": (r"^([cilmvx]+)\)[\s]+(.*)",)  # Atenção: confunde-se com a 'alínea' no caso 'i)'
 		}
 
 	def parseString(self, p_text: str, out_mos_dict: dict):
@@ -65,6 +67,47 @@ class DocNode(object):
 		def default(self, o):
 			return o.__dict__
 
+	@classmethod
+	def backToCompatibleAlineaSubalinea(cls, p_this: 'DocNode', p_ordval: int, p_roman_val: int) -> Union['DocNode', None]:
+
+		ret = { "node": None, "tipo_numeracao": None }
+
+		current = p_this
+
+		# print(" ")
+		# print(":: p_ordval, p_roman_val:", p_ordval, p_roman_val, "current:", current.id, current._typestr)
+
+		while not current.prevnode is None:
+
+			current = current.prevnode
+
+			prevord = 0
+			if len(current.children) > 0:
+				prevord = max([c._ordem for c in current.children])
+
+			# print("      > prev:", current.id, current._typestr, "prevord:", prevord, "len.ch:", len(current.children))
+
+			# if p_ordval == 9 and p_roman_val == 1:
+			# 	print("     9 1:", prevord, json.dumps(current.toJSON(), indent=4), json.dumps(p_this.toJSON(), indent=4), "prev is none:", (not current.prevnode is None))
+
+			# print("::::", p_ordval > 0 and p_ordval == prevord + 1, p_roman_val > 0 and p_roman_val == prevord + 1, prevord, p_ordval, p_roman_val, json.dumps(current.toJSON(), indent=4))
+			# print(":::: > ", json.dumps(p_this.toJSON(), indent=4))
+
+			if p_ordval > 0 and p_ordval == prevord + 1:
+				ret = { "node": current, "tipo_numeracao": "normal" }
+				break
+			elif p_roman_val > 0 and p_roman_val == prevord + 1:
+#				print("ret:", json.dumps(current.toJSON(), indent=4))
+				ret = { "node": current, "tipo_numeracao": "romana" }
+				break
+
+		# if not ret["node"] is None:
+		# 	print("    ret >", ret["node"].id, ret["node"]._typestr, "tipo_numeracao:", ret["tipo_numeracao"])
+		# else:
+		# 	print("    ret > NULL")			
+
+		return ret
+
 	def __init__(self, typestr: Optional[str] = None):
 
 		self.id = uuid4()
@@ -80,6 +123,7 @@ class DocNode(object):
 
 		self.start = -1
 		self.stop = -1
+		self.tipo_numeracao = None
 		self.designacao = None
 		self.textlines = []
 		self.children = []
@@ -151,26 +195,6 @@ class DocNode(object):
 
 		return ret
 
-	def backToCompatibleSubalinea(self, p_this: 'DocNode', p_current_ordval: int) -> Union['DocNode', None]:
-
-		ret = None
-
-		current = p_this
-
-		while not current.prevnode is None:
-			
-			current = current.prevnode
-
-			prevord = 0
-			if len(current.children) > 0:
-				prevord = max([c._ordem for c in current.children])
-
-			if p_current_ordval == prevord + 1:
-				ret = current
-				break
-
-		return ret
-
 	def addTextString(self, p_alinea_itens: List[str], p_text: str, p_line_index: int) -> 'DocNode':
 
 		ret = None
@@ -188,6 +212,8 @@ class DocNode(object):
 		#for mk, mvalues in match_dict.items():
 
 		mkeys = tuple(match_dict.keys())
+
+		# print("\n", mkeys, strip_text)
 
 		if mkeys == ('_raw',):
 
@@ -238,13 +264,34 @@ class DocNode(object):
 			if self._typestr != 'ROOT':
 				anc = self.backToAncestorOfTypes(self, ['ROOT'])
 				assert not anc is None
-				anc.children.append(DocNode('TITULO'))
-				ret = anc.children[-1]
-				ret.prevnode = anc
 			else:
-				self.children.append(DocNode('TITULO'))
-				ret = self.children[-1]
-				ret.prevnode = self
+				anc = self
+
+			anc.children.append(DocNode('TITULO'))
+			ret = anc.children[-1]
+			ret.prevnode = anc
+
+			ret.start = p_line_index
+			ret.stop = p_line_index
+			ret._numerostr = titulo_num_str
+			ret._titlestr = text_line
+
+		elif mkeys == ('capitulo',):
+
+			mvalues = match_dict[mkeys[0]]
+
+			text_line, titulo_num_str = mvalues
+			assert self.roman_nr.checkIsRoman(titulo_num_str), text_line
+
+			if self._typestr not in ['ROOT', 'TITULO']:
+				anc = self.backToAncestorOfTypes(self, ['ROOT', 'TITULO'])
+				assert not anc is None
+			else:
+				anc = self
+
+			anc.children.append(DocNode('CAPITULO'))
+			ret = anc.children[-1]
+			ret.prevnode = anc
 
 			ret.start = p_line_index
 			ret.stop = p_line_index
@@ -258,16 +305,15 @@ class DocNode(object):
 			else:
 				text_line, art_num_str = match_dict['artigo']
 
-			if self._typestr != 'TITULO':
-				anc = self.backToAncestorOfTypes(self, ['TITULO'])
-				assert not anc is None
-				anc.children.append(DocNode('ARTIGO'))
-				ret = anc.children[-1]
-				ret.prevnode = anc
+			if self._typestr not in ('TITULO', 'CAPITULO'):
+				anc = self.backToAncestorOfTypes(self, ['TITULO', 'CAPITULO'])
+				assert not anc is None, f"Ascendente nulo em 'artigo', tipo '{self._typestr}', chaves parsing: {mkeys}, linha de texto: {text_line}"
 			else:
-				self.children.append(DocNode('ARTIGO'))
-				ret = self.children[-1]
-				ret.prevnode = self
+				anc = self
+
+			anc.children.append(DocNode('ARTIGO'))
+			ret = anc.children[-1]
+			ret.prevnode = anc
 
 			ret.start = p_line_index
 			ret.stop = p_line_index
@@ -286,13 +332,12 @@ class DocNode(object):
 			if self._typestr != 'ARTIGO':
 				anc = self.backToAncestorOfTypes(self, ['ARTIGO'])
 				assert not anc is None
-				anc.children.append(DocNode('NUMERO'))
-				ret = anc.children[-1]
-				ret.prevnode = anc
 			else:
-				self.children.append(DocNode('NUMERO'))
-				ret = self.children[-1]
-				ret.prevnode = self
+				anc = self
+
+			anc.children.append(DocNode('NUMERO'))
+			ret = anc.children[-1]
+			ret.prevnode = anc
 			
 			ret.start = p_line_index
 			ret.stop = p_line_index
@@ -300,7 +345,92 @@ class DocNode(object):
 
 			ret.textlines.append(num_txt)
 
-		elif 'alinea' in mkeys or 'subalinea' in mkeys:
+		elif 'alinea_romana' in mkeys or 'alinea' in mkeys:
+
+			assert self._typestr in ('ARTIGO', 'NUMERO', 'ALINEA', 'SUBALINEA'), json.dumps(self.toJSON(), indent=4)
+
+			if 'alinea' in mkeys:
+				text_line, num_str, num_txt = match_dict['alinea']
+			else:
+				text_line, num_str, num_txt = match_dict['alinea_romana']
+
+			roman_val = -1
+			ord_val = -1
+			if self.roman_nr.checkIsRoman(num_str):
+				roman_val = self.roman_nr.fromRomanStr(num_str)
+			if len(num_str) == 1:
+				ord_val = p_alinea_itens.index(num_str) + 1
+
+
+			if self._typestr in ('ARTIGO', 'NUMERO'):
+
+				self.children.append(DocNode('ALINEA'))
+				ret = self.children[-1]
+				ret.prevnode = self
+				# A iniciar nova numeração
+				assert ord_val == 1 or roman_val == 1
+				if ord_val == 1:
+					ret.tipo_numeracao = "normal"
+				else:
+					ret.tipo_numeracao = "romana"
+				ret._ordem = 1
+
+			else:
+
+				# Apenas self._typestr 'ALINEA' ou 'SUBALINEA'
+
+
+
+
+				# if roman_val == 1: # potencialmente, a iniciar nova série de subalíneas i), ii), iii) ...
+
+				# 	if ord_val > 0:
+				# 		get_prev_ord(self)
+
+
+				# print("372: ", ord_val, roman_val, json.dumps(self.prevnode.toJSON(), indent=4), json.dumps(self.toJSON(), indent=4), text_line)
+
+				# raise RuntimeError("##")
+			
+				anc_ret = DocNode.backToCompatibleAlineaSubalinea(self, ord_val, roman_val)
+				if not anc_ret["node"] is None:
+					anc = anc_ret["node"]
+				else:
+					# A iniciar nova numeração
+					assert ord_val == 1 or roman_val == 1, f"ord_val:{ord_val} roman_val:{roman_val} this:{json.dumps(self.toJSON(), indent=4)} text_line:{text_line}"
+					anc = self
+
+				if anc._typestr == 'NUMERO':
+					anc.children.append(DocNode('ALINEA'))
+				else: 
+					anc.children.append(DocNode('SUBALINEA'))
+
+				ret = anc.children[-1]
+				ret.prevnode = anc
+				
+				if not anc_ret["node"] is None:
+					if anc_ret["tipo_numeracao"] == "normal":
+						ret._ordem = ord_val
+					else:
+						ret._ordem = roman_val
+					ret.tipo_numeracao = anc_ret["tipo_numeracao"]
+				else:
+					ret._ordem = 1
+					if ord_val == 1:
+						ret.tipo_numeracao = "normal"
+					else:
+						ret.tipo_numeracao = "romana"					
+
+
+
+			ret.start = p_line_index
+			ret.stop = p_line_index
+			ret._numerostr = num_str
+
+			ret.textlines.append(num_txt)				
+
+
+		elif mkeys == ('alineaZZ',):
 
 			# Necessário distinguir entre alínea a subalinea, ou qualquer nível de sub-subalínea
 
@@ -313,15 +443,33 @@ class DocNode(object):
 
 				# 'subalinea' e 'alinea': letras isoladas comuns à numeração romana: i) l) c) x) v)
 				# podem ser alinea ou subalínea, dependentemente do número de ordem anterior em sequência, se existir
+				# Atenção: Por erro, há textos com subalíneas 'numeradas' com letras de 'a' a 'x'
 
 				text_line, num_str, num_txt = match_dict['alinea']
 				
-				if self._typestr in ('ALINEA', 'NUMERO'):
+				if self._typestr in ('NUMERO', 'ALINEA', 'SUBALINEA'):
+					
 					tmp_ordval = p_alinea_itens.index(num_str) + 1
-					prevord = 0
-					if len(self.children) > 0:
-						prevord = max([c._ordem for c in self.prevnode.children])
-					real_alinea = (prevord == tmp_ordval - 1)	
+
+					if self._typestr == 'NUMERO':
+						real_alinea = (tmp_ordval == 1)	
+					elif self._typestr == 'ALINEA':
+						prevord = 0
+						if len(self.prevnode.children) > 0:
+							prevord = max([c._ordem for c in self.prevnode.children])
+						print("A >> p t num_str:", prevord, tmp_ordval, num_str)
+						real_alinea = (prevord == tmp_ordval - 1)	
+					else:  # self._typestr == 'SUBALINEA'
+						anc = self.backToAncestorOfTypes(self, ['ALINEA'])
+						assert not anc is None
+						prevord = 0
+						if len(anc.prevnode.children) > 0:
+							prevord = max([c._ordem for c in anc.prevnode.children])
+						print("B >> p t num_str:", prevord, tmp_ordval, num_str)
+						real_alinea = (prevord == tmp_ordval - 1)
+
+				if num_str == 'c':
+					print(">>", real_alinea, self._typestr, text_line, json.dumps(self.prevnode.toJSON(), indent=4))
 
 			if real_alinea:
 
@@ -351,6 +499,7 @@ class DocNode(object):
 						anc = self
 					else:
 						anc = self.backToCompatibleSubalinea(self, ordval)
+					assert not anc is None, f"Ascendente nulo, tipo '{self._typestr}', chaves parsing: {mkeys}, linha de texto: {text_line}"
 					if anc.subalinea_level < 1:
 						level = 1
 					else:
@@ -393,6 +542,9 @@ class DocNode(object):
 
 		if not self._numerostr is None:
 			ret["numero"] = self._numerostr
+
+		if not self.tipo_numeracao is None:
+			ret["tipo_numeracao"] = self.tipo_numeracao
 
 		if self._ordem > 0:
 			ret["ordem"] = self._ordem
@@ -465,7 +617,11 @@ def parseFromText(p_in_path: str, p_out_path: str, p_root_node: 'DocNode', limit
 			if limit > 0 and lnidx > limit:
 				break
 
-			curr_node = curr_node.addTextString(alinea_itens, strp_line, lnidx)
+			try:
+				curr_node = curr_node.addTextString(alinea_itens, strp_line, lnidx)
+			except:
+				traceback.print_exc()
+				break
 
 	if not p_root_node is None:
 
