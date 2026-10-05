@@ -84,6 +84,7 @@ class DocNode(object):
 		self.textlines = []
 		self.children = []
 		self.prevnode = None
+		self.subalinea_level = -1
 		
 		self.dtp = DocTextParser()
 		self.roman_nr = NumeracaoRomana()
@@ -150,6 +151,25 @@ class DocNode(object):
 
 		return ret
 
+	def backToCompatibleSubalinea(self, p_this: 'DocNode', p_current_ordval: int) -> Union['DocNode', None]:
+
+		ret = None
+
+		current = p_this
+
+		while not current.prevnode is None:
+			
+			current = current.prevnode
+
+			prevord = 0
+			if len(current.children) > 0:
+				prevord = max([c._ordem for c in current.children])
+
+			if p_current_ordval == prevord + 1:
+				ret = current
+				break
+
+		return ret
 
 	def addTextString(self, p_alinea_itens: List[str], p_text: str, p_line_index: int) -> 'DocNode':
 
@@ -159,143 +179,198 @@ class DocNode(object):
 		match_dict = {}
 		self.dtp.parseString(strip_text, match_dict)
 
-		# print("match_dict:", match_dict)
+		# if len(match_dict.keys()) > 1:
+		# 	print("match_dict:", match_dict.keys())
 
 		if self.start < 0:
 			self.start = p_line_index
 
+		#for mk, mvalues in match_dict.items():
 
-		for mk, mvalues in match_dict.items():
+		mkeys = tuple(match_dict.keys())
 
-			if mk == '_raw':
+		if mkeys == ('_raw',):
 
-				if self._typestr == "ROOT":
+			if self._typestr == "ROOT":
 
+				self._titlestr = strip_text
+				self.children.append(DocNode('INTRO'))
+				self.stop = p_line_index
+
+				ret = self.children[-1]
+				ret.prevnode = self
+
+			elif self._typestr == "INTRO":
+
+				if self._titlestr is None and len(self.textlines) == 0 and len(strip_text) < COMPRIM_MAX_TITULO_INTRO:
 					self._titlestr = strip_text
-					self.children.append(DocNode('INTRO'))
-					self.stop = p_line_index
-
-					ret = self.children[-1]
-					ret.prevnode = self
-
-				elif self._typestr == "INTRO":
-
-					if self._titlestr is None and len(self.textlines) == 0 and len(strip_text) < COMPRIM_MAX_TITULO_INTRO:
-						self._titlestr = strip_text
-					else:
-						self.textlines.append(strip_text)
-
-					self.stop = p_line_index
-
-				elif self._typestr in ("ARTIGO", "TITULO"):
-
-					if self.designacao is None:
-						self.designacao = strip_text
-					else:
-						self.textlines.append(strip_text)
-
-					self.stop = p_line_index
-
-			elif mk == 'aviso':
-
-				text_line, ato_num_str = mvalues
-				self._tipoato = "Aviso"
-				self._numeroato = ato_num_str
+				else:
+					self.textlines.append(strip_text)
 
 				self.stop = p_line_index
 
-			elif mk == 'titulo':
+			elif self._typestr in ("ARTIGO", "TITULO"):
 
-				text_line, titulo_num_str = mvalues
-				assert self.roman_nr.checkIsRoman(titulo_num_str), text_line
-
-				if self._typestr != 'ROOT':
-					anc = self.backToAncestorOfTypes(self, ['ROOT'])
-					assert not anc is None
-					anc.children.append(DocNode('TITULO'))
-					ret = anc.children[-1]
-					ret.prevnode = anc
+				if self.designacao is None:
+					self.designacao = strip_text
 				else:
-					self.children.append(DocNode('TITULO'))
-					ret = self.children[-1]
-					ret.prevnode = self
+					self.textlines.append(strip_text)
 
-				ret.start = p_line_index
-				ret.stop = p_line_index
-				ret._numerostr = titulo_num_str
-				ret._titlestr = text_line
+				self.stop = p_line_index
 
-			elif mk == 'artigo' or mk == 'artigo_com_tit':
+		elif mkeys == ('aviso',):
 
-				if mk == 'artigo_com_tit':
-					text_line, art_num_str, art_tit = mvalues
-				else:
-					text_line, art_num_str = mvalues
+			mvalues = match_dict[mkeys[0]]
 
-				if self._typestr != 'TITULO':
-					anc = self.backToAncestorOfTypes(self, ['TITULO'])
-					assert not anc is None
-					anc.children.append(DocNode('ARTIGO'))
-					ret = anc.children[-1]
-					ret.prevnode = anc
-				else:
-					self.children.append(DocNode('ARTIGO'))
-					ret = self.children[-1]
-					ret.prevnode = self
+			text_line, ato_num_str = mvalues
+			self._tipoato = "Aviso"
+			self._numeroato = ato_num_str
 
-				ret.start = p_line_index
-				ret.stop = p_line_index
-				ret._numerostr = art_num_str
-				ret._titlestr = f"Artigo {art_num_str}.º"
+			self.stop = p_line_index
 
-				if mk == 'artigo_com_tit':
-					ret.designacao = art_tit
+		elif mkeys == ('titulo',):
 
-			elif mk == 'numdentroartigo':
+			mvalues = match_dict[mkeys[0]]
 
-				text_line, num_str, num_txt = mvalues
+			text_line, titulo_num_str = mvalues
+			assert self.roman_nr.checkIsRoman(titulo_num_str), text_line
 
-				if self._typestr != 'ARTIGO':
-					anc = self.backToAncestorOfTypes(self, ['ARTIGO'])
-					assert not anc is None
-					anc.children.append(DocNode('NUMERO'))
-					ret = anc.children[-1]
-					ret.prevnode = anc
-				else:
-					self.children.append(DocNode('NUMERO'))
-					ret = self.children[-1]
-					ret.prevnode = self
+			if self._typestr != 'ROOT':
+				anc = self.backToAncestorOfTypes(self, ['ROOT'])
+				assert not anc is None
+				anc.children.append(DocNode('TITULO'))
+				ret = anc.children[-1]
+				ret.prevnode = anc
+			else:
+				self.children.append(DocNode('TITULO'))
+				ret = self.children[-1]
+				ret.prevnode = self
+
+			ret.start = p_line_index
+			ret.stop = p_line_index
+			ret._numerostr = titulo_num_str
+			ret._titlestr = text_line
+
+		elif 'artigo' in mkeys or 'artigo_com_tit' in mkeys:
+
+			if 'artigo_com_tit' in mkeys:
+				text_line, art_num_str, art_tit = match_dict['artigo_com_tit']
+			else:
+				text_line, art_num_str = match_dict['artigo']
+
+			if self._typestr != 'TITULO':
+				anc = self.backToAncestorOfTypes(self, ['TITULO'])
+				assert not anc is None
+				anc.children.append(DocNode('ARTIGO'))
+				ret = anc.children[-1]
+				ret.prevnode = anc
+			else:
+				self.children.append(DocNode('ARTIGO'))
+				ret = self.children[-1]
+				ret.prevnode = self
+
+			ret.start = p_line_index
+			ret.stop = p_line_index
+			ret._numerostr = art_num_str
+			ret._titlestr = f"Artigo {art_num_str}.º"
+
+			if 'artigo_com_tit' in mkeys:
+				ret.designacao = art_tit
+
+		elif mkeys == ('numdentroartigo',):
+
+			mvalues = match_dict[mkeys[0]]
+
+			text_line, num_str, num_txt = mvalues
+
+			if self._typestr != 'ARTIGO':
+				anc = self.backToAncestorOfTypes(self, ['ARTIGO'])
+				assert not anc is None
+				anc.children.append(DocNode('NUMERO'))
+				ret = anc.children[-1]
+				ret.prevnode = anc
+			else:
+				self.children.append(DocNode('NUMERO'))
+				ret = self.children[-1]
+				ret.prevnode = self
+			
+			ret.start = p_line_index
+			ret.stop = p_line_index
+			ret._numerostr = num_str
+
+			ret.textlines.append(num_txt)
+
+		elif 'alinea' in mkeys or 'subalinea' in mkeys:
+
+			# Necessário distinguir entre alínea a subalinea, ou qualquer nível de sub-subalínea
+
+			real_alinea = False
+			if not 'subalinea' in mkeys:
+
+				real_alinea = True
+
+			elif 'alinea' in mkeys: 
+
+				# 'subalinea' e 'alinea': letras isoladas comuns à numeração romana: i) l) c) x) v)
+				# podem ser alinea ou subalínea, dependentemente do número de ordem anterior em sequência, se existir
+
+				text_line, num_str, num_txt = match_dict['alinea']
 				
-				ret.start = p_line_index
-				ret.stop = p_line_index
-				ret._numerostr = num_str
+				if self._typestr in ('ALINEA', 'NUMERO'):
+					tmp_ordval = p_alinea_itens.index(num_str) + 1
+					prevord = 0
+					if len(self.children) > 0:
+						prevord = max([c._ordem for c in self.prevnode.children])
+					real_alinea = (prevord == tmp_ordval - 1)	
 
-				ret.textlines.append(num_txt)
+			if real_alinea:
 
-			elif mk == 'alinea':
-
-				text_line, num_str, num_txt = mvalues
-
+				text_line, num_str, num_txt = match_dict['alinea']
 				ordval = p_alinea_itens.index(num_str) + 1
 
 				if not self._typestr in ['ARTIGO', 'NUMERO']:
 					anc = self.backToAncestorOfTypes(self, ['ARTIGO', 'NUMERO'])
 					assert not anc is None
-					anc.children.append(DocNode('ALINEA'))
-					ret = anc.children[-1]
-					ret.prevnode = anc
 				else:
-					self.children.append(DocNode('ALINEA'))
-					ret = self.children[-1]
-					ret.prevnode = self
-				
-				ret.start = p_line_index
-				ret.stop = p_line_index
-				ret._numerostr = num_str
-				if ordval > 0:
-					ret._ordem = ordval
+					anc = self
 
-				ret.textlines.append(num_txt)
+				anc.children.append(DocNode('ALINEA'))
+
+			else:
+
+				text_line, num_str, num_txt = match_dict['subalinea']
+				assert self.roman_nr.checkIsRoman(num_str), text_line
+				ordval = self.roman_nr.fromRomanStr(num_str)
+
+				level = 0
+				if self._typestr in ('ALINEA', 'NUMERO'):  # Subalinea pode aparecer como descendente de NUMERO
+					level = 1
+					anc = self
+				elif self._typestr == 'SUBALINEA':
+					if ordval == 1:
+						anc = self
+					else:
+						anc = self.backToCompatibleSubalinea(self, ordval)
+					if anc.subalinea_level < 1:
+						level = 1
+					else:
+						level = anc.subalinea_level + 1
+				else:
+					raise RuntimeError(f"Tipo corrente '{self._typestr}' inesperado, chaves parsing: {mkeys}, linha de texto: {text_line}")
+
+				anc.children.append(DocNode('SUBALINEA'))
+				anc.children[-1].subalinea_level = level
+
+			ret = anc.children[-1]
+			ret.prevnode = anc
+
+			ret.start = p_line_index
+			ret.stop = p_line_index
+			ret._numerostr = num_str
+			if ordval > 0:
+				ret._ordem = ordval
+
+			ret.textlines.append(num_txt)
 
 		if not ret:
 			ret = self
@@ -321,6 +396,9 @@ class DocNode(object):
 
 		if self._ordem > 0:
 			ret["ordem"] = self._ordem
+
+		if self.subalinea_level > 0:
+			ret["subalinea_level"] = self.subalinea_level
 
 		if self._typestr == "ROOT":
 			ret.setdefault('metadados', {})
