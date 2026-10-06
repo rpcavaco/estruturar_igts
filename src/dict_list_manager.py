@@ -245,6 +245,10 @@ class DictListManager():
 		if len(fluxo) > 0:
 			print("Fluxo final:", "\n".join(fluxo))
 
+		if len(found_idxs) > 0:
+			yield found_idxs
+
+
 	def iterateGroups(self, group_size: int = 1, prev_is_null: bool = False):
 
 		seed = 0

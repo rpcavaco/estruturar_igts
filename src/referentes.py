@@ -438,11 +438,10 @@ class ReconhecimentoReferentes(object):
 
 		# print(in_window_text)
 
-		in_window_text = p_janela.replace("e/ou", "ou").replace("e / ou", "ou")
+		in_window_text = p_janela.replace(" e/ou ", " ou ").replace(" e / ou ", " ou ")
 
-		in_window_text = re.sub(fr"({PT_ALPHA_CHAR_PATT})/({PT_ALPHA_CHAR_PATT})", r"\1 / \2", in_window_text)   ## tornar barras separadoras contíguas a texto em barras isoladas
-		in_window_text = re.sub(fr"({PT_ALPHA_CHAR_PATT})-({PT_ALPHA_CHAR_PATT})", r"\1 - \2", in_window_text)   ## tornar barras separadoras contíguas a texto em barras isoladas
-
+		# in_window_text = re.sub(fr"({PT_ALPHA_CHAR_PATT})/({PT_ALPHA_CHAR_PATT})", r"\1 / \2", in_window_text)   ## tornar barras separadoras contíguas a texto em barras isoladas
+		# in_window_text = re.sub(fr"({PT_ALPHA_CHAR_PATT})-({PT_ALPHA_CHAR_PATT})", r"\1 - \2", in_window_text)   ## tornar barras separadoras contíguas a texto em barras isoladas
 
 		cleantext = in_window_text
 		out_dict['tokens_list'] = genTokensList(cleantext)
@@ -497,4 +496,13 @@ class ReconhecimentoReferentes(object):
 				referentes.append(tkn['repr'])
 		if len(referentes) > 0:
 			out_dict['referentes'] = referentes
+
+		URLs = []
+		for tkn in out_dict['tokens_list']:
+			if 'construct' in tkn.keys() and tkn['construct'] == 'URL':
+				URLs.append(tkn['repr'])
+		if len(URLs) > 0:
+			out_dict['urls'] = URLs
+
+		# print("X", out_dict['tokens_list'].to_json())
 
