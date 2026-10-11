@@ -156,6 +156,8 @@ class DictListManager():
 		"""Remove and return the item at the given index."""
 		return self._items.pop(index)
 
+	# def tokenize_item(self, )
+
 	# ------------------------------------------------------------------ #
 	# Walking / in-place transformation
 	# ------------------------------------------------------------------ #
@@ -164,7 +166,8 @@ class DictListManager():
 		func: Callable[[Dict[str, Any]], Any],
 		predicate: Optional[Callable[[Dict[str, Any]], bool]] = None,
 		afterfunc: Optional[Callable[[Dict[str, Any]], Any]] = None,
-		validate_after: bool = True
+		validate_after: bool = True,
+		include_idx_as_func_param: bool = False # índice do elemento na lista é passado como parametro a 'func'
 	) -> None:
 		"""
 		Walk the list and apply ``func`` to each dictionary, in place.
@@ -176,11 +179,14 @@ class DictListManager():
 		re-validated against the schema after ``func`` runs, so a bad
 		mutation raises immediately instead of corrupting the list.
 		"""
-		for item in self._items:
+		for idx, item in enumerate(self._items):
 			if predicate is not None and not predicate(item):
 				continue
 			try:
-				func(item)
+				if include_idx_as_func_param:
+					func(idx, item)
+				else:
+					func(item)
 			except AttributeError as e:
 				warnings.warn(f"{e} - item:{item}")
 				raise

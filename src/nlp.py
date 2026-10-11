@@ -72,7 +72,8 @@ FORMAS_VERBAIS_AUXILIARES = {
 
 PATT_NUMERO = {
 	"int": r"^([0-9]+)$",	
-	"area": r"^([0-9]+)m2$",
+	"area": r"^([0-9]+)[\s]?m2$",
+	"perc": r"^([0-9]+)[\s]?%$",
 	"item": (r"^([0-9]+[\.\-/]+[0-9]+[\./]+[0-9]+$)", r"^([0-9]+[\.\-/]+[0-9]+$)"),
 	"float": r"^([0-9]+[\,]+[0-9]+$)",
 	"ord": r'^([0-9]+[\. ]?[ºª])',
@@ -204,6 +205,39 @@ def verificar(value, checks, bus=None, path_exec_key='execpath'):
 		bus.setdefault(path_exec_key, [])
 		bus[path_exec_key].append('Final')
 
+def sep_type(p_sep_char: str):
+
+	type_str = None
+	divseps = [':', ';','/', '-', chr(int('2013', 16))]
+
+	if p_sep_char in ('“', '”',  '"', "'", '(', '«', '.'):
+		if p_sep_char in ('“', '”',  '"', "'"):
+			type_str = "quote"
+		elif p_sep_char == '«':
+			type_str = "angle_quote"
+		else:
+			type_str = "parentesis"
+
+	if type_str is None:
+		if p_sep_char in ('”', '“', '"', "'"):
+			type_str = "quote"
+		elif p_sep_char == '»':
+			type_str = "angle_quote"
+		elif p_sep_char == ')':
+			type_str = "parentesis"
+		elif p_sep_char == ',':
+			type_str = "soft"
+		elif p_sep_char in ('.', ';'):
+			type_str = "hard"
+		elif p_sep_char == ':':
+			type_str = "continuity"
+
+	if type_str is None:
+		if p_sep_char in divseps:
+			type_str = "div"
+
+	return type_str
+
 def genSepararSeparadoresColados(p_the_string: str):
 
 	sep_content = ""
@@ -256,7 +290,7 @@ def genSepararSeparadoresColados(p_the_string: str):
 	return prevlist, the_string, postlist
 
 
-def genTokens(p_ret: "DictListManager", p_dirty):
+def genTokens(p_ret: "DictListManager", p_dirty: str) -> None:
 
 	# print("## p_dirty:", p_dirty)
 
@@ -349,7 +383,7 @@ def genTokens(p_ret: "DictListManager", p_dirty):
 
 	return
 
-def genTokensList(p_in_window_text: str) -> list[Any]:
+def genTokensList(p_in_window_text: str, sep_char: str = r"\n") -> list[Any]:
 
 	#print("genTokensList:", p_in_window_text[:40])
 
@@ -395,9 +429,9 @@ def genTokensList(p_in_window_text: str) -> list[Any]:
 
 	first_tokens = DictListManager(schemas)
 
-	for i, ln in enumerate(cleantext.split(r"\n")):
+	for i, ln in enumerate(cleantext.split(sep_char)):
 		if i > 0 and (not 'sep' in first_tokens[-1].keys() or first_tokens[-1]['sep'] != 'break'):
-			first_tokens.insert({"sep": "break", "ok": r"\n"})
+			first_tokens.insert({"sep": sep_type(sep_char), "ok": sep_char})
 		for wrd in ln.split():
 			genTokens(first_tokens, wrd)
 			# if len(set(tkn.keys()).intersection(['lower', 'string', 'div'])) > 0:

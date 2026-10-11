@@ -162,14 +162,15 @@ class ReconhecimentoReferentes(object):
 
 	def reconhecerURLs(self, p_list: 'DictListManager') -> None:
 
-		idxs_lists = []
-		for idxs_list in p_list.iterNextContiguousConstructElements(
-				lambda item: 'lower' in item.keys() and (item["lower"].startswith("http:") or item["lower"].startswith("https:"))
-			):		
-				idxs_lists.append(idxs_list)
+		idxs_list = []
+		p_list.walk(
+			lambda idx, item: idxs_list.append(idx),
+			predicate=lambda item: 'lower' in item.keys() and (item["lower"].startswith("http:") or item["lower"].startswith("https:")),
+			include_idx_as_func_param = True
+		)
 
-		for idxs_list_1 in reversed(idxs_lists):
-			p_list.buildConstruct(idxs_list_1, "URL")
+		for idx in reversed(idxs_list):
+			p_list.buildConstruct([idx], "URL")
 
 	def reconhecerDenominacoes(self, p_list: 'DictListManager'):
 
@@ -335,6 +336,25 @@ class ReconhecimentoReferentes(object):
 		for idxs_list_1 in reversed(idxs_lists):
 			p_list.buildConstruct(idxs_list_1, "ato_normativo")
 
+	def genAdicTokensOverSeps(self, p_list: 'DictListManager'):
+
+		found_items = []
+		p_list.walk(
+			lambda idx, item: found_items.append((idx, item)),
+			predicate=lambda item: 'repr' in item.keys() and not 'construct' in item.keys() and not 'numero' in item.keys() and '/' in item['repr'],
+			include_idx_as_func_param=True
+		)
+
+		if len(found_items) > 0:
+
+			for idx, _item in reversed(found_items):
+				old_item = p_list.remove_at(idx)
+				#print("::", old_item, _item)
+				new_items = genTokensList(old_item['repr'], sep_char="/")
+				for ni, new_item in enumerate(new_items):
+					p_list.insert(new_item, index=idx + ni)
+
+
 	def reconhecerReferentes(self, p_list: 'DictListManager'):
 
 		def validar_construct(p_children: List[Dict[str, Any]]) -> bool:
@@ -454,6 +474,10 @@ class ReconhecimentoReferentes(object):
 
 		self.reconhecerURLs(out_dict['tokens_list'])
 		self.reconhecerDatas(out_dict['tokens_list'])
+		self.reconhecerAtosNormativos(out_dict['tokens_list'])
+
+		# Dividir em tokens palavras que incluem '/' ###########################
+		self.genAdicTokensOverSeps(out_dict['tokens_list'])
 
 		# Reconhecer construções nome ou designação ###########################
 
@@ -464,7 +488,6 @@ class ReconhecimentoReferentes(object):
 		out_siglas = []
 		self.marcarSiglas(out_dict['tokens_list'], out_siglas)	
 		self.reconhecerExpansaoSiglas(out_dict['tokens_list'], out_siglas)
-		self.reconhecerAtosNormativos(out_dict['tokens_list'])
 
 		# Obter POS ###########################################################
 

@@ -27,7 +27,12 @@ def main(p_versao_concelho, p_output_file, preserve_tokens_ords: Optional[List[i
 	ret = {}
 	janela_dict = {}
 
-	for i, item in enumerate(tqdm(nodes_dict.items())):
+	# Limitar
+	# items_list = list(nodes_dict.items())[:300]
+
+	items_list = nodes_dict.items()
+
+	for i, item in enumerate(tqdm(items_list)):
 		if limit > 0:
 			if reverse_limit:
 				if i < limit:
@@ -45,7 +50,7 @@ def main(p_versao_concelho, p_output_file, preserve_tokens_ords: Optional[List[i
 				# 	janela_dict['p'].append(j)
 				janela_dict['input'] = instr
 				ret.setdefault('nodes', [])
-				if not preserve_tokens_ords is None and not i+1 in preserve_tokens_ords:
+				if not preserve_tokens_ords is None and len(preserve_tokens_ords) > 0 and not i+1 in preserve_tokens_ords:
 					del janela_dict['tokens_list']
 				ret['nodes'].append(deepcopy(janela_dict))
 
@@ -102,10 +107,14 @@ if __name__ == "__main0__":
 	main('../dados/Maia_1306/2_revisao_AVISO_4731_2025_2', 'referentes_regulamento_maia.json', preserve_tokens_ords=[1102])
 
 if __name__ == "__main1__":
-	main('../dados/Alfandega_Fe_0401/2_revisao_AVISO_23096_2025_2', 'referentes_regulamento.json', preserve_tokens_ords=[], update_pos=True, limit=0, reverse_limit=False)
+	main('../dados/Alfandega_Fe_0401/2_revisao_AVISO_23096_2025_2', 'referentes_regulamento.json', preserve_tokens_ords=None, update_pos=True, limit=0, reverse_limit=False)
 
 if __name__ == "__main__":
-	main('../dados/Sernancelhe_1818/2_revisao_AVISO_11229_2025_2', 'referentes_regulamento.json', preserve_tokens_ords=[], update_pos=False, limit=0, reverse_limit=False)
+	main('../dados/Sernancelhe_1818/2_revisao_AVISO_11229_2025_2', 'referentes_regulamento.json', 
+		preserve_tokens_ords=None, 
+		update_pos=False, 
+		limit=0, reverse_limit=False
+	)
 
 if __name__ == "__main2__":
 	matches_faceis('../dados/Sernancelhe_1818/2_revisao_AVISO_11229_2025_2', 'referentes_regulamento.json')
