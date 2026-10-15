@@ -7,7 +7,7 @@ import re
 from typing import Dict, Type, Any, List
 from copy import copy
 
-from nlp import injetarTemposVerbais, genTokensList, genPOS, POSNotFound #, presenca_nomes_proprios, presenca_datas
+from nlp import injetarTemposVerbais, genTokensList, genPOS, POSNotFound, getNumPattern #, presenca_nomes_proprios, presenca_datas
 from dict_list_manager import DictListManager, ConstructValidationError, EmptyConstructError
 
 PT_ALPHA_CHAR_PATT = "[a-zàáâãçèéêìíîòóôõùúü]"
@@ -49,6 +49,48 @@ def antecedente_compatível(
 
 	return ret
 
+def assocNumParts(p_list: 'DictListManager') -> None:
+	"""
+	Associar partes de 'número', separadas por espaço. 
+	Método criado por causa dos identificadores de estradas
+	com espaços, mas permite reconhecer quaisquer padrões de 
+	PATT_NUMERO que incluam espaço (\s).
+	 """
+
+	def assoc(p_prev_elems, p_chg_list, p_item):
+
+		if len(p_prev_elems) < 1:
+			p_prev_elems.append(p_item)
+			return
+
+		if not 'ok' in p_prev_elems[-1].keys() or not 'ok' in p_item.keys():
+			return
+
+		new_string = f"{p_prev_elems[-1]['ok']} {p_item['ok']}"
+		if not " " in new_string.strip():
+			return
+
+		num_patt, val, string = getNumPattern(new_string.strip())
+		if not num_patt is None:
+			leng = len(p_prev_elems)
+			p_chg_list.append((leng-1, leng, num_patt, val, string))
+
+		p_prev_elems.append(p_item)
+
+	last_elems = []
+	chg_list = []
+
+	p_list.walk(
+		lambda item: assoc(last_elems, chg_list, item)
+	)
+
+	if len(chg_list) > 0:
+		for idx0, idx1, num_patt, val, string in reversed(chg_list):
+			p_list.remove_at(idx1)
+			p_list.remove_at(idx0)
+			p_list.insert(None, idx0, ok=string, numero=num_patt, valor=val, string=str(string), lower=str(string).lower())
+
+
 class ReconhecimentoReferentes(object):
 
 	def __init__(self):
@@ -57,8 +99,6 @@ class ReconhecimentoReferentes(object):
 		with open(os.path.join('setup', 'part_of_speech.json'), 'r', encoding='utf-8') as fp: 
 			self.part_of_speech_dict = json.load(fp)		
 			injetarTemposVerbais(self.part_of_speech_dict)
-
-		print("Dimensão do vocabulário:", len(self.part_of_speech_dict.keys()),  "palavras")
 
 		self.substituicoes = None
 		with open(os.path.join('setup', 'substituicoes.json'), 'r', encoding='utf-8') as fp: 
@@ -104,6 +144,9 @@ class ReconhecimentoReferentes(object):
 				self.nomes.append(nome_splits[0])
 			else:
 				self.nomes_compostos.append(copy(nome_splits))
+
+		print("Dimensão do vocabulário:", len(self.part_of_speech_dict.keys()), "palavras, nomes:", (len(self.nomes) + len(self.nomes_compostos)))
+
 
 	def marcarSiglas(self, p_list: 'DictListManager', out_siglas: List[str]) -> None:
 
@@ -336,7 +379,7 @@ class ReconhecimentoReferentes(object):
 		for idxs_list_1 in reversed(idxs_lists):
 			p_list.buildConstruct(idxs_list_1, "ato_normativo")
 
-	def genAdicTokensOverSeps(self, p_list: 'DictListManager'):
+	def genAdicTokensOverSeps(self, p_list: 'DictListManager', break_on_hyphens=False):
 
 		found_items = []
 		p_list.walk(
@@ -350,7 +393,10 @@ class ReconhecimentoReferentes(object):
 			for idx, _item in reversed(found_items):
 				old_item = p_list.remove_at(idx)
 				#print("::", old_item, _item)
-				new_items = genTokensList(old_item['repr'], sep_char="/")
+				if break_on_hyphens:
+					new_items = genTokensList(old_item['repr'], sep_chars=r"([\-/])")
+				else:
+					new_items = genTokensList(old_item['repr'], sep_chars=r"(/)")
 				for ni, new_item in enumerate(new_items):
 					p_list.insert(new_item, index=idx + ni)
 
@@ -450,7 +496,7 @@ class ReconhecimentoReferentes(object):
 			except EmptyConstructError as ece:
 				const_empty_errorcnt += 1
 
-	def reconhecerEmJanela(self, p_janela: str, out_dict: Dict[str, Type]) -> None:
+	def reconhecerEmJanela(self, p_janela: str, out_dict: Dict[str, Type], break_on_hyphens=False) -> None:
 
 		out_dict.clear()
 
@@ -464,7 +510,15 @@ class ReconhecimentoReferentes(object):
 		# in_window_text = re.sub(fr"({PT_ALPHA_CHAR_PATT})-({PT_ALPHA_CHAR_PATT})", r"\1 - \2", in_window_text)   ## tornar barras separadoras contíguas a texto em barras isoladas
 
 		cleantext = in_window_text
+
+		# if " " in cleantext and "EM" in cleantext:
+		# 	print("--473:", cleantext)
+
 		out_dict['tokens_list'] = genTokensList(cleantext)
+
+		assocNumParts(out_dict['tokens_list'])
+
+		# print("--> após genTokensList")
 
 		# Definir 'repr' onde possível ########################################
 
@@ -477,7 +531,7 @@ class ReconhecimentoReferentes(object):
 		self.reconhecerAtosNormativos(out_dict['tokens_list'])
 
 		# Dividir em tokens palavras que incluem '/' ###########################
-		self.genAdicTokensOverSeps(out_dict['tokens_list'])
+		self.genAdicTokensOverSeps(out_dict['tokens_list'], break_on_hyphens=break_on_hyphens)
 
 		# Reconhecer construções nome ou designação ###########################
 

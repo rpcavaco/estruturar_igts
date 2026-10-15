@@ -76,8 +76,9 @@ PATT_NUMERO = {
 	"perc": r"^([0-9]+)[\s]?%$",
 	"item": (r"^([0-9]+[\.\-/]+[0-9]+[\./]+[0-9]+$)", r"^([0-9]+[\.\-/]+[0-9]+$)"),
 	"float": r"^([0-9]+[\,]+[0-9]+$)",
-	"ord": r'^([0-9]+[\. ]?[ºª])',
-	"alinea": r'^([a-cA-C]?[a-zA-Z]\))'
+	"ord": r'^([0-9]+)[\. ]?[ºª]$',
+	"alinea": r'^([a-cA-C]?[a-zA-Z]\))$',
+	"estrada": (r"[eE][nNmM][\s]?([\d]+[\-]?[\d]+)$", r"[eE][nNmM][\s]?([\d])$")
 } 
 
 # POS_ANTECEDENTES_INADMISSIVEIS = {
@@ -146,7 +147,7 @@ class NumeracaoRomana(object):
 	def checkIsRoman(self, p_str) -> bool:
 		return p_str.strip().upper() in self.nr
 
-def getNumPattern(p_raw):
+def getNumPattern(p_raw, full=False):
 
 	num_patt = None
 	string = None
@@ -160,13 +161,21 @@ def getNumPattern(p_raw):
 
 		if isinstance(patts, list) or isinstance(patts, tuple):
 			for patt in patts:
-				eval_result = do_eval(patt, p_raw)
+				if full:
+					real_patt = f"^{patt}"
+				else:
+					real_patt = patt
+				eval_result = do_eval(real_patt, p_raw)
 				if not eval_result is None:
 					num_patt = eval_result[0]
 					string = eval_result[1]
 					break
 		else:
-			eval_result = do_eval(patts, p_raw)
+			if full:
+				real_patts = f"^{patts}"
+			else:
+				real_patts = patts
+			eval_result = do_eval(real_patts, p_raw)
 			if not eval_result is None:
 				num_patt = eval_result[0]
 				string = eval_result[1]			
@@ -177,6 +186,8 @@ def getNumPattern(p_raw):
 			val = int(p_raw) 
 		elif num_patt == 'float':
 			val = float(p_raw.replace(',', '.')) 
+		else:
+			val = val
 
 	return num_patt, val, string
 
@@ -297,7 +308,8 @@ def genTokens(p_ret: "DictListManager", p_dirty: str) -> None:
 	if len(p_dirty) == 0:
 		return
 
-	the_string = p_dirty
+	the_string = p_dirty.strip() # Sem transformação de case, está como o original
+	# lower_string = the_string.lower()
 
 	num_patt, val, string = getNumPattern(the_string)
 	postlist = []
@@ -309,7 +321,7 @@ def genTokens(p_ret: "DictListManager", p_dirty: str) -> None:
 				p_ret.insert(**el)
 		else:
 			assert not string is None
-			if len(string) < len(the_string):
+			if len(string.strip()) < len(the_string.strip()):
 				prevlist, the_string, postlist = genSepararSeparadoresColados(the_string)
 				for el in prevlist:
 					p_ret.insert(**el)				
@@ -383,7 +395,7 @@ def genTokens(p_ret: "DictListManager", p_dirty: str) -> None:
 
 	return
 
-def genTokensList(p_in_window_text: str, sep_char: str = r"\n") -> list[Any]:
+def genTokensList(p_in_window_text: str, sep_chars: str = r"(\n)") -> list[Any]:
 
 	#print("genTokensList:", p_in_window_text[:40])
 
@@ -429,11 +441,15 @@ def genTokensList(p_in_window_text: str, sep_char: str = r"\n") -> list[Any]:
 
 	first_tokens = DictListManager(schemas)
 
-	for i, ln in enumerate(cleantext.split(sep_char)):
-		if i > 0 and (not 'sep' in first_tokens[-1].keys() or first_tokens[-1]['sep'] != 'break'):
-			first_tokens.insert({"sep": sep_type(sep_char), "ok": sep_char})
-		for wrd in ln.split():
-			genTokens(first_tokens, wrd)
+	splits = re.split(sep_chars, cleantext)
+
+	for spl in splits:
+		mo = re.match(sep_chars, spl)
+		if not mo is None:
+			first_tokens.insert({"sep": sep_type(spl), "ok": spl})
+		else:
+			for wrd in spl.split():
+				genTokens(first_tokens, wrd)
 			# if len(set(tkn.keys()).intersection(['lower', 'string', 'div'])) > 0:
 			# 	first_tokens.append(tkn)
 

@@ -11,7 +11,7 @@ from nlp import update_parts_of_speech_dict
 
 from tqdm import tqdm
 
-def main(p_versao_concelho, p_output_file, preserve_tokens_ords: Optional[List[int]] = None, update_pos: Optional[bool] = False, limit: Optional[int] = 0, reverse_limit: Optional[bool] = False) -> None:
+def main(p_versao_concelho, p_output_file, preserve_tokens_ords: Optional[List[int]] = None, update_pos: Optional[bool] = False, limit: Optional[int] = 0, reverse_limit: Optional[bool] = False, break_on_hyphens: Optional[bool] = False) -> None:
 
 
 	wrkdir = os.path.join(p_versao_concelho, "output")
@@ -43,7 +43,7 @@ def main(p_versao_concelho, p_output_file, preserve_tokens_ords: Optional[List[i
 		k, val = item
 		if 'c' in val.keys():
 			for j, instr in enumerate(val["c"]):
-				rref.reconhecerEmJanela(instr, janela_dict)
+				rref.reconhecerEmJanela(instr, janela_dict, break_on_hyphens=break_on_hyphens)
 				janela_dict['ord'] = i + 1
 				janela_dict['p'] = copy(val['p'])
 				# if len(val['p']) > 0:
@@ -74,7 +74,7 @@ def main(p_versao_concelho, p_output_file, preserve_tokens_ords: Optional[List[i
 		print(f"Ver {p_output_file} em 'output'")
 		json.dump(ret, fp, indent=4, ensure_ascii=False, cls=DictListManager.Encoder)
 
-def matches_faceis(p_versao_concelho, p_referentes_file) -> None:
+def matches_faceis(p_versao_concelho, p_referentes_file, p_output_file) -> None:
 
 	wrkdir = os.path.join(p_versao_concelho, "output")
 
@@ -90,18 +90,49 @@ def matches_faceis(p_versao_concelho, p_referentes_file) -> None:
 
 	assert not part_of_speech_dict is None
 
+	sufixos_plurais = None
+	with open(os.path.join('setup', 'sufixos_plurais,json'), 'r', encoding='utf-8') as fp: 
+		sufixos_plurais = json.load(fp)	
+
 	print(f"{len(referentes_dict["faltas"])} palavras em falta")
+
+	ret = {}
 
 	found = 0
 	for wrd in referentes_dict["faltas"]:
-		if not wrd.endswith('s'):
-			if wrd + 's' in part_of_speech_dict.keys():
-				found += 1
-		else:
-			if wrd[:-1] in part_of_speech_dict.keys():
-				found += 1
+		for plur, sing in sufixos_plurais:
+			if wrd.endswith(plur):
+				nova = wrd[:-len(plur)] + sing
+				if nova in part_of_speech_dict.keys():
+					ret[wrd] = part_of_speech_dict[nova]
+					found += 1
+			elif wrd.endswith(sing):
+				nova = wrd[:-len(sing)] + plur
+				if nova in part_of_speech_dict.keys():
+					ret[wrd] = part_of_speech_dict[nova]
+					found += 1
 
 	print(f"{found} faltas recuperáveis pelos plurais")
+
+	hsufs = ['-la', '-lhe', '-lhes', '-se']
+
+	found = 0
+	for wrd in referentes_dict["faltas"]:
+		for hsuf in hsufs:
+			if wrd.endswith(hsuf):
+				ret[wrd] = ["verbo"]
+				found += 1
+
+	print(f"{found} faltas recuperáveis com '-se', '-lhe', etc.")
+
+
+		
+
+
+
+	with open(os.path.join(wrkdir, p_output_file), 'w') as fp:
+		print(f"Ver {p_output_file} em 'output'")
+		json.dump(ret, fp, indent=4, ensure_ascii=False, cls=DictListManager.Encoder)
 
 if __name__ == "__main0__":
 	main('../dados/Maia_1306/2_revisao_AVISO_4731_2025_2', 'referentes_regulamento_maia.json', preserve_tokens_ords=[1102])
@@ -113,8 +144,8 @@ if __name__ == "__main__":
 	main('../dados/Sernancelhe_1818/2_revisao_AVISO_11229_2025_2', 'referentes_regulamento.json', 
 		preserve_tokens_ords=None, 
 		update_pos=False, 
-		limit=0, reverse_limit=False
+		limit=500, reverse_limit=True
 	)
 
 if __name__ == "__main2__":
-	matches_faceis('../dados/Sernancelhe_1818/2_revisao_AVISO_11229_2025_2', 'referentes_regulamento.json')
+	matches_faceis('../dados/Sernancelhe_1818/2_revisao_AVISO_11229_2025_2', 'referentes_regulamento.json', 'matches_faceis.json')

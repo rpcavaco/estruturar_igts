@@ -29,7 +29,7 @@ class DocTextParser(object):
 			"numero": (r"^([\d]+)[\s]?\-[\s]?(.*)",),
 			"uopg_numero": (r"^([S]?UOPG[\s]+[\d]+)[\s]?\-[\s]?(.*)",),
 			"alinea": (r"^([a-z]?[a-z])\)[\s]+(.*)",),
-			"alinea_romana": (r"^([cilmvx]+)\)[\s]+(.*)",)  # Atenção: confunde-se com a 'alínea' no caso 'i)'
+			"alinea_romana": (r"^([cilmvx]+)\)[\s]+(.*)",),  # Atenção: confunde-se com a 'alínea' no caso 'i)'
 		}
 
 	def parseString(self, p_text: str, out_mos_dict: dict):
@@ -350,9 +350,7 @@ class DocNode(object):
 
 		elif 'alinea_romana' in mkeys or 'alinea' in mkeys:
 
-
 			alinea_itens = p_alinea_itens
-
 
 			if 'alinea' in mkeys:
 				text_line, num_str, num_txt = match_dict['alinea']
