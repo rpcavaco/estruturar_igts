@@ -66,6 +66,7 @@ def main(p_versao_concelho, p_output_file, preserve_tokens_ords: Optional[List[i
 	if len(faltas) > 0:
 		ret['faltas'] = list(sorted(faltas))
 		if update_pos:
+			opt_out_path = os.path.join(wrkdir, 'upd_pos.json')
 			update_parts_of_speech_dict(rref.part_of_speech_dict, ret['faltas'], opt_out_path=os.path.join(wrkdir, 'upd_pos.json'))
 
 
@@ -145,8 +146,8 @@ if __name__ == "__main1__":
 if __name__ == "__main__":
 	main('../dados/Sernancelhe_1818/2_revisao_AVISO_11229_2025_2', 'referentes_regulamento.json', 
 		preserve_tokens_ords=None, 
-		update_pos=False, 
-		limit=500, reverse_limit=True
+		update_pos=True, 
+		limit=0, reverse_limit=False
 	)
 
 if __name__ == "__main2__":

@@ -745,7 +745,9 @@ def update_parts_of_speech_dict(p_pos_dict, p_word_list: list[str], opt_out_path
 				if not r in newposs:
 					newposs.append(r)
 			# print(">>", w, poss, newposs)
-			ret[w] = copy(newposs)
+
+			if len(newposs) > 0:
+				ret[w] = copy(newposs)
 
 			if not opt_out_path is None:
 
