@@ -5,14 +5,16 @@ from copy import copy, deepcopy
 from typing import Optional, List
 
 from json_helpers import find_unserializable
-from referentes import ReconhecimentoReferentes
+from elementos import ReconhecimentoElementos
 from dict_list_manager import DictListManager
 from nlp import update_parts_of_speech_dict
 
 from tqdm import tqdm
 
 def main(p_versao_concelho, p_output_file, preserve_tokens_ords: Optional[List[int]] = None, update_pos: Optional[bool] = False, limit: Optional[int] = 0, reverse_limit: Optional[bool] = False, break_on_hyphens: Optional[bool] = False) -> None:
-
+	"""
+	Processo de reconhecimento de elementos em regulamentos de PDM
+	"""
 
 	wrkdir = os.path.join(p_versao_concelho, "output")
 	infile = os.path.join(wrkdir, 'docnodes_regulamento.json')
@@ -23,7 +25,7 @@ def main(p_versao_concelho, p_output_file, preserve_tokens_ords: Optional[List[i
 
 	assert not nodes_dict is None
 
-	rref = ReconhecimentoReferentes()
+	rref = ReconhecimentoElementos()
 	ret = {}
 	janela_dict = {}
 

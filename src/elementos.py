@@ -91,7 +91,7 @@ def assocNumParts(p_list: 'DictListManager') -> None:
 			p_list.insert(None, idx0, ok=string, numero=num_patt, valor=val, string=str(string), lower=str(string).lower())
 
 
-class ReconhecimentoReferentes(object):
+class ReconhecimentoElementos(object):
 
 	def __init__(self):
 
