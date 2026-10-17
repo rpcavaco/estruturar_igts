@@ -50,7 +50,7 @@ def antecedente_compatível(
 	return ret
 
 def assocNumParts(p_list: 'DictListManager') -> None:
-	"""
+	r"""
 	Associar partes de 'número', separadas por espaço. 
 	Método criado por causa dos identificadores de estradas
 	com espaços, mas permite reconhecer quaisquer padrões de 
@@ -90,6 +90,95 @@ def assocNumParts(p_list: 'DictListManager') -> None:
 			p_list.remove_at(idx0)
 			p_list.insert(None, idx0, ok=string, numero=num_patt, valor=val, string=str(string), lower=str(string).lower())
 
+
+def assocVariosTripletos(p_list: 'DictListManager') -> None:
+	r"""
+	Associar elementos, por exemplo, abreviaturas, compostas por dois elementos abreviados mais um separador
+	 """
+
+	def assoc(p_prev_elems, p_chg_list, p_item):
+
+		if len(p_prev_elems) < 2:
+			p_prev_elems.append(p_item)
+			return
+
+		if not 'ok' in p_prev_elems[-2].keys() or not 'lower' in p_prev_elems[-2].keys():
+			p_prev_elems.append(p_item)
+			return
+
+		if not 'sep' in p_prev_elems[-1].keys() or not p_prev_elems[-1]['ok'] == '.':
+			p_prev_elems.append(p_item)
+			return
+
+		if not 'ok' in p_item.keys() or not 'lower' in p_item.keys():
+			p_prev_elems.append(p_item)
+			return
+
+		# Abreviaturas de santo / santa
+		if p_prev_elems[-2]['lower'] == 's':
+			if p_item['lower'] in ('o', 'a', 'to', 'ta', 'º', 'ª'):
+
+				new_string = f"{p_prev_elems[-2]['ok']}{p_prev_elems[-1]['ok']}{p_item['ok']}"
+
+				leng = len(p_prev_elems)
+				p_chg_list.append((leng-1, 3, "abrev_santo", new_string))
+
+		p_prev_elems.append(p_item)
+
+	last_elems = []
+	chg_list = []
+
+	p_list.walk(
+		lambda item: assoc(last_elems, chg_list, item)
+	)
+
+	if len(chg_list) > 0:
+		for idx, sz, tipostr, string in reversed(chg_list):
+			for k in reversed(range(sz)):
+				p_list.remove_at(idx+k)
+			p_list.insert(None, idx, ok=string, especial=tipostr, string=str(string), lower=str(string).lower())
+
+def assocVariosPares(p_list: 'DictListManager') -> None:
+	r"""
+	Associar elementos, por exemplo, abreviaturas, compostas por dois elementos um abreviado e um separador
+	 """
+
+	def assoc(p_prev_elems, p_chg_list, p_item):
+
+		if len(p_prev_elems) < 1:
+			p_prev_elems.append(p_item)
+			return
+
+		if not 'ok' in p_prev_elems[-1].keys() or not 'lower' in p_prev_elems[-1].keys():
+			p_prev_elems.append(p_item)
+			return
+
+		if not 'sep' in p_item.keys() or not p_item['ok'] == '.':
+			p_prev_elems.append(p_item)
+			return
+
+		# Abreviaturas de santo / santa
+		if p_prev_elems[-1]['lower'] in ('s', 'sto', 'sta'):
+
+			new_string = f"{p_prev_elems[-1]['ok']}{p_item['ok']}"
+
+			leng = len(p_prev_elems)
+			p_chg_list.append((leng-1, 2, "abrev_santo", new_string))
+
+		p_prev_elems.append(p_item)
+
+	last_elems = []
+	chg_list = []
+
+	p_list.walk(
+		lambda item: assoc(last_elems, chg_list, item)
+	)
+
+	if len(chg_list) > 0:
+		for idx, sz, tipostr, string in reversed(chg_list):
+			for k in reversed(range(sz)):
+				p_list.remove_at(idx+k)
+			p_list.insert(None, idx, ok=string, especial=tipostr, string=str(string), lower=str(string).lower())
 
 class ReconhecimentoElementos(object):
 
@@ -228,7 +317,12 @@ class ReconhecimentoElementos(object):
 
 		idxs_lists = []
 		for idxs_list in p_list.iterNextContiguousConstructElements(
-				lambda item: 'repr' in item.keys() and (item["repr"] in self.nomes or item["repr"] in seps or item["ok"][0].isupper())
+				lambda item: 'repr' in item.keys() \
+					and (
+						item["repr"] in self.nomes \
+						or item["repr"] in seps \
+						or item["ok"][0].isupper()
+					)
 				# testlist=["vítor", "ramalho"]
 			):
 
@@ -522,7 +616,8 @@ class ReconhecimentoElementos(object):
 
 		assocNumParts(out_dict['tokens_list'])
 
-		# print("--> após genTokensList")
+		assocVariosTripletos(out_dict['tokens_list'])
+		assocVariosPares(out_dict['tokens_list'])
 
 		# Definir 'repr' onde possível ########################################
 

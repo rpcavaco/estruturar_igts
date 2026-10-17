@@ -3024,6 +3024,10 @@
     "policêntrico": [
         "adjetivo"
     ],
+    "santa": [
+        "nome",
+        "adjetivo"
+    ],
     "santas": [
         "nome",
         "adjetivo"
@@ -9442,6 +9446,11 @@
     "santo": [
         "adjetivo",
         "nome"
+    ],
+    "são": [
+        "adjetivo",
+        "nome",
+        "verbo"
     ],
     "satisfação": [
         "nome"
