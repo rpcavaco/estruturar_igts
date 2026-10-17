@@ -14588,5 +14588,21 @@
     ],
     "t6": [
         "nome"
+    ],
+    "pesqueira": [
+        "nome",
+        "adjetivo"
+    ],
+    "pesqueiro": [
+        "nome",
+        "adjetivo"
+    ],
+    "pesqueiras": [
+        "nome",
+        "adjetivo"
+    ],
+    "pesqueiros": [
+        "nome",
+        "adjetivo"
     ]
 }

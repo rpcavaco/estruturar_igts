@@ -514,7 +514,11 @@ class ReconhecimentoElementos(object):
 		# if " " in cleantext and "EM" in cleantext:
 		# 	print("--473:", cleantext)
 
+		# Primeira lista de tokens
+		
 		out_dict['tokens_list'] = genTokensList(cleantext)
+
+		# Associar identificadores 'numero' que tenham ficado separados por existirem espaços entre os elementos componentes
 
 		assocNumParts(out_dict['tokens_list'])
 
