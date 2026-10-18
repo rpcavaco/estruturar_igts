@@ -1,0 +1,1 @@
+python reconhecer_elementos_regulamento.py resolver_pos '../dados/Sernancelhe_1818/2_revisao_AVISO_11229_2025_2' 'referentes_regulamento.json'
