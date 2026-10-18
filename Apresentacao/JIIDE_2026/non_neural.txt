@@ -1,0 +1,7 @@
+Why non-neural is defensible, not just a fallback
+
+Interpretability matters more in legal contexts. If a lemmatization error changes how a legal term gets indexed or retrieved, you want to be able to say why it happened. A CRF’s feature weights or a hand-written Constraint Grammar rule are auditable. A transformer’s attention patterns are not, practically speaking. If this feeds any kind of legal research, citation analysis, or search tool, that auditability is a real requirement, not a nicety.
+
+Legal Portuguese is closed and formulaic enough that hand-crafted rules cover a lot. Statutory and regulatory language reuses a small set of syntactic templates (obligation constructions, cross-reference patterns, definitional clauses) far more than general text does. This is precisely the condition where rule-based systems shine — they don’t need broad coverage, they need deep coverage of a narrow register.
+
+No training data dependency. You don’t need a large annotated legal treebank (which doesn’t really exist for Portuguese legal text at scale) if you’re using rule-based or lexicon-driven approaches. Neural and even CRF approaches want in-domain labeled data to hit high accuracy; FST/rule-based approaches front-load the effort into the grammar instead, which you can build incrementally against your own corpus.
