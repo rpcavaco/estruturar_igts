@@ -6,6 +6,7 @@ import customtkinter as ctk
 from .cfg import CONCELHOS
 
 from src.processar_regulamento import genfiles_regulamento
+from src.reconhecer_elementos_regulamento import reconhecer
 
 def get_dados_folder():
     ret = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'dados')
@@ -85,7 +86,8 @@ class OpsFrame(BaseFrame):
         app.exec_estruturarregl_callback()
 
     def recon_elems_regl_callback(self):
-        print("recon_elems_regl_callback")
+        app = self.winfo_toplevel()
+        app.exec_recon_elems_regl_callback()
 
     def resolver_pos_regl_callback(self):
         print("resolver_pos_regl_callback")
@@ -164,15 +166,26 @@ class App(ctk.CTk):
         if self.concelho_escolhido is None:
             WarningPopup(app, "Necessário escolher um concelho primeiro")
         elif self.versao_escolhida is None:
-            WarningPopup(app, "Necessário escolher uam versão primeiro")
+            WarningPopup(app, "Necessário escolher uma versão primeiro")
         else:
             folder_dados = get_dados_folder()
             pasta_concelho = CONCELHOS[self.concelho_escolhido]["pasta"]
             cfgs = CONCELHOS[self.concelho_escolhido]["versoes"][self.versao_escolhida]
             tipo_numeracao_alineas = cfgs[0]
             path = os.path.join(folder_dados, pasta_concelho, self.versao_escolhida)
-            print(path, tipo_numeracao_alineas)
             genfiles_regulamento(path, tipo_numeracao_alineas)
+            InfoPopup(app, "Gerados ficheiros extraídos do Regulamento")
+
+    def exec_recon_elems_regl_callback(self):
+        if self.concelho_escolhido is None:
+            WarningPopup(app, "Necessário escolher um concelho primeiro")
+        elif self.versao_escolhida is None:
+            WarningPopup(app, "Necessário escolher uma versão primeiro")
+        else:
+            folder_dados = get_dados_folder()
+            pasta_concelho = CONCELHOS[self.concelho_escolhido]["pasta"]
+            path = os.path.join(folder_dados, pasta_concelho, self.versao_escolhida)
+            reconhecer(path, 'referentes_regulamento.json')
             InfoPopup(app, "Gerados ficheiros extraídos do Regulamento")
 
     def exit_button_callback(self):

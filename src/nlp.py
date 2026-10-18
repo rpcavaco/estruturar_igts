@@ -72,13 +72,14 @@ FORMAS_VERBAIS_AUXILIARES = {
 
 PATT_NUMERO = {
 	"int": r"^([0-9]+)$",	
-	"area": r"^([0-9]+)[\s]?m2$",
+	"area": (r"^([0-9]+)[\s]?m2$", r"^([0-9]+)[\s]?ha$", r"^([0-9]+)[\s]?km2$"),
+	"comprimento": (r"^([0-9]+)[\s]?m$", r"^([0-9]+)[\s]?km$"),
 	"perc": r"^([0-9]+)[\s]?%$",
-	"item": (r"^([0-9]+[\.\-/]+[0-9]+[\./]+[0-9]+$)", r"^([0-9]+[\.\-/]+[0-9]+$)"),
-	"float": r"^([0-9]+[\,]+[0-9]+$)",
+	"item": (r"^[0-9]+[\.\-/]+[0-9]+[\./]+[0-9]+$", r"^[0-9]+[\.\-/]+[0-9]+$"),
+	"float": r"^([0-9]+[\,]+[0-9]+)$",
 	"ord": r'^([0-9]+)[\. ]?[ºª]$',
-	"alinea": r'^([a-cA-C]?[a-zA-Z]\))$',
-	"estrada": (r"[eE][nNmM][\s]?([\d]+[\-]?[\d]+)$", r"[eE][nNmM][\s]?([\d])$")
+	"alinea": r'^[a-cA-C]?[a-zA-Z]\)$',
+	"estrada": (r"[eE][nNmM][\s]?[\d]+[\-]?[\d]+$", r"[eE][nNmM][\s]?[\d]$")
 } 
 
 # POS_ANTECEDENTES_INADMISSIVEIS = {
@@ -151,11 +152,14 @@ def getNumPattern(p_raw, full=False):
 
 	num_patt = None
 	string = None
+	val = None
 
 	def do_eval(p_patt, pp_raw):
 		mo = re.match(p_patt, pp_raw)
-		if not mo is None:
-			return k, mo.group(0)
+		if mo is None:
+			return None
+		else:
+			return mo.group(0), mo.groups()
 
 	for k, patts in PATT_NUMERO.items():
 
@@ -167,9 +171,10 @@ def getNumPattern(p_raw, full=False):
 					real_patt = patt
 				eval_result = do_eval(real_patt, p_raw)
 				if not eval_result is None:
-					num_patt = eval_result[0]
-					string = eval_result[1]
-					break
+					num_patt = k
+					string = eval_result[0]
+					if len(eval_result[1]) > 0:
+						val = eval_result[1][0]
 		else:
 			if full:
 				real_patts = f"^{patts}"
@@ -177,17 +182,18 @@ def getNumPattern(p_raw, full=False):
 				real_patts = patts
 			eval_result = do_eval(real_patts, p_raw)
 			if not eval_result is None:
-				num_patt = eval_result[0]
-				string = eval_result[1]			
+				num_patt = k
+				string = eval_result[0]
+				if len(eval_result[1]) > 0:
+					val = eval_result[1][0]		
 
-	val = None
 	if not num_patt is None:
 		if num_patt == 'int':
-			val = int(p_raw) 
+			val = int(val) 
 		elif num_patt == 'float':
-			val = float(p_raw.replace(',', '.')) 
-		else:
-			val = val
+			val = float(val.replace(',', '.')) 
+		elif not val is None:
+			val = float(val)
 
 	return num_patt, val, string
 
@@ -289,7 +295,10 @@ def genSepararSeparadoresColados(p_the_string: str):
 			elif ch == ')':
 				type_str = "parentesis"
 			if not type_str is None:
-				postlist.append({"sep": "containment_end", "type": type_str, "ok": ch})
+				if not "(" in the_string:
+					postlist.append({"sep": "containment_end", "type": type_str, "ok": ch})
+				else:
+					the_string = the_string + ch
 			else:
 				if ch == ',':
 					postlist.append({"sep": "soft", "ok": ch})
@@ -330,7 +339,7 @@ def genTokens(p_ret: "DictListManager", p_dirty: str) -> None:
 
 		the_string = the_string.replace('―', '-')
 
-		ALL_SEPS = ('.', ',', ':', ';', '”', '“', ')', '»', '“', '(', '«', '/', '-', chr(int('2013', 16)))
+		ALL_SEPS = ('.', ',', ':', ';', '”', '“', ')', '»', '“', '(', '«', '/', '-', chr(int('2013', 16)), '+', '*', '=', '<', '>')
 		aseps = set(ALL_SEPS)
 
 		# separadores DIVISORES

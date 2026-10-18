@@ -100,8 +100,8 @@ class DictListManager():
 			if len(self.validators) == len(validation_msgs): 
 				raise SchemaValidationError("\n".join(validation_msgs))
 			else:
-				# Se, de todos os validadores existente, um e apenas um deles não produzir mensagem de erro, estamos bem
-				assert len(self.validators) - len(validation_msgs) == 1
+				# Se, de todos os validadores existente, um deles não produzir mensagem de erro, estamos bem
+				assert len(self.validators) - len(validation_msgs) >= 1, f"validadores:{len(self.validators)}, val.msgs:{len(validation_msgs)}, item:{item} msgs:{validation_msgs}"
 
 
 	# ------------------------------------------------------------------ #

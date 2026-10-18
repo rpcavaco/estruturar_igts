@@ -7,8 +7,8 @@ import re
 from typing import Dict, Type, Any, List
 from copy import copy
 
-from nlp import injetarTemposVerbais, genTokensList, genPOS, POSNotFound, getNumPattern #, presenca_nomes_proprios, presenca_datas
-from dict_list_manager import DictListManager, ConstructValidationError, EmptyConstructError
+from .nlp import injetarTemposVerbais, genTokensList, genPOS, POSNotFound, getNumPattern #, presenca_nomes_proprios, presenca_datas
+from .dict_list_manager import DictListManager, ConstructValidationError, EmptyConstructError
 
 PT_ALPHA_CHAR_PATT = "[a-zàáâãçèéêìíîòóôõùúü]"
 PT_INV_ALPHA_CHAR_PATT = "[^a-zàáâãçèéêìíîòóôõùúü]"
@@ -140,7 +140,7 @@ def assocVariosTripletos(p_list: 'DictListManager') -> None:
 
 def assocVariosPares(p_list: 'DictListManager') -> None:
 	r"""
-	Associar elementos, por exemplo, abreviaturas, compostas por dois elementos um abreviado e um separador
+	Associar elementos, por exemplo, abreviaturas, compostas por dois elementos um abreviado e um separador, exemplo Dr.
 	 """
 
 	def assoc(p_prev_elems, p_chg_list, p_item):
@@ -157,8 +157,8 @@ def assocVariosPares(p_list: 'DictListManager') -> None:
 			p_prev_elems.append(p_item)
 			return
 
-		# Abreviaturas de santo / santa
-		if p_prev_elems[-1]['lower'] in ('s', 'sto', 'sta'):
+		# Abreviaturas de santo / santa + DR
+		if p_prev_elems[-1]['lower'] in ('s', 'sto', 'sta', 'dr'):
 
 			new_string = f"{p_prev_elems[-1]['ok']}{p_item['ok']}"
 
@@ -180,12 +180,28 @@ def assocVariosPares(p_list: 'DictListManager') -> None:
 				p_list.remove_at(idx+k)
 			p_list.insert(None, idx, ok=string, especial=tipostr, string=str(string), lower=str(string).lower())
 
+
+def reconhecerURLs(p_list: 'DictListManager') -> None:
+
+	idxs_list = []
+	p_list.walk(
+		lambda idx, item: idxs_list.append(idx),
+		predicate=lambda item: 'lower' in item.keys() and (item["lower"].startswith("http:") or item["lower"].startswith("https:")),
+		include_idx_as_func_param = True
+	)
+
+	for idx in reversed(idxs_list):
+		p_list.buildConstruct([idx], "URL")
+
 class ReconhecimentoElementos(object):
 
-	def __init__(self):
+	def __init__(self, substituicoes_locais=None):
 
 		self.part_of_speech_dict = None
-		with open(os.path.join('setup', 'part_of_speech.json'), 'r', encoding='utf-8') as fp: 
+		setup_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'setup')
+		assert os.path.exists(setup_folder), f"não existe pasta 'setup' em {setup_folder}"
+
+		with open(os.path.join(setup_folder, 'part_of_speech.json'), 'r', encoding='utf-8') as fp: 
 
 			self.part_of_speech_dict = json.load(fp)	
 
@@ -197,17 +213,23 @@ class ReconhecimentoElementos(object):
 			injetarTemposVerbais(self.part_of_speech_dict)
 
 		self.substituicoes = None
-		with open(os.path.join('setup', 'substituicoes.json'), 'r', encoding='utf-8') as fp: 
+		with open(os.path.join(setup_folder, 'substituicoes.json'), 'r', encoding='utf-8') as fp: 
 			self.substituicoes = json.load(fp)	
 
+		self.substituicoes_locais = substituicoes_locais
+
 		self.pos_admissiveis = None
-		with open(os.path.join('setup', 'pos_admissiveis.json'), 'r', encoding='utf-8') as fp: 
+		with open(os.path.join(setup_folder, 'pos_admissiveis.json'), 'r', encoding='utf-8') as fp: 
 			self.pos_admissiveis = json.load(fp)	
+
+		self.unidades = None
+		with open(os.path.join(setup_folder, 'unidades.json'), 'r', encoding='utf-8') as fp: 
+			self.unidades = json.load(fp)
 
 		self.inicios_admissiveis = self.pos_admissiveis['permitidos_inicio']
 
 		# self.sufixos_plurais = None
-		# with open(os.path.join('setup', 'sufixos_plurais,json'), 'r', encoding='utf-8') as fp: 
+		# with open(os.path.join(setup_folder, 'sufixos_plurais,json'), 'r', encoding='utf-8') as fp: 
 		# 	self.sufixos_plurais = json.load(fp)
 
 		# self.remover_para_comparabilidade = set([])
@@ -224,7 +246,7 @@ class ReconhecimentoElementos(object):
 		self.nomes = []
 		self.nomes_compostos = []
 
-		with open(os.path.join('setup', 'nomes_proprios.json'), 'r', encoding='utf-8') as fp: 
+		with open(os.path.join(setup_folder, 'nomes_proprios.json'), 'r', encoding='utf-8') as fp: 
 			nomes = json.load(fp)
 
 		assert len(nomes) > 0
@@ -240,6 +262,17 @@ class ReconhecimentoElementos(object):
 
 		print("Dimensão do vocabulário:", len(self.part_of_speech_dict.keys()), "palavras, nomes:", (len(self.nomes) + len(self.nomes_compostos)))
 
+	def reconhecerUnidades(self, p_list: 'DictListManager') -> None:
+
+		idxs_list = []
+		p_list.walk(
+			lambda idx, item: idxs_list.append(idx),
+			predicate=lambda item: 'lower' in item.keys() and item["lower"] in self.unidades,
+			include_idx_as_func_param = True
+		)
+
+		for idx in idxs_list:
+			p_list[idx]['especial'] = 'unidade'
 
 	def marcarSiglas(self, p_list: 'DictListManager', out_siglas: List[str]) -> None:
 
@@ -249,9 +282,12 @@ class ReconhecimentoElementos(object):
 			if not p_str in p_out_siglas:
 				p_out_siglas.append(p_str)
 
+		siglas = list(self.substituicoes.keys())
+		siglas.extend(self.substituicoes_locais.keys())
+
 		p_list.walk(
 			lambda item: item.update(pos=['sigla']),
-			predicate=lambda item: 'repr' in item.keys() and item['repr'] in self.substituicoes.keys(),
+			predicate=lambda item: 'repr' in item.keys() and item['repr'] in siglas,
 			afterfunc=lambda item: add_sigla(out_siglas, item['repr'])
 		)
 
@@ -268,7 +304,7 @@ class ReconhecimentoElementos(object):
 			prev_tkn, tkn = grp_tokens
 
 			do_continue = False
-			for k in ('construct', 'numero'):
+			for k in ('construct', 'numero', 'especial'):
 				if k in tkn.keys():
 					do_continue = True
 					break
@@ -285,9 +321,12 @@ class ReconhecimentoElementos(object):
 					if k in prev_tkn.keys():
 						the_prev_tkn = None
 						break
-		
+
+			siglas = list(self.substituicoes.keys())
+			siglas.extend(self.substituicoes_locais.keys())
+
 			try:
-				genPOS(self.part_of_speech_dict, self.nomes, self.substituicoes.keys(), tkn, prev_tkn=the_prev_tkn)	
+				genPOS(self.part_of_speech_dict, self.nomes, siglas, tkn, prev_tkn=the_prev_tkn)	
 				token_list.validate(tkn)
 			except POSNotFound as pnf:
 				p_ret.setdefault('faltas', [])
@@ -295,18 +334,6 @@ class ReconhecimentoElementos(object):
 			# except:
 			# 	print("--156--", idx, grp_tokens, the_prev_tkn)
 			# 	raise
-
-	def reconhecerURLs(self, p_list: 'DictListManager') -> None:
-
-		idxs_list = []
-		p_list.walk(
-			lambda idx, item: idxs_list.append(idx),
-			predicate=lambda item: 'lower' in item.keys() and (item["lower"].startswith("http:") or item["lower"].startswith("https:")),
-			include_idx_as_func_param = True
-		)
-
-		for idx in reversed(idxs_list):
-			p_list.buildConstruct([idx], "URL")
 
 	def reconhecerDenominacoes(self, p_list: 'DictListManager'):
 
@@ -436,8 +463,10 @@ class ReconhecimentoElementos(object):
 
 		for sigla in p_siglas_list:
 
-			words_subst = self.substituicoes[sigla].split()
-
+			if sigla in self.substituicoes.keys():
+				words_subst = self.substituicoes[sigla].split()
+			else:
+				words_subst = self.substituicoes_locais[sigla].split()
 
 			idxs_lists = []
 			for idx, indices in p_list.iterateMatches([words_subst]):
@@ -594,7 +623,7 @@ class ReconhecimentoElementos(object):
 			except EmptyConstructError as ece:
 				const_empty_errorcnt += 1
 
-	def reconhecerEmJanela(self, p_janela: str, out_dict: Dict[str, Type], break_on_hyphens=False) -> None:
+	def reconhecerEmJanela(self, p_janela: str, out_dict: Dict[str, Type]) -> None:
 
 		out_dict.clear()
 
@@ -616,6 +645,10 @@ class ReconhecimentoElementos(object):
 		
 		out_dict['tokens_list'] = genTokensList(cleantext)
 
+		# Reconhecer unidades: db(A), m2, ha, etc.
+
+		self.reconhecerUnidades(out_dict['tokens_list'])
+
 		# Associar identificadores 'numero' que tenham ficado separados por existirem espaços entre os elementos componentes
 
 		assocNumParts(out_dict['tokens_list'])
@@ -629,12 +662,12 @@ class ReconhecimentoElementos(object):
 
 		# Reconhecer construções (q precisam de 'repr' mas não de 'pos') ######
 
-		self.reconhecerURLs(out_dict['tokens_list'])
+		reconhecerURLs(out_dict['tokens_list'])
 		self.reconhecerDatas(out_dict['tokens_list'])
 		self.reconhecerAtosNormativos(out_dict['tokens_list'])
 
 		# Dividir em tokens palavras que incluem '/' ###########################
-		self.genAdicTokensOverSeps(out_dict['tokens_list'], break_on_hyphens=break_on_hyphens)
+		self.genAdicTokensOverSeps(out_dict['tokens_list'], break_on_hyphens=False)
 
 		# Reconhecer construções nome ou designação ###########################
 

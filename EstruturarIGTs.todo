@@ -1,0 +1,55 @@
+{
+  "todotree": {
+    "tree": [
+      {
+        "key": 1792343581856,
+        "children": [
+          {
+            "key": 1792343648199,
+            "children": [],
+            "todo": {
+              "content": "Ato normativo com espaços",
+              "id": 1792343648199,
+              "level": "default",
+              "done": false,
+              "start": 1792343648199
+            }
+          },
+          {
+            "key": 1792343667954,
+            "children": [],
+            "todo": {
+              "content": "Legislação antiga",
+              "id": 1792343667954,
+              "level": "default",
+              "done": false,
+              "start": 1792343667954
+            }
+          }
+        ],
+        "todo": {
+          "content": "Aspetos de parsing em falta",
+          "id": 1792343581856,
+          "level": "default",
+          "done": false,
+          "start": 1792343581856,
+          "focus": false,
+          "end": 1792343597513
+        }
+      }
+    ],
+    "expandKeys": [
+      1792343581856
+    ],
+    "add_mode": "bottom",
+    "virtual": false,
+    "showLine": false,
+    "playFontSize": 24,
+    "title": "this",
+    "autoSort": false,
+    "showEndTime": false,
+    "simpleMode": false,
+    "lang": "en",
+    "version": "1792343675649"
+  }
+}
