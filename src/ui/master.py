@@ -185,7 +185,7 @@ class App(ctk.CTk):
             folder_dados = get_dados_folder()
             pasta_concelho = CONCELHOS[self.concelho_escolhido]["pasta"]
             path = os.path.join(folder_dados, pasta_concelho, self.versao_escolhida)
-            reconhecer(path, 'referentes_regulamento.json')
+            reconhecer(path, 'referentes_regulamento.json') #, limit=10)
             InfoPopup(app, "Gerados ficheiros extraídos do Regulamento")
 
     def exit_button_callback(self):

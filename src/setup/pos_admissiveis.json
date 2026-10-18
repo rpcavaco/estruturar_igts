@@ -52,7 +52,9 @@
             "adjetivo"
         ],
         "verbo": [
-            "adverbio"
+            "verbo",
+            "adverbio",
+            "nome"
         ],
         "participio": [
             "adverbio",

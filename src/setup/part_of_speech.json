@@ -5480,7 +5480,7 @@
         "participio"
     ],
     "comprovadamente": [
-        "advérbio"
+        "adverbio"
     ],
     "comunicação": [
         "nome"
@@ -10206,7 +10206,7 @@
         "nome"
     ],
     "non": [
-		"advérbio",
+		"adverbio",
         "nome"
 	],
     "lden": [
@@ -10219,13 +10219,10 @@
 		"nome"
 	],
     "pelo": [
-        "contracao",
-        "nome",
-        "verbo"
+        "contracao"
     ],
     "pela": [
-        "contracao",
-        "verbo"
+        "contracao"
     ],
     "e": [
         "conjuncao"
@@ -10237,7 +10234,7 @@
         "adverbio"
     ],
     "não": [
-        "advérbio",
+        "adverbio",
         "nome"
     ],
     "cada": [
@@ -15819,7 +15816,7 @@
         "adjetivo"
     ],
     "preponderantemente": [
-        "advérbio"
+        "adverbio"
     ],
     "provimento": [
         "nome"

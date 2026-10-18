@@ -123,6 +123,14 @@ def assocVariosTripletos(p_list: 'DictListManager') -> None:
 				leng = len(p_prev_elems)
 				p_chg_list.append((leng-1, 3, "abrev_santo", new_string))
 
+		elif p_prev_elems[-2]['lower'] in ('dr', 'eng'):
+			if p_item['lower'] in ('o', 'a', 'º', 'ª'):
+
+				new_string = f"{p_prev_elems[-2]['ok']}{p_prev_elems[-1]['ok']}{p_item['ok']}"
+
+				leng = len(p_prev_elems)
+				p_chg_list.append((leng-1, 3, "inicial_titulo", new_string))
+
 		p_prev_elems.append(p_item)
 
 	last_elems = []
@@ -158,12 +166,26 @@ def assocVariosPares(p_list: 'DictListManager') -> None:
 			return
 
 		# Abreviaturas de santo / santa + DR
-		if p_prev_elems[-1]['lower'] in ('s', 'sto', 'sta', 'dr'):
+		if p_prev_elems[-1]['lower'] in ('s', 'sto', 'sta'):
 
 			new_string = f"{p_prev_elems[-1]['ok']}{p_item['ok']}"
 
 			leng = len(p_prev_elems)
 			p_chg_list.append((leng-1, 2, "abrev_santo", new_string))
+
+		elif p_prev_elems[-1]['lower'] in ('dr', 'eng'):
+
+			new_string = f"{p_prev_elems[-1]['ok']}{p_item['ok']}"
+
+			leng = len(p_prev_elems)
+			p_chg_list.append((leng-1, 2, "inicial_titulo", new_string))
+
+		elif p_prev_elems[-1]['lower'] in ('dec',):
+
+			new_string = f"{p_prev_elems[-1]['ok']}{p_item['ok']}"
+
+			leng = len(p_prev_elems)
+			p_chg_list.append((leng-1, 2, None, new_string))
 
 		p_prev_elems.append(p_item)
 
@@ -178,7 +200,10 @@ def assocVariosPares(p_list: 'DictListManager') -> None:
 		for idx, sz, tipostr, string in reversed(chg_list):
 			for k in reversed(range(sz)):
 				p_list.remove_at(idx+k)
-			p_list.insert(None, idx, ok=string, especial=tipostr, string=str(string), lower=str(string).lower())
+			if tipostr is None:
+				p_list.insert(None, idx, ok=string, string=str(string), lower=str(string).lower())
+			else:
+				p_list.insert(None, idx, ok=string, especial=tipostr, string=str(string), lower=str(string).lower())
 
 
 def reconhecerURLs(p_list: 'DictListManager') -> None:
@@ -344,7 +369,7 @@ class ReconhecimentoElementos(object):
 		for idxs_list_1 in reversed(idxs_lists):
 			p_list.buildConstruct(idxs_list_1, "denominacao")
 
-		seps = ['da', 'do', 'de', 'e', 'em', 'na', 'no']
+		seps = ['da', 'do', 'das', 'dos', 'de', 'e', 'em', 'na', 'no']
 
 		idxs_lists = []
 		for idxs_list in p_list.iterNextContiguousConstructElements(
@@ -388,25 +413,36 @@ class ReconhecimentoElementos(object):
 
 				pair = idxs_list[i:i+2]
 				if len(pair) == 2:			
-					if p_list[pair[0]]['repr'] in ('e', 'ou') and \
+					if p_list[pair[0]]['lower'] == 'e' and \
 						not p_list[pair[1]]['repr'] in self.nomes:
 							idxs_lists.append(copy(secnd_idxs_list))
 							del secnd_idxs_list[:]
 					else:
-						secnd_idxs_list.append(idx)
+						# não deixar sep no inicio de nova lista, se tiver havido separação
+						if len(secnd_idxs_list) > 0 or not p_list[pair[0]]['repr'] in seps:
+							secnd_idxs_list.append(idx)
 				else:
+					# pair terá apenas um elemento no final da lista
 					secnd_idxs_list.append(idx)
 
 			if len(secnd_idxs_list) > 0:
 				idxs_lists.append(secnd_idxs_list)
 
 		for idxs_list_2 in reversed(idxs_lists):
+
+			# # Verificar que indices são consecutivos
+			# if len(idxs_list_2) == 0 or len(idxs_list_2) != (idxs_list_2[-1] - idxs_list_2[0]) + 1:
+			# 	continue
+
+			# p_list.buildConstruct(idxs_list_2, "denominacao", include_number="START")
+
 			try:
 				p_list.buildConstruct(idxs_list_2, "denominacao", include_number="START")
 			except AssertionError as ae:
 				aelist = json.loads(str(ae))
-				print(idxs_list_2)
+				print("idxs_list_2:", idxs_list_2)
 				print([p_list[idx] for idx in aelist])
+
 				
 	def reconhecerDatas(self, p_list: 'DictListManager') -> None:
 
@@ -480,18 +516,31 @@ class ReconhecimentoElementos(object):
 		idxs_lists = []
 
 		def is_tipo_ato(p_repr):
-			return p_repr in ('decreto-lei', 'dec.-lei', 'dl', 'portaria', 'aviso')
+			return p_repr in ('decreto-lei', 'dec.-lei', 'dl', 'portaria', 'aviso', 'lei', 'dec.')
+
+		for idx, grp_tokens in p_list.iterateGroups(group_size=4, prev_is_null=False):	
+			if len(grp_tokens) < 4:
+				continue
+			atkn, btkn, ctkn, dtkn = grp_tokens	
+			if 'lower' in atkn.keys() and 'lower' in btkn.keys() and 'lower' in ctkn.keys() and 'numero' in dtkn.keys():
+				if is_tipo_ato(atkn['lower']) and is_tipo_ato(btkn['lower']) and ctkn['lower'] == 'n.º' and dtkn['numero'] == 'item':
+					idxs_lists.append([j+idx for j in range(4)])
+
+		for idxs_list_0 in reversed(idxs_lists):
+			p_list.buildConstruct(idxs_list_0, "ato_normativo")
+
+		del idxs_lists[:]
 
 		for idx, grp_tokens in p_list.iterateGroups(group_size=3, prev_is_null=False):	
 			if len(grp_tokens) < 3:
 				continue
 			atkn, btkn, ctkn = grp_tokens	
-			if 'repr' in atkn.keys() and 'repr' in btkn.keys() and 'numero' in ctkn.keys():
-				if is_tipo_ato(atkn['repr']) and ctkn['numero'] == 'item':
+			if 'lower' in atkn.keys() and 'lower' in btkn.keys() and 'numero' in ctkn.keys():
+				if is_tipo_ato(atkn['lower']) and btkn['lower'] == 'n.º' and ctkn['numero'] == 'item':
 					idxs_lists.append([j+idx for j in range(3)])
 
-		for idxs_list_0 in reversed(idxs_lists):
-			p_list.buildConstruct(idxs_list_0, "ato_normativo")
+		for idxs_list_1 in reversed(idxs_lists):
+			p_list.buildConstruct(idxs_list_1, "ato_normativo")
 
 		del idxs_lists [:]
 
@@ -503,8 +552,36 @@ class ReconhecimentoElementos(object):
 				if is_tipo_ato(atkn['repr']) and ctkn['numero'] == 'item':
 					idxs_lists.append([j+idx for j in range(2)])
 
-		for idxs_list_1 in reversed(idxs_lists):
-			p_list.buildConstruct(idxs_list_1, "ato_normativo")
+		for idxs_list_2 in reversed(idxs_lists):
+			p_list.buildConstruct(idxs_list_2, "ato_normativo")
+
+	def reconhecerArtigosAlineas(self, p_list: 'DictListManager') -> None:
+
+		idxs_lists = []
+
+		for idx, grp_tokens in p_list.iterateGroups(group_size=2, prev_is_null=False):	
+			if len(grp_tokens) < 2:
+				continue
+			atkn, btkn = grp_tokens	
+			if 'lower' in atkn.keys() and 'numero' in btkn.keys():
+				if atkn['lower'] == 'artigo' and btkn['numero'] == 'ord':
+					idxs_lists.append([j+idx for j in range(2)])
+
+		for idxs_list_0 in reversed(idxs_lists):
+			p_list.buildConstruct(idxs_list_0, "artigo")
+
+		del idxs_lists [:]
+
+		for idx, grp_tokens in p_list.iterateGroups(group_size=2, prev_is_null=False):	
+			if len(grp_tokens) < 2:
+				continue
+			atkn, btkn = grp_tokens	
+			if 'lower' in atkn.keys() and 'numero' in btkn.keys():
+				if atkn['lower'] == 'alínea' and btkn['numero'] == 'alinea':
+					idxs_lists.append([j+idx for j in range(2)])
+
+		for idxs_list_0 in reversed(idxs_lists):
+			p_list.buildConstruct(idxs_list_0, "alinea")
 
 	def genAdicTokensOverSeps(self, p_list: 'DictListManager', break_on_hyphens=False):
 
@@ -526,7 +603,6 @@ class ReconhecimentoElementos(object):
 					new_items = genTokensList(old_item['repr'], sep_chars=r"(/)")
 				for ni, new_item in enumerate(new_items):
 					p_list.insert(new_item, index=idx + ni)
-
 
 	def reconhecerReferentes(self, p_list: 'DictListManager'):
 
@@ -570,7 +646,7 @@ class ReconhecimentoElementos(object):
 					if len(idx_list) > 1 or ('ok' in p_list[idx_list[0]].keys() and p_list[idx_list[0]]["ok"][0].isupper()): # usar apenas listas com mais de um elemento ou se o o elemento único estiver 'capitalizado'
 						idxs_lists.append(copy(idx_list))
 					else:
-						p_list[idx_list[0]]['ref_skipped'] = "elem_unico A"
+						p_list[idx_list[0]]['ref_skipped'] = f"elem_unico A"
 					del idx_list[:]
 
 				continue
@@ -664,6 +740,7 @@ class ReconhecimentoElementos(object):
 
 		reconhecerURLs(out_dict['tokens_list'])
 		self.reconhecerDatas(out_dict['tokens_list'])
+		self.reconhecerArtigosAlineas(out_dict['tokens_list'])
 		self.reconhecerAtosNormativos(out_dict['tokens_list'])
 
 		# Dividir em tokens palavras que incluem '/' ###########################
@@ -706,7 +783,8 @@ class ReconhecimentoElementos(object):
 		referentes = []
 		for tkn in out_dict['tokens_list']:
 			if 'construct' in tkn.keys() and tkn['construct'] == 'referente':
-				referentes.append(tkn['repr'])
+				if not tkn['repr'] in referentes:
+					referentes.append(tkn['repr'])
 		if len(referentes) > 0:
 			out_dict['referentes'] = referentes
 

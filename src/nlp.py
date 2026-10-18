@@ -588,7 +588,7 @@ def genPOS(
 					ret = list(def_pos)
 					pronto = True
 		elif nomverb_set.issubset(def_pos):
-			if real_prev_tkn is None or bool(set(['preposicao', 'artigo', 'conjuncao']).intersection(prev_attribs)):
+			if real_prev_tkn is None or bool(set(['preposicao', 'artigo', 'conjuncao', 'contracao']).intersection(prev_attribs)):
 				fluxo.append("B1")
 				#ret = ['nome']
 				def_pos.remove("verbo")
@@ -790,7 +790,6 @@ def presenca_nomes_proprios(p_part_of_speech_dict: dict, p_token_list: list[str]
 	pairs_list = [None] + p_token_list
 	for i, tkns in [(i, pairs_list[i:i+2]) for i in range(len(p_token_list))]:
 		prevt, tkn = tkns
-		print(prevt, tkn)
 		if 'repr' in tkn.keys() and tkn['repr'] in nomes:
 			collected_token_indexes.append(i)
 		else:
