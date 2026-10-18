@@ -1,3 +1,5 @@
 jsonschema
 requests
 unidecode
+customtkinter
+
