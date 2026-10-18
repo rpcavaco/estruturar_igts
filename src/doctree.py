@@ -8,7 +8,7 @@ from typing import Optional, Union, List, Literal
 from copy import copy, deepcopy
 from datetime import datetime
 
-from nlp import NumeracaoRomana
+from .nlp import NumeracaoRomana
 
 VERSION = 0.2
 

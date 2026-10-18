@@ -2,4 +2,4 @@ jsonschema
 requests
 unidecode
 customtkinter
-
+tqdm

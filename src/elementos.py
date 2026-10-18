@@ -186,7 +186,14 @@ class ReconhecimentoElementos(object):
 
 		self.part_of_speech_dict = None
 		with open(os.path.join('setup', 'part_of_speech.json'), 'r', encoding='utf-8') as fp: 
-			self.part_of_speech_dict = json.load(fp)		
+
+			self.part_of_speech_dict = json.load(fp)	
+
+			# Remover palavras que não tem POS definido (lista POS vazia)
+			for k, v in self.part_of_speech_dict.items():
+				if len(v) == 0:
+					del self.part_of_speech_dict[k]
+
 			injetarTemposVerbais(self.part_of_speech_dict)
 
 		self.substituicoes = None
@@ -198,9 +205,6 @@ class ReconhecimentoElementos(object):
 			self.pos_admissiveis = json.load(fp)	
 
 		self.inicios_admissiveis = self.pos_admissiveis['permitidos_inicio']
-
-		with open(os.path.join('setup', 'pos_admissiveis.json'), 'r', encoding='utf-8') as fp: 
-			self.pos_admissiveis = json.load(fp)	
 
 		# self.sufixos_plurais = None
 		# with open(os.path.join('setup', 'sufixos_plurais,json'), 'r', encoding='utf-8') as fp: 

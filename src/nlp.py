@@ -11,12 +11,12 @@ from unidecode import unidecode
 from time import sleep
 from tqdm import tqdm
 
-from json_helpers import find_unserializable
+from .json_helpers import find_unserializable
 
 from typing import List, Dict, Type, Any #, Callable, Dict, Iterable, Iterator, List, Optional, Type
 
 
-from dict_list_manager import DictListManager
+from .dict_list_manager import DictListManager
 
 # ATENÇÃO - no PROCESSAMENTO DE blocos_analise
 
@@ -645,7 +645,7 @@ def genPOS(
 			# 	fluxo.append("F2")
 			ret = list(def_pos)
 
-	assert not ret is None and len(ret) > 0, f"prev_tkn:{prev_tkn} this_token:{p_this_token}"
+	assert not ret is None and len(ret) > 0, f"prev_tkn:{prev_tkn} this_token:{p_this_token}, def:{def_pos}"
 
 	# if p_this_token['repr'] == "ocorrido":
 	# 	print(fluxo, p_this_token, partadj_set, ret, partadj_set.issubset(set(ret)))

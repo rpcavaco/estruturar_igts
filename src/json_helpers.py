@@ -1,7 +1,7 @@
 
 import json
 
-from dict_list_manager import DictListManager
+from .dict_list_manager import DictListManager
 
 def find_unserializable(obj, path="root"):
     if isinstance(obj, dict):

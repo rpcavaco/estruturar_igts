@@ -1,8 +1,16 @@
 
+import os
 import customtkinter as ctk
 
 
-from cfg import CONCELHOS
+from .cfg import CONCELHOS
+
+from src.processar_regulamento import genfiles_regulamento
+
+def get_dados_folder():
+    ret = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'dados')
+    assert os.path.exists(ret), f"pasta 'dados' não existe em '{ret}'"
+    return ret
 
 class BaseFrame(ctk.CTkFrame):
     def __init__(self, master, title):
@@ -20,12 +28,37 @@ class ConcelhosFrame(BaseFrame):
         choices_concelhos = ['<escolha concelho>'] 
         choices_concelhos.extend(CONCELHOS.keys())
 
-        self.choice_concelhos = ctk.CTkComboBox(self, width=200, values=choices_concelhos, command=self.choice_concelhos_callback)
+        self.choice_concelhos = ctk.CTkComboBox(self, width=250, values=choices_concelhos, command=self.choice_concelhos_callback)
         self.choice_concelhos.grid(row=1, column=0, padx=10, pady=(10, 0), sticky="w")
 
     def choice_concelhos_callback(self, choice):
         app = self.winfo_toplevel()
         app.choice_concelhos_callback(choice)
+
+
+class VersoesFrame(BaseFrame):
+    def __init__(self, master, title):
+        super().__init__(master, title)
+
+        self.choices_versoes_vals = ['<aguarda concelho>'] 
+
+        self.choice_versoes = ctk.CTkComboBox(self, width=250, values=self.choices_versoes_vals, command=self.choice_versoes_callback)
+        self.choice_versoes.grid(row=1, column=0, padx=10, pady=(10, 0), sticky="w")
+
+    def set_versoes(self, versoes):
+        del self.choices_versoes_vals[:]
+        self.choices_versoes_vals.append('<escolher versão>')
+        for versao in versoes:
+            if not versao in self.choices_versoes_vals:
+                self.choices_versoes_vals.append(versao)
+
+    def refresh_combo_versoes(self):
+        self.choice_versoes.configure(values=self.choices_versoes_vals)    # updates the dropdown list
+        self.choice_versoes.set(self.choices_versoes_vals[0] if len(self.choices_versoes_vals) > 0 else "")  # updates the displayed text
+
+    def choice_versoes_callback(self, choice):
+        app = self.winfo_toplevel()
+        app.choice_versoes_callback(choice)
 
 
 class OpsFrame(BaseFrame):
@@ -45,7 +78,7 @@ class OpsFrame(BaseFrame):
             k, v = item
             caption, callb_func = v
             self.op_buttons[k] = ctk.CTkButton(self, width=200, text=caption, command=callb_func)
-            self.op_buttons[k].grid(row=i+1, column=0, padx=30, pady=(10, 0), sticky="w")
+            self.op_buttons[k].grid(row=i+2, column=0, padx=30, pady=(10, 0), sticky="w")
 
     def estrut_regl_callback(self):
         app = self.winfo_toplevel()
@@ -72,44 +105,75 @@ class WarningPopup(ctk.CTkToplevel):
         ctk.CTkButton(self, text="OK", command=self.destroy).pack()
         self.after(100, self.grab_set)      # make modal (delay avoids a CTk timing issue)
 
+class InfoPopup(ctk.CTkToplevel):
+    def __init__(self, master, message):
+        super().__init__(master)
+        self.title("Informação")
+        self.geometry("320x140")
+        self.resizable(False, False)
+        self.transient(master)              # stay on top of parent
+        ctk.CTkLabel(self, text=message, wraplength=280).pack(pady=20, padx=20)
+        ctk.CTkButton(self, text="OK", command=self.destroy).pack()
+        self.after(100, self.grab_set)      # make modal (delay avoids a CTk timing issue)
+
 
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
         self.title("Estruturar IGTs")
-        self.geometry("480x400")
-        self.minsize(480, 400)
-        self.maxsize(481, 401)
+        self.geometry("810x400")
+        self.minsize(810, 400)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
         self.concelho_escolhido = None
+        self.versao_escolhida = None
 
         # Frame 'concelhos'
 
         self.concelhos_frame = ConcelhosFrame(self, "Concelhos")
         self.concelhos_frame.grid(row=0, column=0, padx=10, pady=(10,0), sticky="nsw")
 
+       # Frame 'versoes'
+
+        self.versoes_frame = VersoesFrame(self, "Versões")
+        self.versoes_frame.grid(row=0, column=1, padx=(0, 10), pady=(10,0), sticky="nsw")
+
         # Frame 'operações'
 
         self.ops_frame = OpsFrame(self, "Operações regulamento")
-        self.ops_frame.grid(row=0, column=1, padx=(0, 10), pady=(10,0), sticky="ns")
+        self.ops_frame.grid(row=0, column=2, padx=(0, 10), pady=(10,0), sticky="ns")
 
 
         self.exit_button = ctk.CTkButton(self, text="Sair", command=self.exit_button_callback)
-        self.exit_button.grid(row=3, column=1, padx=10, pady=10, sticky="e")
+        self.exit_button.grid(row=3, column=2, padx=10, pady=10, sticky="e")
 
-        self.maxsize(480, 400)
+        self.maxsize(810, 400)
 
     def choice_concelhos_callback(self, choice):
         self.concelho_escolhido = choice
+        self.versoes_frame.set_versoes(CONCELHOS[self.concelho_escolhido]["versoes"].keys())
+        self.versoes_frame.refresh_combo_versoes()
+
+    def choice_versoes_callback(self, choice):
+        self.versao_escolhida = choice
 
     def exec_estruturarregl_callback(self):
         if self.concelho_escolhido is None:
             WarningPopup(app, "Necessário escolher um concelho primeiro")
-
+        elif self.versao_escolhida is None:
+            WarningPopup(app, "Necessário escolher uam versão primeiro")
+        else:
+            folder_dados = get_dados_folder()
+            pasta_concelho = CONCELHOS[self.concelho_escolhido]["pasta"]
+            cfgs = CONCELHOS[self.concelho_escolhido]["versoes"][self.versao_escolhida]
+            tipo_numeracao_alineas = cfgs[0]
+            path = os.path.join(folder_dados, pasta_concelho, self.versao_escolhida)
+            print(path, tipo_numeracao_alineas)
+            genfiles_regulamento(path, tipo_numeracao_alineas)
+            InfoPopup(app, "Gerados ficheiros extraídos do Regulamento")
 
     def exit_button_callback(self):
         self.destroy()

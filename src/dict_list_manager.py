@@ -37,7 +37,7 @@ from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Type
 from jsonschema import validate
 from jsonschema import Validator, Draft202012Validator
 from jsonschema.exceptions import SchemaError, ValidationError
-from validation_helpers import extend_with_default
+from .validation_helpers import extend_with_default
 
 
 class SchemaValidationError(Exception):
