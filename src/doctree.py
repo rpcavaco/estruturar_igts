@@ -28,8 +28,8 @@ class DocTextParser(object):
 			"artigo": (r"^artigo[\s]+([\d]+)[\.]?º?", re.I),
 			"numero": (r"^([\d]+)[\s]?\-[\s]?(.*)",),
 			"uopg_numero": (r"^([S]?UOPG[\s]+[\d]+)[\s]?\-[\s]?(.*)",),
-			"alinea": (r"^([a-z]?[a-z])\)[\s]+(.*)",),
-			"alinea_romana": (r"^([cilmvx]+)\)[\s]+(.*)",),  # Atenção: confunde-se com a 'alínea' no caso 'i)'
+			"alinea": (r"^([a-z]?[a-z])[\)\.][\s]+(.*)",),
+			"alinea_romana": (r"^([cilmvx]+)[\)\.][\s]+(.*)",),  # Atenção: confunde-se com a 'alínea' no caso 'i)'
 		}
 
 	def parseString(self, p_text: str, out_mos_dict: dict):

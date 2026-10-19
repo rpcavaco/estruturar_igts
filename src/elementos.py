@@ -66,11 +66,17 @@ def assocNumParts(p_list: 'DictListManager') -> None:
 		if not 'ok' in p_prev_elems[-1].keys() or not 'ok' in p_item.keys():
 			return
 
+		# Com espaço
 		new_string = f"{p_prev_elems[-1]['ok']} {p_item['ok']}"
 		if not " " in new_string.strip():
 			return
 
 		num_patt, val, string = getNumPattern(new_string.strip())
+		if num_patt is None:
+			# Também testar sem espaço
+			new_string = f"{p_prev_elems[-1]['ok']}{p_item['ok']}"
+			num_patt, val, string = getNumPattern(new_string.strip())
+
 		if not num_patt is None:
 			leng = len(p_prev_elems)
 			p_chg_list.append((leng-1, leng, num_patt, val, string))
@@ -241,8 +247,11 @@ class ReconhecimentoElementos(object):
 		with open(os.path.join(setup_folder, 'substituicoes.json'), 'r', encoding='utf-8') as fp: 
 			self.substituicoes = json.load(fp)	
 
-		self.substituicoes_locais = substituicoes_locais
-
+		if not substituicoes_locais is None:
+			self.substituicoes_locais = substituicoes_locais
+		else:
+			self.substituicoes_locais = {}
+			
 		self.pos_admissiveis = None
 		with open(os.path.join(setup_folder, 'pos_admissiveis.json'), 'r', encoding='utf-8') as fp: 
 			self.pos_admissiveis = json.load(fp)	
