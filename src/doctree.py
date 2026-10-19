@@ -376,7 +376,7 @@ class DocNode(object):
 				ret = self.children[-1]
 				ret.prevnode = self
 				# A iniciar nova numeração
-				assert ord_val == 1 or roman_val == 1
+				assert ord_val == 1 or roman_val == 1, f"ord_val:{ord_val} roman_val:{roman_val}"
 				if ord_val == 1:
 					ret.tipo_numeracao = "normal"
 				else:

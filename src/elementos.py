@@ -251,7 +251,7 @@ class ReconhecimentoElementos(object):
 			self.substituicoes_locais = substituicoes_locais
 		else:
 			self.substituicoes_locais = {}
-			
+
 		self.pos_admissiveis = None
 		with open(os.path.join(setup_folder, 'pos_admissiveis.json'), 'r', encoding='utf-8') as fp: 
 			self.pos_admissiveis = json.load(fp)	

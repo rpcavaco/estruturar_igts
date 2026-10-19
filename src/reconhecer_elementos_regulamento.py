@@ -23,8 +23,9 @@ def reconhecer(p_versao_concelho, p_output_file, preserve_tokens_ords: Optional[
 	subs_file = os.path.join(p_versao_concelho, 'regl', 'substituicoes.json')
 
 	substituicoes_locais = None
-	with open(subs_file, 'r', encoding='utf-8') as fp: 
-		substituicoes_locais = json.load(fp)
+	if os.path.exists(subs_file):
+		with open(subs_file, 'r', encoding='utf-8') as fp: 
+			substituicoes_locais = json.load(fp)
 
 	nodes_dict = None
 	with open(infile, 'r', encoding='utf-8') as fp:
