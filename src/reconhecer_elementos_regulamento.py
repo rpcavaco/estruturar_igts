@@ -12,7 +12,7 @@ from .nlp import update_parts_of_speech_dict
 
 from tqdm import tqdm
 
-def reconhecer(p_versao_concelho, p_output_file, preserve_tokens_ords: Optional[List[int]] = None, limit: Optional[int] = 0, reverse_limit: Optional[bool] = False) -> None:
+def reconhecer(p_versao_concelho, p_output_file, preserve_tokens_ords: Optional[List[int]] = None, limite: Optional[int] = 0, reverter_limite: Optional[bool] = False) -> None:
 	"""
 	Processo de reconhecimento de elementos em regulamentos de PDM
 	"""
@@ -43,12 +43,12 @@ def reconhecer(p_versao_concelho, p_output_file, preserve_tokens_ords: Optional[
 	items_list = nodes_dict.items()
 
 	for i, item in enumerate(tqdm(items_list)):
-		if limit > 0:
-			if reverse_limit:
-				if i < limit:
+		if limite > 0:
+			if reverter_limite:
+				if i < limite:
 					continue
 			else:
-				if i > limit:
+				if i > limite:
 					break
 		k, val = item
 		if 'c' in val.keys():
@@ -172,7 +172,7 @@ def main():
 	print("args:", args)
 
 	if args.modo == 'reconhecer':
-		reconhecer(args.versao_concelho, args.output_file, preserve_tokens_ords=args.preserve_tokens, limit = args.limit, reverse_limit=args.reverse_limit) 
+		reconhecer(args.versao_concelho, args.output_file, preserve_tokens_ords=args.preserve_tokens, limite = args.limit, reverter_limite=args.reverse_limit) 
 
 	elif args.modo == 'matches_faceis':
 		matches_faceis(args.versao_concelho, args.output_file, 'matches_faceis.json')

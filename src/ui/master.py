@@ -171,9 +171,14 @@ class App(ctk.CTk):
             folder_dados = get_dados_folder()
             pasta_concelho = CONCELHOS[self.concelho_escolhido]["pasta"]
             cfgs = CONCELHOS[self.concelho_escolhido]["versoes"][self.versao_escolhida]
-            tipo_numeracao_alineas = cfgs[0]
+            tipo_numeracao_alineas = cfgs["tipo_numeracao"]
             path = os.path.join(folder_dados, pasta_concelho, self.versao_escolhida)
-            genfiles_regulamento(path, tipo_numeracao_alineas)
+            if "lim_genfiles_regulamento" in cfgs.keys():
+                lim_genfiles_regulamento = cfgs["lim_genfiles_regulamento"]
+            else:
+                lim_genfiles_regulamento = 0
+            # print("lim_genfiles_regulamento:", lim_genfiles_regulamento)
+            genfiles_regulamento(path, tipo_numeracao_alineas, limite=lim_genfiles_regulamento)
             InfoPopup(app, "Gerados ficheiros extraídos do Regulamento")
 
     def exec_recon_elems_regl_callback(self):
@@ -184,8 +189,9 @@ class App(ctk.CTk):
         else:
             folder_dados = get_dados_folder()
             pasta_concelho = CONCELHOS[self.concelho_escolhido]["pasta"]
+            cfgs = CONCELHOS[self.concelho_escolhido]["versoes"][self.versao_escolhida]
             path = os.path.join(folder_dados, pasta_concelho, self.versao_escolhida)
-            reconhecer(path, 'referentes_regulamento.json') #, limit=10)
+            reconhecer(path, 'referentes_regulamento.json', limit=0)
             InfoPopup(app, "Gerados ficheiros extraídos do Regulamento")
 
     def exit_button_callback(self):
