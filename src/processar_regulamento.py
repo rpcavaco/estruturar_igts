@@ -23,7 +23,7 @@ def genfiles_regulamento(p_versao_concelho, p_tipo_numeracao_alineas, limite = 0
 
 	Argumentos:
 	- p_versao_concelho - indica o nome da pasta de versão de PDM, dentro da pasta do concelho
-		(dados/<concelho>/<versão_concelho>)
+		(dados/PDM/<concelho>/<versão_concelho>)
 	- p_tipo_numeracao_alineas - 'TIPO1' / 'TIPO2'	('TIPO1' por defeito)
 		TIPO1: aa, ab, ac ... ax, ba, bb
 		TIPO2: aa, bb, cc, ... (apenas Maia)

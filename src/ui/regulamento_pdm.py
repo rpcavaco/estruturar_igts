@@ -123,7 +123,7 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Estruturar IGTs")
+        self.title("Regulamento PDM")
         self.geometry("810x400")
         self.minsize(810, 400)
 
@@ -172,7 +172,7 @@ class App(ctk.CTk):
             pasta_concelho = CONCELHOS[self.concelho_escolhido]["pasta"]
             cfgs = CONCELHOS[self.concelho_escolhido]["versoes"][self.versao_escolhida]
             tipo_numeracao_alineas = cfgs["tipo_numeracao"]
-            path = os.path.join(folder_dados, pasta_concelho, self.versao_escolhida)
+            path = os.path.join(folder_dados, 'PDM', pasta_concelho, self.versao_escolhida)
             if "lim_genfiles_regulamento" in cfgs.keys():
                 lim_genfiles_regulamento = cfgs["lim_genfiles_regulamento"]
             else:
@@ -190,7 +190,7 @@ class App(ctk.CTk):
             folder_dados = get_dados_folder()
             pasta_concelho = CONCELHOS[self.concelho_escolhido]["pasta"]
             cfgs = CONCELHOS[self.concelho_escolhido]["versoes"][self.versao_escolhida]
-            path = os.path.join(folder_dados, pasta_concelho, self.versao_escolhida)
+            path = os.path.join(folder_dados, 'PDM', pasta_concelho, self.versao_escolhida)
             reconhecer(path, 'referentes_regulamento.json', limit=0)
             InfoPopup(app, "Gerados ficheiros extraídos do Regulamento")
 
