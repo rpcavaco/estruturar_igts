@@ -156,6 +156,9 @@ class DictListManager():
 		"""Remove and return the item at the given index."""
 		return self._items.pop(index)
 
+	def get(self, index: int) -> Dict[str, Any]:
+		return self._items[index]
+
 	# def tokenize_item(self, )
 
 	# ------------------------------------------------------------------ #
