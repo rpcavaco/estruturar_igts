@@ -92,50 +92,62 @@ def matches_faceis(p_versao_concelho, p_referentes_file, p_output_file) -> None:
 
 	assert not referentes_dict is None
 
+	src_path = os.path.dirname(os.path.abspath(__file__))
+
 	part_of_speech_dict = None
-	with open(os.path.join('setup', 'part_of_speech.json'), 'r', encoding='utf-8') as fp: 
+	with open(os.path.join(src_path, 'setup', 'part_of_speech.json'), 'r', encoding='utf-8') as fp: 
 		part_of_speech_dict = json.load(fp)	
 
 	assert not part_of_speech_dict is None
 
 	sufixos_plurais = None
-	with open(os.path.join('setup', 'sufixos_plurais,json'), 'r', encoding='utf-8') as fp: 
+	with open(os.path.join(src_path, 'setup', 'sufixos_plurais,json'), 'r', encoding='utf-8') as fp: 
 		sufixos_plurais = json.load(fp)	
 
-	print(f"{len(referentes_dict["faltas"])} palavras em falta")
+	# print(f"{len(referentes_dict["faltas"])} palavras em falta")
 
 	ret = {}
 
 	found = 0
-	for wrd in referentes_dict["faltas"]:
-		for plur, sing in sufixos_plurais:
-			if wrd.endswith(plur):
-				nova = wrd[:-len(plur)] + sing
-				if nova in part_of_speech_dict.keys():
-					ret[wrd] = part_of_speech_dict[nova]
-					found += 1
-			elif wrd.endswith(sing):
-				nova = wrd[:-len(sing)] + plur
-				if nova in part_of_speech_dict.keys():
-					ret[wrd] = part_of_speech_dict[nova]
-					found += 1
+	if 'faltas' in referentes_dict.keys():
+		for wrd in referentes_dict["faltas"]:
+			for plur, sing in sufixos_plurais:
+				if wrd.endswith(plur):
+					nova = wrd[:-len(plur)] + sing
+					if nova in part_of_speech_dict.keys():
+						ret[wrd] = part_of_speech_dict[nova]
+						found += 1
+				elif wrd.endswith(sing):
+					nova = wrd[:-len(sing)] + plur
+					if nova in part_of_speech_dict.keys():
+						ret[wrd] = part_of_speech_dict[nova]
+						found += 1
 
-	print(f"{found} faltas recuperáveis pelos plurais")
+	# print(f"{found} faltas recuperáveis pelos plurais")
+	faltas_plurais = found
 
 	hsufs = ['-la', '-lhe', '-lhes', '-se']
 
 	found = 0
-	for wrd in referentes_dict["faltas"]:
-		for hsuf in hsufs:
-			if wrd.endswith(hsuf):
-				ret[wrd] = ["verbo"]
-				found += 1
+	if 'faltas' in referentes_dict.keys():
+		for wrd in referentes_dict["faltas"]:
+			for hsuf in hsufs:
+				if wrd.endswith(hsuf):
+					ret[wrd] = ["verbo"]
+					found += 1
 
-	print(f"{found} faltas recuperáveis com '-se', '-lhe', etc.")
+	# print(f"{found} faltas recuperáveis com '-se', '-lhe', etc.")
+	faltas_lhe_se = found
 
 	with open(os.path.join(wrkdir, p_output_file), 'w') as fp:
 		print(f"Ver {p_output_file} em 'output'")
 		json.dump(ret, fp, indent=4, ensure_ascii=False, cls=DictListManager.Encoder)
+
+	len_faltas = 0
+	if 'faltas' in referentes_dict.keys():
+		len_faltas = len(referentes_dict["faltas"])
+
+	return faltas_plurais, faltas_lhe_se, len_faltas
 
 def resolver_pos(p_versao_concelho: str, p_referentes_file: str):
 
@@ -145,14 +157,26 @@ def resolver_pos(p_versao_concelho: str, p_referentes_file: str):
 	with open(os.path.join(wrkdir, p_referentes_file), 'r') as fp:
 		referentes_dict = json.load(fp)
 
+	src_path = os.path.dirname(os.path.abspath(__file__))
+
 	part_of_speech_dict = None
-	with open(os.path.join('setup', 'part_of_speech.json'), 'r', encoding='utf-8') as fp: 
+	with open(os.path.join(src_path, 'setup', 'part_of_speech.json'), 'r', encoding='utf-8') as fp: 
 		part_of_speech_dict = json.load(fp)	
 
-	print(f"Faltas a tratar: {len(referentes_dict['faltas'])}")
+	# print(f"Faltas a tratar: {len(referentes_dict['faltas'])}")
 
-	opt_out_path = os.path.join(wrkdir, 'upd_pos.json')
-	update_parts_of_speech_dict(part_of_speech_dict, referentes_dict['faltas'], opt_out_path=os.path.join(wrkdir, 'upd_pos.json'))
+	if 'faltas' in referentes_dict.keys():
+
+		opt_out_path = os.path.join(wrkdir, 'upd_pos.json')
+		update_parts_of_speech_dict(part_of_speech_dict, referentes_dict['faltas'], opt_out_path=os.path.join(wrkdir, 'upd_pos.json'))
+
+		lenfaltas = len(referentes_dict['faltas'])
+
+	else:
+
+		lenfaltas = 0
+
+	return lenfaltas
 
 
 def main():

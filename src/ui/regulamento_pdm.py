@@ -6,7 +6,7 @@ import customtkinter as ctk
 from .cfg import CONCELHOS
 
 from src.processar_regulamento import genfiles_regulamento
-from src.reconhecer_elementos_regulamento import reconhecer
+from src.reconhecer_elementos_regulamento import reconhecer, resolver_pos, matches_faceis
 
 def get_dados_folder():
     ret = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'dados')
@@ -70,7 +70,8 @@ class OpsFrame(BaseFrame):
             "estrut_regl": ("Estruturar", self.estrut_regl_callback),
             "recon_elems_regl": ("Reconhecer elementos", self.recon_elems_regl_callback),
             "resolver_pos_regl": ("Resolver POS em falta", self.resolver_pos_regl_callback),
-            "match_facil_regl": ("Matches fáceis POS", self.match_facil_regl_callback)
+            "match_facil_regl": ("Matches fáceis POS", self.match_facil_regl_callback),
+            "obter_lista_plantas": ("Obter lista de plantas", self.obter_lista_plantas_callback)
         }
 
         self.op_buttons = {}
@@ -90,11 +91,15 @@ class OpsFrame(BaseFrame):
         app.exec_recon_elems_regl_callback()
 
     def resolver_pos_regl_callback(self):
-        print("resolver_pos_regl_callback")
+        app = self.winfo_toplevel()
+        app.exec_resolver_pos_regl_callback()
 
     def match_facil_regl_callback(self):
-        print("match_facil_regl_callback")
+        app = self.winfo_toplevel()
+        app.exec_match_facil_regl_callback()
 
+    def obter_lista_plantas_callback():
+        print("obter_lista_plantas_callback")
 
 class WarningPopup(ctk.CTkToplevel):
     def __init__(self, master, message):
@@ -189,10 +194,37 @@ class App(ctk.CTk):
         else:
             folder_dados = get_dados_folder()
             pasta_concelho = CONCELHOS[self.concelho_escolhido]["pasta"]
-            cfgs = CONCELHOS[self.concelho_escolhido]["versoes"][self.versao_escolhida]
             path = os.path.join(folder_dados, 'PDM', pasta_concelho, self.versao_escolhida)
-            reconhecer(path, 'referentes_regulamento.json', limit=0)
-            InfoPopup(app, "Gerados ficheiros extraídos do Regulamento")
+            reconhecer(path, 'tokens_regulamento.json', limit=0)
+            InfoPopup(app, "Gerados ficheiro de tokens (tokens_regulamento) extraídos do Regulamento")
+
+    def exec_resolver_pos_regl_callback(self):
+        if self.concelho_escolhido is None:
+            WarningPopup(app, "Necessário escolher um concelho primeiro")
+        elif self.versao_escolhida is None:
+            WarningPopup(app, "Necessário escolher uma versão primeiro")
+        else:
+            folder_dados = get_dados_folder()
+            pasta_concelho = CONCELHOS[self.concelho_escolhido]["pasta"]
+            path = os.path.join(folder_dados, 'PDM', pasta_concelho, self.versao_escolhida)
+
+            lenfaltas = resolver_pos(path, 'tokens_regulamento.json')
+
+            InfoPopup(app, f"Ver alterações a ficheiro upd_pos.json na pasta da versão respetiva, faltas pendentes: {lenfaltas}")
+
+    def exec_match_facil_regl_callback(self):
+        if self.concelho_escolhido is None:
+            WarningPopup(app, "Necessário escolher um concelho primeiro")
+        elif self.versao_escolhida is None:
+            WarningPopup(app, "Necessário escolher uma versão primeiro")
+        else:
+            folder_dados = get_dados_folder()
+            pasta_concelho = CONCELHOS[self.concelho_escolhido]["pasta"]
+            path = os.path.join(folder_dados, 'PDM', pasta_concelho, self.versao_escolhida)
+
+            faltas_plurais, faltas_lhe_se, len_faltas = matches_faceis(path, 'tokens_regulamento.json', 'matches_faceis.json')
+
+            InfoPopup(app, f"Ver alterações a ficheiro matches_faceis.json na pasta da versão respetiva, faltas pendentes: {faltas_plurais}, {faltas_lhe_se}, {len_faltas}")
 
     def exit_button_callback(self):
         self.destroy()

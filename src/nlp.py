@@ -779,8 +779,10 @@ def presenca_nomes_proprios(p_part_of_speech_dict: dict, p_token_list: list[str]
 
 	ret = []
 
+	src_path = os.path.dirname(os.path.abspath(__file__))
+
 	nomes = None
-	with open(os.path.join('setup', 'nomes_proprios.json'), 'r', encoding='utf-8') as fp: 
+	with open(os.path.join(src_path, 'setup', 'nomes_proprios.json'), 'r', encoding='utf-8') as fp: 
 		nomes = json.load(fp)
 
 	seps = ['da', 'do', 'de', 'e']
@@ -819,8 +821,10 @@ def presenca_nomes_proprios_old(p_part_of_speech_dict: dict, p_words_to_check: l
 
 	ret = None
 
+	src_path = os.path.dirname(os.path.abspath(__file__))
+
 	nomes = None
-	with open(os.path.join('setup', 'nomes_proprios.json'), 'r', encoding='utf-8') as fp: 
+	with open(os.path.join(src_path, 'setup', 'nomes_proprios.json'), 'r', encoding='utf-8') as fp: 
 		nomes = json.load(fp)	
 
 	assert not nomes is None
@@ -941,8 +945,10 @@ if __name__ == "__main0__":
 
 	print("ok")
 
+	src_path = os.path.dirname(os.path.abspath(__file__))
+
 	pos_dict = None
-	with open(os.path.join('setup', 'part_of_speech.json'), 'r', encoding='utf-8') as fp: 
+	with open(os.path.join(src_path, 'setup', 'part_of_speech.json'), 'r', encoding='utf-8') as fp: 
 		pos_dict = json.load(fp)
 
 	assert not pos_dict is None
