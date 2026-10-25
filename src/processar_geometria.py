@@ -28,7 +28,9 @@ def ler_layers_logicas(p_path_versao, p_path, p_layer_field, p_geom_ext):
 			relpath = os.path.relpath(fullpath, start=p_path)
 
 			try:
-				df = gpd.read_file(fullpath).drop(columns="geometry")
+				df = gpd.read_file(fullpath, read_geometry=True)
+				gts = df.geom_type.unique()
+				df.drop(columns="geometry")
 			except pyogrio.errors.DataSourceError as dse:
 				print("DataSourceError:", dse, relpath)
 				continue
@@ -39,7 +41,7 @@ def ler_layers_logicas(p_path_versao, p_path, p_layer_field, p_geom_ext):
 			try:
 				layer_vals = list(df[layer_cols[0]].unique())
 				layer_count += len(layer_vals)
-				ret[len(ret.keys())+1] = { "p": relpath, "l": layer_vals }
+				ret[len(ret.keys())+1] = { "p": relpath, "gt": gts[0], "l": layer_vals }
 			except IndexError as ie:
 				print("IndexError:", ie, relpath)
 				print("cols:", cols)
