@@ -3,3 +3,4 @@ requests
 unidecode
 customtkinter
 tqdm
+geopandas
