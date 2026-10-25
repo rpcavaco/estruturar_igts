@@ -327,7 +327,7 @@ class DictListManager():
 				if idxs_efetivamente_usados[-1] < len(self._items) - 1:
 					test_idx = idxs_efetivamente_usados[-1] + 1
 					if 'numero' in self._items[test_idx].keys():
-						if self._items[test_idx]['numero'] in ('item', 'ord', 'alinea', 'romano'):
+						if self._items[test_idx]['numero'] in ('item', 'ord', 'alinea', 'romano', 'int'):
 							children.append(deepcopy(self._items[test_idx]))
 							idxs_efetivamente_usados.append(test_idx)
 
