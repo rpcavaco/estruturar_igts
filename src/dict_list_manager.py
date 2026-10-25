@@ -169,7 +169,7 @@ class DictListManager():
 		func: Callable[[Dict[str, Any]], Any],
 		predicate: Optional[Callable[[Dict[str, Any]], bool]] = None,
 		afterfunc: Optional[Callable[[Dict[str, Any]], Any]] = None,
-		validate_after: bool = True,
+		validate_after: bool = False,
 		include_idx_as_func_param: bool = False # índice do elemento na lista é passado como parametro a 'func'
 	) -> None:
 		"""

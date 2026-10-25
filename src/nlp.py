@@ -79,7 +79,9 @@ PATT_NUMERO = {
 	"float": r"^([0-9]+[\,]+[0-9]+)$",
 	"ord": r'^([0-9]+)[\. ]?[ºª]$',
 	"alinea": (r"^[a-zA-Z]?[a-zA-Z][\)\.]$",r"^[cilmvx]+[\)\.]$"),
-	"estrada": (r"[eE][nNmM][\s]?[\d]+[\-]?[\d]+$", r"[eE][nNmM][\s]?[\d]$")
+	"estrada": (r"[eE][nNmM][\s]?[\d]+[\-]?[\d]+$", r"[eE][nNmM][\s]?[\d]$"),
+	"uopg": (r"^uopg[0-9]+$", r"^UOPG[0-9]+$"),
+	"suopg": (r"^suopg[0-9]+$", r"^SUOPG[0-9]+$")
 } 
 
 # POS_ANTECEDENTES_INADMISSIVEIS = {

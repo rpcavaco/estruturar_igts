@@ -25,6 +25,7 @@
 	"eem": "estrutura ecológica municipal",
 	"er": "estrada regional",
 	"fmsau": "fundo municipal de sustentabilidade ambiental e urbanística",
+	"prof-edm": "programa regional de ordenamento florestal de entre douro e minho",
 	"prof-tmad": "programa regional de ordenamento florestal de trás-os-montes e alto douro",
 	"proftmad": "programa regional de ordenamento florestal de trás-os-montes e alto douro",
 	"uopg": "unidade operativa de planeamento e gestão",
@@ -49,5 +50,10 @@
 	"pna": "programa nacional da água",
 	"pnpot": "programa nacional da política de ordenamento do território",
 	"rgr": "regulamento geral do ruído",
-	"ptcon0059": "zona especial de conservação do rio paiva"
+	"ptcon0059": "zona especial de conservação do rio paiva",
+	"imt": "instituto da mobilidade e transportes",
+	"reot": "relatório do estado do ordenamento do território",
+	"uvp": "unidade de valorização paisagística",
+	"ut": "unidades territoriais",
+	"th": "tursimo de habitação"
 }

@@ -15879,6 +15879,69 @@
     "refletores": [
         "nome",
         "adjetivo"
+    ],
+    "baixo": [
+        "adjetivo"
+    ],
+    "determinadas": [
+        "adjetivo",
+        "pronome",
+        "participio"
+    ],
+    "efetuadas": [
+        "participio"
+    ],
+    "asterisco": [
+        "nome"
+    ],
+    "distinguidas": [
+        "adjetivo",
+        "participio"
+    ],
+    "distintas": [
+        "adjetivo"
+    ],
+    "dominância": [
+        "nome"
+    ],
+    "fizerem": [
+        "verbo"
+    ],
+    "mantiver": [
+        "verbo"
+    ],
+    "usar": [
+        "verbo"
+    ],
+    "etc": [
+        "locucao"
+    ],
+    "formando-se": [
+        "verbo"
+    ],
+    "puro": [
+        "adjetivo"
+    ],
+    "puros": [
+        "adjetivo"
+    ],
+    "replantar": [
+        "verbo"
+    ],
+    "replantada": [
+        "verbo"
+    ],
+    "replantadas": [
+        "verbo"
+    ],
+    "replantado": [
+        "verbo"
+    ],
+    "replantados": [
+        "verbo"
+    ],
+    "replantação": [
+        "nome"
     ]
     
 }
