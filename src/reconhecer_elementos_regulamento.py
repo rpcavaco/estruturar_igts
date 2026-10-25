@@ -3,10 +3,10 @@ import json
 import argparse
 
 from copy import copy, deepcopy
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 from .json_helpers import find_unserializable
-from .elementos import ReconhecimentoElementos
+from .elementos import ReconhecimentoElementos, Pesquisa
 from .dict_list_manager import DictListManager
 from .nlp import update_parts_of_speech_dict
 
@@ -55,6 +55,7 @@ def reconhecer(p_versao_concelho, p_output_file, preserve_tokens_ords: Optional[
 			for j, instr in enumerate(val["c"]):
 				rref.reconhecerEmJanela(instr, janela_dict)
 				janela_dict['ord'] = i + 1
+				janela_dict['subord'] = j + 1
 				janela_dict['p'] = copy(val['p'])
 				# if len(val['p']) > 0:
 				# 	janela_dict['p'].append(j)
@@ -82,7 +83,7 @@ def reconhecer(p_versao_concelho, p_output_file, preserve_tokens_ords: Optional[
 		print(f"Ver {p_output_file} em 'output'")
 		json.dump(ret, fp, indent=4, ensure_ascii=False, cls=DictListManager.Encoder)
 
-def matches_faceis(p_versao_concelho, p_referentes_file, p_output_file) -> None:
+def matches_faceis(p_versao_concelho, p_referentes_file, p_output_file) -> Tuple[int]:
 
 	wrkdir = os.path.join(p_versao_concelho, "output")
 
@@ -149,7 +150,7 @@ def matches_faceis(p_versao_concelho, p_referentes_file, p_output_file) -> None:
 
 	return faltas_plurais, faltas_lhe_se, len_faltas
 
-def resolver_pos(p_versao_concelho: str, p_referentes_file: str):
+def resolver_pos(p_versao_concelho: str, p_referentes_file: str) -> int:
 
 	wrkdir = os.path.join(p_versao_concelho, "output")
 
@@ -177,6 +178,93 @@ def resolver_pos(p_versao_concelho: str, p_referentes_file: str):
 		lenfaltas = 0
 
 	return lenfaltas
+
+
+def obter_lista_plantas(p_path_versao_concelho, p_tokens_plantas_primnivel_path, p_regltokens_file, p_output_file, strict=False) -> None:
+	"""
+	- strict: não considera repetições, found_count não pode ser maior que base_count
+	"""
+
+	wrkdir = os.path.join(p_path_versao_concelho, "output")
+
+	regltokens_dict = None
+	with open(os.path.join(wrkdir, p_regltokens_file), 'r') as fp:
+		regltokens_dict = json.load(fp)
+
+	tokens_plantas_lists = None
+	with open(os.path.join(wrkdir, p_tokens_plantas_primnivel_path), 'r') as fp:
+		tokens_plantas_lists = json.load(fp)
+
+	out_path = os.path.join(wrkdir, p_output_file)
+
+	search_obj = Pesquisa()
+	ret_list = []
+
+	ret_obj = {}
+
+	for tpli, tokens_plantas_list in enumerate(tokens_plantas_lists):
+		for ti, tkn_node in enumerate(regltokens_dict["nodes"]):
+
+			del ret_list[:]
+
+			search_obj.similaridadeElementos(tokens_plantas_list, tkn_node["tokens_list"], ret_list)
+			if len(ret_list) == 0:
+				continue
+
+			max_found = 0
+			max_elem = None
+
+			for i, ret in enumerate(ret_list):
+				base_count, base_count_relevantes, found_count, found_count_relevantes = ret
+				if found_count > max_found:
+					if not strict or found_count <= base_count:
+						max_found = found_count
+						max_elem = (i, base_count, base_count_relevantes, found_count, found_count_relevantes)
+			
+			if max_found > 0:
+				i, base_count, base_count_relevantes, found_count, found_count_relevantes = max_elem
+				if found_count >= base_count and found_count_relevantes >= base_count_relevantes:
+					ret_obj.setdefault(str(tpli), {})
+					ret_obj[str(tpli)].setdefault(tkn_node["p"][-1], {})
+					ret_obj[str(tpli)][tkn_node["p"][-1]][tkn_node["subord"]] = copy(max_elem)
+
+	p_keys_ocurrences = {}
+	for tpli_key, tpli_val in ret_obj.items():
+		for p_key in tpli_val.keys():
+			p_keys_ocurrences.setdefault(p_key, [])
+			if not tpli_key in p_keys_ocurrences[p_key]:
+				p_keys_ocurrences[p_key].append(tpli_key)
+
+	max_cnt = 0
+	for v in p_keys_ocurrences.values():
+		if len(v) > max_cnt:
+			max_cnt = len(v)
+
+	found_p = []
+	for k, v in p_keys_ocurrences.items():
+		if len(v) == max_cnt:
+			found_p.append(k)
+
+	saida = {}
+	for tpli_key, tpli_val in ret_obj.items():
+		for p_key in tpli_val.keys():
+			if p_key in found_p:
+				saida.setdefault(p_key, [])
+				saida[p_key].append(tpli_val[p_key])
+
+	with open(os.path.join(wrkdir, "obter_lista_plantas.json"), "w", encoding="utf-8") as fp:
+		json.dump(saida, fp, indent=4, ensure_ascii=False)
+
+	for p_key, saida_val in saida.items():
+		for tkn_node in regltokens_dict["nodes"]: 
+			if tkn_node["p"][-1] == p_key:
+				subord_keys = set([k for d in saida_val for k in d.keys()])
+				if tkn_node["subord"] in subord_keys:
+					print("\n".join(tkn_node['referentes']))
+
+
+
+
 
 
 def main():

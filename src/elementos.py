@@ -4,7 +4,7 @@ import json
 import re
 
 # from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Type
-from typing import Dict, Type, Any, List
+from typing import Dict, Type, Any, List, Optional
 from copy import copy
 
 from .nlp import injetarTemposVerbais, genTokensList, genPOS, POSNotFound, getNumPattern #, presenca_nomes_proprios, presenca_datas
@@ -224,6 +224,82 @@ def reconhecerURLs(p_list: 'DictListManager') -> None:
 	for idx in reversed(idxs_list):
 		p_list.buildConstruct([idx], "URL")
 
+
+
+class Pesquisa(object):
+
+	def __init__(self):
+
+		src_path = os.path.dirname(os.path.abspath(__file__))
+
+		self.sufixos_plurais = None
+		with open(os.path.join(src_path, 'setup', 'sufixos_plurais,json'), 'r', encoding='utf-8') as fp: 
+			self.sufixos_plurais = json.load(fp)	
+
+	def similaridadeLists(self, p_lista_elementos_to_search: List[Dict[str, Type]], p_lista_elementos_searched: List[Dict[str, Type]]):
+
+		base_count = 0
+		base_count_relevantes = 0
+		found_count = 0
+		found_count_relevantes = 0
+
+		seps = ['da', 'do', 'das', 'dos', 'de', 'e', 'em', 'na', 'no']
+
+		for tkn_a in p_lista_elementos_to_search:
+
+			if "repr" in tkn_a.keys():
+
+				base_count += 1
+				if not tkn_a["repr"] in seps:
+					base_count_relevantes += 1
+
+				for tkn_b in p_lista_elementos_searched:
+
+					if "repr" in tkn_b.keys() and tkn_a["repr"] == tkn_b["repr"]:
+						# seps não podem iniciar found_count
+						if found_count > 0 or not tkn_a["repr"] in seps:
+							found_count += 1
+							if not tkn_b["repr"] in seps:
+								found_count_relevantes += 1
+
+		return base_count, base_count_relevantes, found_count, found_count_relevantes
+
+	def similaridadeElementos2(self, p_lista_elementos_to_search: List[Dict[str, Type]], p_lista_elementos_searched: List[Dict[str, Type]], outlist: List[tuple], construct: Optional[str] = None):
+
+		if not construct is None:
+			
+			for tkn_b in p_lista_elementos_searched:
+				if 'construct' in tkn_b.keys() and tkn_b['construct'] == construct:
+					outlist.append(self.similaridadeLists(p_lista_elementos_to_search, tkn_b["children"]))
+
+		else:
+
+			outlist.append(self.similaridadeLists(p_lista_elementos_to_search, p_lista_elementos_searched))
+
+
+	def similaridadeElementos(self, p_lista_elementos_to_search: List[Dict[str, Type]], p_lista_elementos_searched: List[Dict[str, Type]], outlist: List[tuple]):
+	
+		to_search_tokens = []
+		for tkn_a in p_lista_elementos_to_search:
+
+			if 'construct' in tkn_a.keys():
+			
+				if len(to_search_tokens) > 0:
+					use_tokens = deepcopy(to_search_tokens)
+					del to_search_tokens[:]
+					self.similaridadeElementos2(use_tokens, p_lista_elementos_searched, outlist)
+
+				self.similaridadeElementos2(tkn_a["children"], p_lista_elementos_searched, outlist, construct=tkn_a['construct'])
+
+			else:
+
+				to_search_tokens.append(tkn_a)
+
+		if len(to_search_tokens) > 0:
+			# se ainda existirem elemetos em to_search_tokens, fazer yield self.similaridadeElementos2, 
+			# à partida, serão elementos fora de construct
+			self.similaridadeElementos2(to_search_tokens, p_lista_elementos_searched, outlist)
+
 class ReconhecimentoElementos(object):
 
 	def __init__(self, substituicoes_locais=None):
@@ -413,6 +489,7 @@ class ReconhecimentoElementos(object):
 
 			# Tentativa de separar duas denominações juntas, desde que a primeira
 			#   palavra a sequir à conjunção não seja um nome
+
 			secnd_idxs_list = []
 			for i, idx in enumerate(idxs_list):
 
@@ -422,7 +499,8 @@ class ReconhecimentoElementos(object):
 
 				pair = idxs_list[i:i+2]
 				if len(pair) == 2:			
-					if p_list[pair[0]]['lower'] == 'e' and \
+					if 'lower' in p_list[pair[0]].keys() and \
+						p_list[pair[0]]['lower'] == 'e' and \
 						not p_list[pair[1]]['repr'] in self.nomes:
 							idxs_lists.append(copy(secnd_idxs_list))
 							del secnd_idxs_list[:]

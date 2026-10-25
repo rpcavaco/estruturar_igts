@@ -6,7 +6,9 @@ import customtkinter as ctk
 from .cfg import CONCELHOS
 
 from src.processar_regulamento import genfiles_regulamento
-from src.reconhecer_elementos_regulamento import reconhecer, resolver_pos, matches_faceis
+from src.reconhecer_elementos_regulamento import reconhecer, resolver_pos, matches_faceis, obter_lista_plantas
+
+TOKENS_REGULAMENTO = "tokens_regulamento.json"
 
 def get_dados_folder():
     ret = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'dados')
@@ -98,8 +100,9 @@ class OpsFrame(BaseFrame):
         app = self.winfo_toplevel()
         app.exec_match_facil_regl_callback()
 
-    def obter_lista_plantas_callback():
-        print("obter_lista_plantas_callback")
+    def obter_lista_plantas_callback(self):
+        app = self.winfo_toplevel()
+        app.exec_obter_lista_plantas_callback()
 
 class WarningPopup(ctk.CTkToplevel):
     def __init__(self, master, message):
@@ -195,8 +198,8 @@ class App(ctk.CTk):
             folder_dados = get_dados_folder()
             pasta_concelho = CONCELHOS[self.concelho_escolhido]["pasta"]
             path = os.path.join(folder_dados, 'PDM', pasta_concelho, self.versao_escolhida)
-            reconhecer(path, 'tokens_regulamento.json', limit=0)
-            InfoPopup(app, "Gerados ficheiro de tokens (tokens_regulamento) extraídos do Regulamento")
+            reconhecer(path, TOKENS_REGULAMENTO, limite=0)
+            InfoPopup(app, f"Gerado ficheiro de tokens ({TOKENS_REGULAMENTO}) extraídos do Regulamento")
 
     def exec_resolver_pos_regl_callback(self):
         if self.concelho_escolhido is None:
@@ -208,7 +211,7 @@ class App(ctk.CTk):
             pasta_concelho = CONCELHOS[self.concelho_escolhido]["pasta"]
             path = os.path.join(folder_dados, 'PDM', pasta_concelho, self.versao_escolhida)
 
-            lenfaltas = resolver_pos(path, 'tokens_regulamento.json')
+            lenfaltas = resolver_pos(path, TOKENS_REGULAMENTO)
 
             InfoPopup(app, f"Ver alterações a ficheiro upd_pos.json na pasta da versão respetiva, faltas pendentes: {lenfaltas}")
 
@@ -222,9 +225,34 @@ class App(ctk.CTk):
             pasta_concelho = CONCELHOS[self.concelho_escolhido]["pasta"]
             path = os.path.join(folder_dados, 'PDM', pasta_concelho, self.versao_escolhida)
 
-            faltas_plurais, faltas_lhe_se, len_faltas = matches_faceis(path, 'tokens_regulamento.json', 'matches_faceis.json')
+            faltas_plurais, faltas_lhe_se, len_faltas = matches_faceis(path, TOKENS_REGULAMENTO, 'matches_faceis.json')
 
-            InfoPopup(app, f"Ver alterações a ficheiro matches_faceis.json na pasta da versão respetiva, faltas pendentes: {faltas_plurais}, {faltas_lhe_se}, {len_faltas}")
+            InfoPopup(app, f"Ver alterações a ficheiro matches_faceis.json na pasta da versão respetiva, faltas pendentes, plurais: {faltas_plurais}, -lhe/-se:{faltas_lhe_se}, total faltas:{len_faltas}")
+
+    def exec_obter_lista_plantas_callback(self):
+        if self.concelho_escolhido is None:
+            WarningPopup(app, "Necessário escolher um concelho primeiro")
+        elif self.versao_escolhida is None:
+            WarningPopup(app, "Necessário escolher uma versão primeiro")
+        else:
+            folder_dados = get_dados_folder()
+            pasta_concelho = CONCELHOS[self.concelho_escolhido]["pasta"]
+            path = os.path.join(folder_dados, 'PDM', pasta_concelho, self.versao_escolhida)
+            path_catalogo_objetos = os.path.join(folder_dados, 'PDM', 'CatalogoObjetos')
+
+            tokens_plantas_primnivel_path = os.path.join(path_catalogo_objetos, 'plantas_primeiro_nivel_tokens.json')
+
+            tr_file = os.path.join(path, 'output', TOKENS_REGULAMENTO)
+            if not os.path.exists(tr_file):
+                WarningPopup(app, "Não existe ficheiro de tokens de regulamento, tem de executar 'Reconhecer elementos' primeiro")
+            else:
+                obter_lista_plantas(path, tokens_plantas_primnivel_path, TOKENS_REGULAMENTO, 'lista_plantas.json', strict=True)
+
+            InfoPopup(app, f"OK")
+
+
+
+
 
     def exit_button_callback(self):
         self.destroy()
