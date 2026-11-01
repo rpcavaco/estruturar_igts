@@ -17,7 +17,8 @@
         ],
         "conjuncao": [
             "nome",
-            "adjetivo"
+            "adjetivo",
+            "verbo"
         ],
         "contracao": [
             "nome",
@@ -54,7 +55,8 @@
         "verbo": [
             "verbo",
             "adverbio",
-            "nome"
+            "nome",
+            "preposicao"
         ],
         "participio": [
             "adverbio",
