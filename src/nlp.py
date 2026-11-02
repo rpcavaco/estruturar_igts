@@ -4,7 +4,9 @@ import json
 import requests
 import time
 import re
+import regex
 import warnings
+import unicodedata
 
 from copy import copy, deepcopy
 from unidecode import unidecode
@@ -83,6 +85,13 @@ PATT_NUMERO = {
 	"uopg": (r"^uopg[0-9]+$", r"^UOPG[0-9]+$"),
 	"suopg": (r"^suopg[0-9]+$", r"^SUOPG[0-9]+$")
 } 
+
+CAMELCASE_PATTERN = regex.compile(
+    r'\p{Lu}+(?=\p{Lu}\p{Ll})'   # acronym followed by a capitalized word
+    r'|\p{Lu}?\p{Ll}+'           # normal word, optionally capitalized
+    r'|\p{Lu}+'                  # trailing acronym
+    r'|\d+'                      # digit runs
+)
 
 # POS_ANTECEDENTES_INADMISSIVEIS = {
 # 	"adjetivo": [
@@ -935,6 +944,11 @@ def presenca_datas(p_tokens_to_check: list[str]) -> list[int]:
 
 	return list(sorted(found_indexes))
 
+
+
+def split_camelcase_words(s):
+    s = unicodedata.normalize('NFC', s)
+    return CAMELCASE_PATTERN.findall(s)
 
 # if __name__ == "__main__":
 # 	read_all_pos()

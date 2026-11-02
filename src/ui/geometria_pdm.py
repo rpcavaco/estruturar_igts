@@ -1,7 +1,7 @@
 import os
 import customtkinter as ctk
 
-from src.processar_geometria import ler_layers_logicas
+from src.processar_geometria import ler_layers_logicas, tokenizar_layers_logicas
 
 from .cfg import CONCELHOS
 
@@ -65,8 +65,11 @@ class OpsFrame(BaseFrame):
     def __init__(self, master, title):
         super().__init__(master, title)
 
+        # Chaves abaixo são arbitrárias, servem apenas para ajudar a gerir internamente 
+        #  os recursos a alocar a cada operação
         operacoes = {
-            "logic_layers": ("Layers lógicas", self.logic_layers_callback)
+            "logic_layers": ("Layers lógicas", self.logic_layers_callback),
+            "tokenize_logic_layers": ("Tokenizar layers", self.tokenizelogiclayers_callback)
         }
 
         self.op_buttons = {}
@@ -80,6 +83,10 @@ class OpsFrame(BaseFrame):
     def logic_layers_callback(self):
         app = self.winfo_toplevel()
         app.exec_logiclayers_callback()
+
+    def tokenizelogiclayers_callback(self):
+        app = self.winfo_toplevel()
+        app.exec_tokenizelogiclayers_callback()
 
 class WarningPopup(ctk.CTkToplevel):
     def __init__(self, master, message):
@@ -162,7 +169,27 @@ class App(ctk.CTk):
             path_versao = os.path.join(folder_dados, 'PDM', pasta_concelho, self.versao_escolhida)
             path = os.path.join(path_versao, *geom_path)
             ler_layers_logicas(path_versao, path, layer_field, geom_ext)
-            InfoPopup(app, "..... geometria ....")
+            InfoPopup(app, "Layers lógicas lidas para 'layers.json'")
+
+    def exec_tokenizelogiclayers_callback(self):
+        if self.concelho_escolhido is None:
+            WarningPopup(app, "Necessário escolher um concelho primeiro")
+        elif self.versao_escolhida is None:
+            WarningPopup(app, "Necessário escolher uma versão primeiro")
+        else:
+            folder_dados = get_dados_folder()
+            pasta_concelho = CONCELHOS[self.concelho_escolhido]["pasta"]
+            path_versao = os.path.join(folder_dados, 'PDM', pasta_concelho, self.versao_escolhida)
+            lyrfile_path = os.path.join(path_versao, 'output', 'layers.json')
+            if not os.path.exists(lyrfile_path):
+                WarningPopup(app, "Não existe ficheiro 'layers.json', necessário executar 'Layers lógicas' primeiro")
+            else:
+                tokenizar_layers_logicas(path_versao)
+                InfoPopup(app, "Tokenização de layers terminada")
+
+
+
+
 
     def exit_button_callback(self):
         self.destroy()

@@ -4,6 +4,10 @@ import geopandas as gpd
 import pyogrio
 import json
 
+from shutil import copy2
+
+from .nlp import split_camelcase_words
+
 def corrigir_chars(p_layer_vals):
 	for i, val in enumerate(p_layer_vals):
 		p_layer_vals[i] = val.replace('Ã', 'Á')
@@ -60,12 +64,15 @@ def ler_layers_logicas(p_path_versao, p_path, p_layer_field, p_geom_ext):
 				layer_vals = list(df[layer_cols[0]].unique())
 				corrigir_chars(layer_vals)
 				layer_count += len(layer_vals)
-				ret[len(ret.keys())+1] = { "p": relpath, "gt": gts[0], "l": layer_vals }
+				retkey = len(ret.keys())+1
+				ret[retkey] = { "p": relpath, "gt": gts[0], "l": [] }
+				for lv in layer_vals:
+					ret[retkey]["l"].append({ "txt": lv })
 			except IndexError as ie:
 				print("IndexError:", ie, relpath)
 				print("cols:", cols)
 				# ret.append([relpath, os.path.splitext(the_file)[0]])
-				ret[len(ret.keys())+1] = { "p": relpath, "l": [os.path.splitext(the_file)[0]] } 
+				ret[len(ret.keys())+1] = { "p": relpath, "l": [{ "txt": os.path.splitext(the_file)[0] }] } 
 				layer_count += 1
 
 
@@ -77,9 +84,20 @@ def ler_layers_logicas(p_path_versao, p_path, p_layer_field, p_geom_ext):
 def tokenizar_layers_logicas(p_path_versao):
 
 	lyrfile_path = os.path.join(p_path_versao, 'output', 'layers.json')
+	bak_lyrfile_path = os.path.join(p_path_versao, 'output', 'layers.bak.json')
 
 	ll_obj = None
 	with open(lyrfile_path) as fp:
 		ll_obj = json.load(fp)
 
 	assert not ll_obj is None
+
+	for val in ll_obj.values():
+
+		for lyrtxt in val["l"]:
+			lyrtxt["tkns"] = split_camelcase_words(lyrtxt["txt"])
+
+	copy2(lyrfile_path, bak_lyrfile_path)
+		
+	with open(lyrfile_path, "w") as fp:
+		json.dump(ll_obj, fp, indent=4, ensure_ascii=False)

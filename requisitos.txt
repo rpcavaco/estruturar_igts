@@ -4,3 +4,5 @@ unidecode
 customtkinter
 tqdm
 geopandas
+regex
+
