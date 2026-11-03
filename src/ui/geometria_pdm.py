@@ -1,7 +1,7 @@
 import os
 import customtkinter as ctk
 
-from src.processar_geometria import ler_layers_logicas, tokenizar_layers_logicas
+from src.processar_geometria import ler_layers_logicas, elementos_layers_logicas
 
 from .cfg import CONCELHOS
 
@@ -69,7 +69,7 @@ class OpsFrame(BaseFrame):
         #  os recursos a alocar a cada operação
         operacoes = {
             "logic_layers": ("Layers lógicas", self.logic_layers_callback),
-            "tokenize_logic_layers": ("Tokenizar layers", self.tokenizelogiclayers_callback)
+            "tokenize_logic_layers": ("Separar elementos layers", self.tokenizelogiclayers_callback)
         }
 
         self.op_buttons = {}
@@ -184,7 +184,7 @@ class App(ctk.CTk):
             if not os.path.exists(lyrfile_path):
                 WarningPopup(app, "Não existe ficheiro 'layers.json', necessário executar 'Layers lógicas' primeiro")
             else:
-                tokenizar_layers_logicas(path_versao)
+                elementos_layers_logicas(path_versao)
                 InfoPopup(app, "Tokenização de layers terminada")
 
 

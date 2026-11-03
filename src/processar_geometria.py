@@ -6,7 +6,7 @@ import json
 
 from shutil import copy2
 
-from .nlp import split_camelcase_words
+from .elementos import ReconhecimentoElementos
 
 def corrigir_chars(p_layer_vals):
 	for i, val in enumerate(p_layer_vals):
@@ -76,28 +76,22 @@ def ler_layers_logicas(p_path_versao, p_path, p_layer_field, p_geom_ext):
 				layer_count += 1
 
 
+	retfinal = { "layers": ret }
+
 	with open(os.path.join(p_path_versao, 'output', 'layers.json'), "w") as fp:
-		json.dump(ret, fp, indent=4, ensure_ascii=False)
+		json.dump(retfinal, fp, indent=4, ensure_ascii=False)
 
 	print(f"Final, totais ficheiros: {file_count}, totais layers: {layer_count}")
 
-def tokenizar_layers_logicas(p_path_versao):
+def elementos_layers_logicas(p_path_versao):
 
-	lyrfile_path = os.path.join(p_path_versao, 'output', 'layers.json')
-	bak_lyrfile_path = os.path.join(p_path_versao, 'output', 'layers.bak.json')
+	rref = ReconhecimentoElementos()
 
-	ll_obj = None
-	with open(lyrfile_path) as fp:
-		ll_obj = json.load(fp)
-
-	assert not ll_obj is None
-
-	for val in ll_obj.values():
-
-		for lyrtxt in val["l"]:
-			lyrtxt["tkns"] = split_camelcase_words(lyrtxt["txt"])
+	lyrs_obj = {}
+	lyrfile_path = rref.tratarNomesLayers(p_path_versao, lyrs_obj, "layers.json")
+	bak_lyrfile_path = lyrfile_path.replace(".json", ".bak.json")
 
 	copy2(lyrfile_path, bak_lyrfile_path)
 		
 	with open(lyrfile_path, "w") as fp:
-		json.dump(ll_obj, fp, indent=4, ensure_ascii=False)
+		json.dump(lyrs_obj, fp, indent=4, ensure_ascii=False)

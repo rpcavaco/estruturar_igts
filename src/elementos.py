@@ -7,7 +7,7 @@ import re
 from typing import Dict, Type, Any, List, Optional
 from copy import copy
 
-from .nlp import injetarTemposVerbais, genTokensList, genPOS, POSNotFound, getNumPattern #, presenca_nomes_proprios, presenca_datas
+from .nlp import injetarTemposVerbais, genTokensList, genPOS, POSNotFound, getNumPattern, split_camelcase_words
 from .dict_list_manager import DictListManager, ConstructValidationError, EmptyConstructError
 
 PT_ALPHA_CHAR_PATT = "[a-zàáâãçèéêìíîòóôõùúü]"
@@ -225,6 +225,18 @@ def reconhecerURLs(p_list: 'DictListManager') -> None:
 		p_list.buildConstruct([idx], "URL")
 
 
+def formas_plurais(p_str: str, p_sufixos_plurais: List, out_formas: List[str]) -> None:
+	del out_formas[:]
+	for plural_pair in p_sufixos_plurais:
+		out_formas.append(p_str)
+		plural, singular = plural_pair
+		if p_str.endswith(plural):
+			out_formas.append(p_str[:-len(plural)] + singular)
+			break
+		if p_str.endswith(singular):
+			out_formas.append(p_str[:-len(singular)] + plural)
+			break
+
 
 class Pesquisa(object):
 
@@ -237,11 +249,21 @@ class Pesquisa(object):
 			self.sufixos_plurais = json.load(fp)	
 
 	def similaridadeLists(self, p_lista_elementos_to_search: List[Dict[str, Type]], p_lista_elementos_searched: List[Dict[str, Type]]):
+		"""
+		Pesquisa por similaridade por comparação direta entre listas de tokens simples.
+
+		Sẽo retornados quatro resultados:
+		- base_count: número de tokens a pesquisar como atributo 'repr'
+		- base_count_relevantes: dos anteriores, os que não estão na lista 'seps'
+		- found_count: tokens encontrados na pesquisa
+		- found_count_relevantes: dos anteriores (found_count), os que não estão na lista 'seps'
+		"""
 
 		base_count = 0
 		base_count_relevantes = 0
 		found_count = 0
 		found_count_relevantes = 0
+		formas = []
 
 		seps = ['da', 'do', 'das', 'dos', 'de', 'e', 'em', 'na', 'no']
 
@@ -255,16 +277,25 @@ class Pesquisa(object):
 
 				for tkn_b in p_lista_elementos_searched:
 
-					if "repr" in tkn_b.keys() and tkn_a["repr"] == tkn_b["repr"]:
-						# seps não podem iniciar found_count
-						if found_count > 0 or not tkn_a["repr"] in seps:
-							found_count += 1
-							if not tkn_b["repr"] in seps:
-								found_count_relevantes += 1
+					formas_plurais(tkn_a["repr"], self.sufixos_plurais, formas)
+					for forma in formas:
+
+						if "repr" in tkn_b.keys() and forma == tkn_b["repr"]:
+							# seps não podem iniciar found_count
+							if found_count > 0 or not tkn_a["repr"] in seps:
+								found_count += 1
+								if not tkn_b["repr"] in seps:
+									found_count_relevantes += 1
 
 		return base_count, base_count_relevantes, found_count, found_count_relevantes
 
 	def similaridadeElementos2(self, p_lista_elementos_to_search: List[Dict[str, Type]], p_lista_elementos_searched: List[Dict[str, Type]], outlist: List[tuple], construct: Optional[str] = None):
+		"""
+		Pesquisa por similaridade por comparação entre listas de tokens simples, que não sejam 'construct'.
+
+		Se a lista corrente de tokens corresponder a uma lista de 'children' de um 'construct', o tipo respetivo deverá ter
+		 sido enviado no argumento 'construct' e a pesquisa apenas se fará contra 'children' de 'constructs' do mesmo tipo.
+		"""
 
 		if not construct is None:
 			
@@ -278,6 +309,19 @@ class Pesquisa(object):
 
 
 	def similaridadeElementos(self, p_lista_elementos_to_search: List[Dict[str, Type]], p_lista_elementos_searched: List[Dict[str, Type]], outlist: List[tuple]):
+		"""
+		Pesquisa por similaridade.
+
+		Pesquisa não a partir de uma 'string' de texto mas a partir de uma lista de tokens.
+		A pesquisa faz-se por comparação entre listas de tokens simples.
+
+		Se o token de pesquisa corrente for um 'construct' (e não um token simples), apenas se pesquisa em 'constructs' do mesmo tipo.
+		Os seus tokens constituintes ('children') são agrupados e enviados para comparação com listas de 'children' de 'constructs' do
+		 mesmo tipo.
+
+		Se o token de pesquisa não for um 'construct', são juntos outros tantos tokens não-construct consecutivos num grupo de tokens que 
+		 também é enviado para pesquisa através de self.similaridadeElementos2
+		"""
 	
 		to_search_tokens = []
 		for tkn_a in p_lista_elementos_to_search:
@@ -529,7 +573,6 @@ class ReconhecimentoElementos(object):
 				aelist = json.loads(str(ae))
 				print("idxs_list_2:", idxs_list_2)
 				print([p_list[idx] for idx in aelist])
-
 				
 	def reconhecerDatas(self, p_list: 'DictListManager') -> None:
 
@@ -884,3 +927,48 @@ class ReconhecimentoElementos(object):
 
 		# print("X", out_dict['tokens_list'].to_json())
 
+	def tratarNomesLayers(self, p_path_versao: str, p_layer_obj: Any, p_layers_filename: str) -> None:
+
+		lyrfile_path = os.path.join(p_path_versao, 'output', p_layers_filename)
+
+		p_layer_obj.clear()
+		with open(lyrfile_path) as fp:
+			p_layer_obj.update(json.load(fp))
+
+		faltas = []
+		substituicoes = {}
+
+		for val in p_layer_obj["layers"].values():
+
+			for lyrtxt in val["l"]:
+				split_words = split_camelcase_words(lyrtxt["txt"])
+				lyrtxt["wrds"] = split_words
+				for w in split_words:
+					if not w.lower() in self.part_of_speech_dict.keys():
+						if not w in faltas:
+
+							faltas.append(w)
+
+		if len(faltas) > 0:
+			p_layer_obj["faltas"] = sorted(faltas)
+
+		if bool(substituicoes):
+			p_layer_obj["substituicoes"] = substituicoes
+
+		return lyrfile_path
+
+
+if __name__ == "__main__":
+	sp = [
+		["ções", "ção"],
+		["eis", "el"],
+		["os", "o"],
+		["as", "a"],
+		["es", "e"],
+		["us", "u"],
+		["is", "l"],
+		["ens", "em"]
+	]
+	out = []
+	formas_plurais("cação", sp, out)
+	print(out)
