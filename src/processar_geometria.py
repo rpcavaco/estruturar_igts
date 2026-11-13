@@ -78,7 +78,7 @@ def ler_layers_logicas(p_path_versao, p_path, p_layer_field, p_geom_ext):
 
 	retfinal = { "layers": ret }
 
-	with open(os.path.join(p_path_versao, 'output', 'layers.json'), "w") as fp:
+	with open(os.path.join(p_path_versao, 'output', 'layers.json'), "w", encoding="utf-8") as fp:
 		json.dump(retfinal, fp, indent=4, ensure_ascii=False)
 
 	print(f"Final, totais ficheiros: {file_count}, totais layers: {layer_count}")
@@ -93,5 +93,5 @@ def elementos_layers_logicas(p_path_versao):
 
 	copy2(lyrfile_path, bak_lyrfile_path)
 		
-	with open(lyrfile_path, "w") as fp:
+	with open(lyrfile_path, "w", encoding="utf-8") as fp:
 		json.dump(lyrs_obj, fp, indent=4, ensure_ascii=False)

@@ -54,7 +54,7 @@ def reconhecer_catalogo_pdm() -> None:
 		out_json[modo] = deepcopy(found)
 		
 
-	with open(os.path.join(pasta_trabalho, 'tokens_catalogo_objetos_pdm.json'), "w") as fp:
+	with open(os.path.join(pasta_trabalho, 'tokens_catalogo_objetos_pdm.json'), "w", encoding="utf-8") as fp:
 		json.dump(out_json, fp, indent=4, ensure_ascii=False, cls=DictListManager.Encoder)
 
 

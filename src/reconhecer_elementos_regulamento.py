@@ -79,7 +79,7 @@ def reconhecer(p_versao_concelho, p_output_file, preserve_tokens_ords: Optional[
 	find_unserializable(ret)
 
 	#with open(os.path.join("..", "temp", p_output_file), 'w') as fp:
-	with open(os.path.join(wrkdir, p_output_file), 'w') as fp:
+	with open(os.path.join(wrkdir, p_output_file), 'w', encoding='utf-8') as fp:
 		print(f"Ver {p_output_file} em 'output'")
 		json.dump(ret, fp, indent=4, ensure_ascii=False, cls=DictListManager.Encoder)
 
@@ -140,7 +140,7 @@ def matches_faceis(p_versao_concelho, p_referentes_file, p_output_file) -> Tuple
 	# print(f"{found} faltas recuperáveis com '-se', '-lhe', etc.")
 	faltas_lhe_se = found
 
-	with open(os.path.join(wrkdir, p_output_file), 'w') as fp:
+	with open(os.path.join(wrkdir, p_output_file), 'w', encoding='utf-8') as fp:
 		print(f"Ver {p_output_file} em 'output'")
 		json.dump(ret, fp, indent=4, ensure_ascii=False, cls=DictListManager.Encoder)
 
