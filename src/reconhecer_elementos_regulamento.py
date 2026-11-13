@@ -215,7 +215,7 @@ def obter_lista_plantas(p_path_versao_concelho, p_tokens_plantas_primnivel_path,
 			max_elem = None
 
 			for i, ret in enumerate(ret_list):
-				base_count, base_count_relevantes, found_count, found_count_relevantes = ret
+				base_count, base_count_relevantes, found_count, found_count_relevantes, lista_nao_encontrados = ret
 				if found_count > max_found:
 					if not strict or found_count <= base_count:
 						max_found = found_count

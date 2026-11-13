@@ -252,11 +252,12 @@ class Pesquisa(object):
 		"""
 		Pesquisa por similaridade por comparação direta entre listas de tokens simples.
 
-		Sẽo retornados quatro resultados:
+		Sẽo retornados cinco resultados:
 		- base_count: número de tokens a pesquisar como atributo 'repr'
 		- base_count_relevantes: dos anteriores, os que não estão na lista 'seps'
 		- found_count: tokens encontrados na pesquisa
 		- found_count_relevantes: dos anteriores (found_count), os que não estão na lista 'seps'
+		- lista de elementos não encontrados
 		"""
 
 		base_count = 0
@@ -266,6 +267,7 @@ class Pesquisa(object):
 		formas = []
 
 		seps = ['da', 'do', 'das', 'dos', 'de', 'e', 'em', 'na', 'no']
+		not_found = []
 
 		for tkn_a in p_lista_elementos_to_search:
 
@@ -277,17 +279,23 @@ class Pesquisa(object):
 
 				for tkn_b in p_lista_elementos_searched:
 
+					found = False
+
 					formas_plurais(tkn_a["repr"], self.sufixos_plurais, formas)
 					for forma in formas:
 
 						if "repr" in tkn_b.keys() and forma == tkn_b["repr"]:
 							# seps não podem iniciar found_count
 							if found_count > 0 or not tkn_a["repr"] in seps:
+								found = True
 								found_count += 1
 								if not tkn_b["repr"] in seps:
 									found_count_relevantes += 1
 
-		return base_count, base_count_relevantes, found_count, found_count_relevantes
+					if not found:
+						not_found.append(copy(tkn_a))
+
+		return base_count, base_count_relevantes, found_count, found_count_relevantes, not_found
 
 	def similaridadeElementos2(self, p_lista_elementos_to_search: List[Dict[str, Type]], p_lista_elementos_searched: List[Dict[str, Type]], outlist: List[tuple], construct: Optional[str] = None):
 		"""
