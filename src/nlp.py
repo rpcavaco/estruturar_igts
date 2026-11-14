@@ -4,6 +4,7 @@ import json
 import requests
 import re
 import regex
+import unicodedata
 
 from functools import lru_cache
 from copy import copy, deepcopy
@@ -86,10 +87,11 @@ PATT_NUMERO = {
 } 
 
 CAMELCASE_PATTERN = regex.compile(
-	r'\p{Lu}+(?=\p{Lu}\p{Ll})'   # acronym followed by a capitalized word
-	r'|\p{Lu}?\p{Ll}+'		   # normal word, optionally capitalized
-	r'|\p{Lu}+'				  # trailing acronym
-	r'|\d+'					  # digit runs
+    r'\p{Lu}+(?=\p{Lu}\p{Ll})'
+    r'|\p{Lu}?\p{Ll}+'
+    r'|\p{Lu}+'
+    r'|\d+'
+    r'|-'
 )
 
 # POS_ANTECEDENTES_INADMISSIVEIS = {
@@ -944,6 +946,7 @@ def presenca_datas(p_tokens_to_check: list[str]) -> list[int]:
 	return list(sorted(found_indexes))
 
 def split_camelcase_words(s):
+	s = unicodedata.normalize('NFC', s)
 	return CAMELCASE_PATTERN.findall(s)
 
 def find_concat_words(lower_string: str, lowercase_words: List[str]) -> int:
@@ -1072,7 +1075,7 @@ if __name__ == "__main0__":
 
 	print(sorted([pal for pal in pos_dict.keys() if 'artigo' in pos_dict[pal] ]))
 
-if __name__ == "__main__":
+if __name__ == "__maiZn__":
 
 	s = "A-LINHATMETRO"
 
@@ -1083,3 +1086,8 @@ if __name__ == "__main__":
 		concats = find_concat_words(unidecode(w.lower()), ["a", "linha", "metro"])
 		print(s.lower(), "concats U:", concats)
 		print(segmentations_k(s, ["a", "linha", "metro"], ["a", "linha", "metro"], concats)) #, unidecoded_comparison=True))
+
+
+if __name__ == "__main__":
+
+	print(split_camelcase_words("PatrimónioArquitetonico-ZonaNonAedificandi"))

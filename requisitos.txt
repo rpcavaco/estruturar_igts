@@ -1,3 +1,5 @@
+Python 3.15.x por causa de 'unicodedata'
+
 jsonschema
 requests
 unidecode

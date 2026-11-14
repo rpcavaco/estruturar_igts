@@ -961,14 +961,20 @@ class ReconhecimentoElementos(object):
 		else:
 			substituicoes = {}
 
-		# for val in list(p_layer_obj["layers"].values())[2:3]:
+		wrds = []
+
+		# for val in list(p_layer_obj["layers"].values())[138:139]:
 		for val in p_layer_obj["layers"].values():
-			for lyrtxt in val["l"]:
+			for lyrelem in val["l"]:
 
-				if "wrds" in lyrtxt.keys() and len(lyrtxt["wrds"]) > 0:
-					del lyrtxt["wrds"][:]
+				# if "wrds" in lyrtxt.keys() and len(lyrtxt["wrds"]) > 0:
+				# 	del lyrtxt["wrds"][:]
+				del wrds[:]
+				if "wrds" in lyrelem.keys():
+					del lyrelem["wrds" ]
 
-				split_words = split_camelcase_words(lyrtxt["txt"])
+				split_words = split_camelcase_words(lyrelem["txt"])
+				#print("split_words:", split_words)
 				for w0 in split_words:
 
 					if w0 in substituicoes.keys():
@@ -984,12 +990,10 @@ class ReconhecimentoElementos(object):
 						if numconcats > 0:
 							wsegs = segmentations_k(w, test_words, test_words, numconcats)
 							if len(wsegs) > 0:
-								lyrtxt.setdefault("wrds", [])
-								lyrtxt["wrds"].extend(wsegs)
+								wrds.extend(wsegs)
 								found = True
 					else:
-						lyrtxt.setdefault("wrds", [])
-						lyrtxt["wrds"].append(w)
+						wrds.append(w)
 						found = True
 
 					if not found: # Comparação unidecoded
@@ -1000,24 +1004,24 @@ class ReconhecimentoElementos(object):
 							if numconcats > 0:
 								wsegs = segmentations_k(uwl, test_words, ud_test_words, numconcats, unidecoded_comparison=True)
 								if len(wsegs) > 0:
-									lyrtxt.setdefault("wrds", [])
-									lyrtxt["wrds"].extend(wsegs)
+									wrds.extend(wsegs)
 									found = True
 						else:
 							idx = ud_test_words.index(uwl)
-							lyrtxt.setdefault("wrds", [])
 							# Manter o case da palavra substituída
 							if w[0].isupper():
 								if len(w) >= 2 and w[1].isupper():
 									use_w = test_words[idx].upper()
 								else:
 									use_w = test_words[idx].capitalize()
-							lyrtxt["wrds"].append(use_w)
+							wrds.append(use_w)
 							found = True
 
-					# if not found and not w in faltas:
-					# 	faltas.append(w)
+					if not found:
+						wrds.append(w)
 
+				if len(wrds) > 0:
+					lyrelem["newtxt"] = " ".join(wrds)
 		# print("faltas:", faltas)
 		
 		# if len(faltas) > 0:
