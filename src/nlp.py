@@ -2,20 +2,19 @@
 import os
 import json
 import requests
-import time
 import re
 import regex
-import warnings
-import unicodedata
 
+from functools import lru_cache
 from copy import copy, deepcopy
-from unidecode import unidecode
 from time import sleep
+from unidecode import unidecode
+
 from tqdm import tqdm
 
 from .json_helpers import find_unserializable
 
-from typing import List, Dict, Type, Any #, Callable, Dict, Iterable, Iterator, List, Optional, Type
+from typing import List, Dict, Any, Optional #, Callable, Dict, Iterable, Iterator, List, , Type
 
 
 from .dict_list_manager import DictListManager
@@ -87,10 +86,10 @@ PATT_NUMERO = {
 } 
 
 CAMELCASE_PATTERN = regex.compile(
-    r'\p{Lu}+(?=\p{Lu}\p{Ll})'   # acronym followed by a capitalized word
-    r'|\p{Lu}?\p{Ll}+'           # normal word, optionally capitalized
-    r'|\p{Lu}+'                  # trailing acronym
-    r'|\d+'                      # digit runs
+	r'\p{Lu}+(?=\p{Lu}\p{Ll})'   # acronym followed by a capitalized word
+	r'|\p{Lu}?\p{Ll}+'		   # normal word, optionally capitalized
+	r'|\p{Lu}+'				  # trailing acronym
+	r'|\d+'					  # digit runs
 )
 
 # POS_ANTECEDENTES_INADMISSIVEIS = {
@@ -944,16 +943,118 @@ def presenca_datas(p_tokens_to_check: list[str]) -> list[int]:
 
 	return list(sorted(found_indexes))
 
-
-
 def split_camelcase_words(s):
-    s = unicodedata.normalize('NFC', s)
-    return CAMELCASE_PATTERN.findall(s)
+	return CAMELCASE_PATTERN.findall(s)
+
+def find_concat_words(lower_string: str, lowercase_words: List[str]) -> int:
+	"""
+	Retorna contagem de palavras concatenadas encontradas em lower_string.
+
+	Para separar as palavras concatenadas, é necessário usar segmentations_k, 
+	que necessita do valor da contagem devolvida como resultado deste método.
+
+	Não esquecer que, para operar em modo unidecoded, a string de entrada e
+	a lista de words devem ambas estar unidecoded.
+	"""
+
+	n = len(lower_string)
+	ok = [False] * (n + 1)
+	ok[0] = True
+	for j in range(1, n + 1):
+		ok[j] = any(ok[i] and lower_string[i:j] in lowercase_words for i in range(j))
+	
+	if ok[n]:
+		cnt = ok.count(True) - 1
+	else:
+		cnt = 0
+
+	#print("ok:", ok, lower_string)
+
+	return cnt
+
+def segmentations_k(s: str, lowercase_words: List[str], test_words: List[str], k: int, unidecoded_comparison: Optional[bool] = False) -> List[str]:
+	"""
+	Divide a string 's' em palavras, de acordo com a lista passada em 'test_words'.
+
+	As palavras devolvidas são retiradas da lista 'lowercase_words', usando-se os indices que 
+	resultam das pesquisas bem sucedidas em 'test_words'
+
+	Se unidecoded_comparison = True, então 'test_words' tem de conter uma cópia unidecoded de todos os elementos de 'lowercase_words'.
+
+	Devolve a lista de palavras encontradas.
+	"""
+
+	maxlen = max(map(len, lowercase_words))
+
+	@lru_cache(maxsize=None)
+	def seg(start, left):
+		if start == len(s):
+			return ((),)
+		if left == 0:
+			return ()
+		out = []
+		for end in range(start + 1, min(len(s), start + maxlen) + 1):
+			w = s[start:end]
+			if unidecoded_comparison:
+				tw = unidecode(w).lower()
+			else:
+				tw = w.lower()
+			try:
+				idx = test_words.index(tw)
+			except ValueError:
+				idx = -1
+			if idx >= 0:
+				for rest in seg(end, left - 1):
+					out.append((lowercase_words[idx], *rest))
+		return tuple(out)
+
+	ret = []
+	for r in seg(0, k):
+		ret.extend(r)
+
+	return ret
 
 # if __name__ == "__main__":
 # 	read_all_pos()
 
+# Why choosing "NFKD" in unicodedata normalize and not NFD or NFC ? (Foi uma primeira sugestão Claude, acabei por usar NFD)
+# (pergunta colocada ao Claude Sonnet 5.5)
 
+# Because for stripping accents you need a **decomposed** form, and the "K" adds useful extra folding for matching.
+
+# **Why not NFC**
+
+# NFC composes characters, so `ç` stays one code point (U+00E7). There is no separate combining mark to remove, so the accent cannot be stripped. NFC is the right form for storing or comparing text, but not for removing diacritics.
+
+# **NFD vs NFKD**
+
+# Both decompose `ç` into `c` + U+0327 (combining cedilla), so you can then drop the combining marks:
+
+# ```python
+# import unicodedata
+
+# def strip_accents(s: str) -> str:
+#	 s = unicodedata.normalize("NFKD", s)
+#	 return "".join(c for c in s if not unicodedata.combining(c))
+# ```
+
+# The difference is that NFKD also applies *compatibility* decompositions, which map "visually or semantically equivalent" characters to a plain form:
+
+# | Input | NFD | NFKD |
+# |---|---|---|
+# | `ﬁ` (ligature) | `ﬁ` | `fi` |
+# | `Ａ` (fullwidth) | `Ａ` | `A` |
+# | `²` | `²` | `2` |
+# | `ª` / `º` | unchanged | `a` / `o` |
+# | non-breaking space | unchanged | regular space |
+
+# For matching words against a reference list, that is usually what you want, since text copied from PDFs often contains ligatures like `ﬁ`.
+
+# **Caveats**
+
+# - NFKD is lossy. In Portuguese, `ª`/`º` become `a`/`o` (`nº` → `no`), which may or may not be desirable. If you only care about accents and want minimal side effects, use NFD.
+# - Some letters have no decomposition and survive both forms, such as `ø`, `ł`, `đ` and `ß` (`ß` → `ss` only under casefold). You would need an explicit translation table for those, though they are rare in Portuguese.
+# - Apply the same normalization to both the reference list and the input strings, ideally once when building the set, so lookups stay O(1).
 
 
 
@@ -970,4 +1071,15 @@ if __name__ == "__main0__":
 	assert not pos_dict is None
 
 	print(sorted([pal for pal in pos_dict.keys() if 'artigo' in pos_dict[pal] ]))
-		
+
+if __name__ == "__main__":
+
+	s = "A-LINHATMETRO"
+
+	split_words = split_camelcase_words(s)
+
+	for w in split_words:
+
+		concats = find_concat_words(unidecode(w.lower()), ["a", "linha", "metro"])
+		print(s.lower(), "concats U:", concats)
+		print(segmentations_k(s, ["a", "linha", "metro"], ["a", "linha", "metro"], concats)) #, unidecoded_comparison=True))

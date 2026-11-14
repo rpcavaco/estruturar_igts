@@ -1,13 +1,14 @@
 
 import os
 import json
-import re
 
 # from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Type
 from typing import Dict, Type, Any, List, Optional
-from copy import copy
+from copy import copy, deepcopy
 
-from .nlp import injetarTemposVerbais, genTokensList, genPOS, POSNotFound, getNumPattern, split_camelcase_words
+from unidecode import unidecode
+
+from .nlp import injetarTemposVerbais, genTokensList, genPOS, POSNotFound, getNumPattern, split_camelcase_words, find_concat_words, segmentations_k
 from .dict_list_manager import DictListManager, ConstructValidationError, EmptyConstructError
 
 PT_ALPHA_CHAR_PATT = "[a-zàáâãçèéêìíîòóôõùúü]"
@@ -940,23 +941,70 @@ class ReconhecimentoElementos(object):
 		lyrfile_path = os.path.join(p_path_versao, 'output', p_layers_filename)
 
 		p_layer_obj.clear()
-		with open(lyrfile_path) as fp:
+		with open(lyrfile_path, "r", encoding="utf-8") as fp:
 			p_layer_obj.update(json.load(fp))
+
+		search_set = set(self.part_of_speech_dict.keys())
+		ud_search_set = set([unidecode(w) for w in self.part_of_speech_dict.keys()])
+
+		test_words = list(self.part_of_speech_dict.keys())
+		ud_test_words = [unidecode(w) for w in self.part_of_speech_dict.keys()]
 
 		faltas = []
 		substituicoes = {}
 
-		for val in p_layer_obj["layers"].values():
-
+		for val in list(p_layer_obj["layers"].values())[0:2]:
 			for lyrtxt in val["l"]:
+
+				if "wrds" in lyrtxt.keys() and len(lyrtxt["wrds"]) > 0:
+					del lyrtxt["wrds"][:]
+
 				split_words = split_camelcase_words(lyrtxt["txt"])
-				lyrtxt["wrds"] = split_words
 				for w in split_words:
-					if not w.lower() in self.part_of_speech_dict.keys():
-						if not w in faltas:
 
-							faltas.append(w)
+					wl = w.lower()
+					found = False
+					if not wl in search_set:
+						# Tentar encontrar concatenações
+						numconcats = find_concat_words(wl, search_set)
+						if numconcats > 0:
+							wsegs = segmentations_k(w, test_words, test_words, numconcats)
+							if len(wsegs) > 0:
+								lyrtxt.setdefault("wrds", [])
+								lyrtxt["wrds"].extend(wsegs)
+								found = True
+					else:
+						lyrtxt.setdefault("wrds", [])
+						lyrtxt["wrds"].append(w)
+						found = True
 
+					if not found: # Comparação unidecoded
+						uwl = unidecode(wl)
+						if not uwl in ud_search_set:
+							# Tentar encontrar concatenações em modo unidecoded
+							numconcats = find_concat_words(uwl, ud_search_set)
+							if numconcats > 0:
+								wsegs = segmentations_k(uwl, test_words, ud_test_words, numconcats, unidecoded_comparison=True)
+								if len(wsegs) > 0:
+									lyrtxt.setdefault("wrds", [])
+									lyrtxt["wrds"].extend(wsegs)
+									found = True
+						else:
+							idx = ud_test_words.index(uwl)
+							lyrtxt.setdefault("wrds", [])
+							if w[0].isupper():
+								if len(w) >= 2 and w[1].isupper():
+									use_w = test_words[idx].upper()
+								else:
+									use_w = test_words[idx].capitalize()
+							lyrtxt["wrds"].append(use_w)
+							found = True
+
+					if not found and not w in faltas:
+						faltas.append(w)
+
+		print("faltas:", faltas)
+		
 		if len(faltas) > 0:
 			p_layer_obj["faltas"] = sorted(faltas)
 
