@@ -939,6 +939,98 @@ class ReconhecimentoElementos(object):
 
 		# print("X", out_dict['tokens_list'].to_json())
 
+	def reconhecerEmJanela2(self, p_janela: str, out_dict: Dict[str, Type], clobber=False) -> None:
+
+		if clobber:
+			out_dict.clear()
+
+		# Limpeza de artefactos prejudiciais ##################################
+
+		# print(in_window_text)
+
+		# in_window_text = p_janela.replace(" e/ou ", " ou ").replace(" e / ou ", " ou ")
+
+		cleantext = p_janela
+
+		# Primeira lista de tokens
+		
+		out_dict['tokens_list'] = genTokensList(cleantext)
+
+		# Reconhecer unidades: db(A), m2, ha, etc.
+
+		self.reconhecerUnidades(out_dict['tokens_list'])
+
+		# Associar identificadores 'numero' que tenham ficado separados por existirem espaços entre os elementos componentes
+
+		assocNumParts(out_dict['tokens_list'])
+
+		assocVariosTripletos(out_dict['tokens_list'])
+		assocVariosPares(out_dict['tokens_list'])
+
+		# Definir 'repr' onde possível ########################################
+
+		buildRepr(out_dict['tokens_list'])
+
+		# Reconhecer construções (q precisam de 'repr' mas não de 'pos') ######
+
+		# reconhecerURLs(out_dict['tokens_list'])
+		# self.reconhecerDatas(out_dict['tokens_list'])
+		# self.reconhecerArtigosAlineas(out_dict['tokens_list'])
+		# self.reconhecerAtosNormativos(out_dict['tokens_list'])
+
+		# # Dividir em tokens palavras que incluem '/' ###########################
+		# self.genAdicTokensOverSeps(out_dict['tokens_list'], break_on_hyphens=False)
+
+		# Reconhecer construções nome ou designação ###########################
+		self.reconhecerDenominacoes(out_dict['tokens_list'])
+
+		# Marcasr siglas e nomes ou designações de expansão de sigla  #########
+
+		out_siglas = []
+		self.marcarSiglas(out_dict['tokens_list'], out_siglas)	
+		# self.reconhecerExpansaoSiglas(out_dict['tokens_list'], out_siglas)
+
+		# Obter POS ###########################################################
+
+		# pos=['sigla'] já se encontram preenchidos
+
+		self.buildPOS(out_dict, out_siglas)
+
+		# Marcar REFERENTES ####################################################
+		
+		self.reconhecerReferentes(out_dict['tokens_list'])
+
+		# atos = []
+		# for tkn in out_dict['tokens_list']:
+		# 	if 'construct' in tkn.keys() and tkn['construct'] == 'ato_normativo':
+		# 		atos.append(tkn['repr'])
+		# if len(atos) > 0:
+		# 	out_dict['atos'] = atos
+
+		# denominacoes = []
+		# for tkn in out_dict['tokens_list']:
+		# 	if 'construct' in tkn.keys() and tkn['construct'] == 'denominacao':
+		# 		denominacoes.append(tkn['repr'])
+		# if len(denominacoes) > 0:
+		# 	out_dict['denominacoes'] = denominacoes
+
+		referentes = []
+		for tkn in out_dict['tokens_list']:
+			if 'construct' in tkn.keys() and tkn['construct'] == 'referente':
+				if not tkn['repr'] in referentes:
+					referentes.append(tkn['repr'])
+		if len(referentes) > 0:
+			out_dict['referentes'] = referentes
+
+		# URLs = []
+		# for tkn in out_dict['tokens_list']:
+		# 	if 'construct' in tkn.keys() and tkn['construct'] == 'URL':
+		# 		URLs.append(tkn['repr'])
+		# if len(URLs) > 0:
+		# 	out_dict['urls'] = URLs
+
+		# print("X", out_dict['tokens_list'].to_json())
+
 	def tratarNomesLayers(self, p_path_versao: str, p_layer_obj: Any, p_layers_filename: str) -> None:
 
 		lyrfile_path = os.path.join(p_path_versao, 'output', p_layers_filename)
@@ -1031,7 +1123,7 @@ class ReconhecimentoElementos(object):
 
 				if len(wrds) > 0:
 					lyrelem["newtxt"] = " ".join(wrds)
-					lyrelem['tokens_list'] = genTokensList(lyrelem["newtxt"])
+					self.reconhecerEmJanela2(lyrelem["newtxt"], lyrelem)
 		# print("faltas:", faltas)
 		
 		# if len(faltas) > 0:
