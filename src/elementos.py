@@ -14,6 +14,9 @@ from .dict_list_manager import DictListManager, ConstructValidationError, EmptyC
 PT_ALPHA_CHAR_PATT = "[a-zàáâãçèéêìíîòóôõùúü]"
 PT_INV_ALPHA_CHAR_PATT = "[^a-zàáâãçèéêìíîòóôõùúü]"
 
+class EmptyLayersListError(Exception):
+	"""Raised when layers were not previously read."""
+
 def set_token_repr(p_tkn: Dict[str, Any]) -> None:
 	if 'lower' in p_tkn.keys():
 		p_tkn.update(repr=p_tkn['lower'])
@@ -941,8 +944,14 @@ class ReconhecimentoElementos(object):
 		lyrfile_path = os.path.join(p_path_versao, 'output', p_layers_filename)
 
 		p_layer_obj.clear()
-		with open(lyrfile_path, "r", encoding="utf-8") as fp:
-			p_layer_obj.update(json.load(fp))
+		try:
+			with open(lyrfile_path, "r", encoding="utf-8") as fp:
+				p_layer_obj.update(json.load(fp))
+		except:
+			pass
+
+		if not "layers" in p_layer_obj:
+			raise EmptyLayersListError("Necessário reler layers")
 
 		search_set = set(self.part_of_speech_dict.keys())
 		search_set.update(self.substituicoes_siglas.keys())
@@ -1022,6 +1031,7 @@ class ReconhecimentoElementos(object):
 
 				if len(wrds) > 0:
 					lyrelem["newtxt"] = " ".join(wrds)
+					lyrelem['tokens_list'] = genTokensList(lyrelem["newtxt"])
 		# print("faltas:", faltas)
 		
 		# if len(faltas) > 0:

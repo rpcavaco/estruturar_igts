@@ -2,8 +2,10 @@ import os
 import customtkinter as ctk
 
 from src.processar_geometria import ler_layers_logicas, elementos_layers_logicas
+from src.elementos import EmptyLayersListError
 
 from .cfg import CONCELHOS
+
 
 
 def get_dados_folder():
@@ -184,8 +186,12 @@ class App(ctk.CTk):
             if not os.path.exists(lyrfile_path):
                 WarningPopup(app, "Não existe ficheiro 'layers.json', necessário executar 'Layers lógicas' primeiro")
             else:
-                elementos_layers_logicas(path_versao)
-                InfoPopup(app, "Tokenização de layers terminada")
+                try:
+                    elementos_layers_logicas(path_versao)
+                    InfoPopup(app, "Tokenização de layers terminada")
+                except EmptyLayersListError:
+                     WarningPopup(app, "Necessário ler 'Layers lógicas' primeiro")
+
 
 
 

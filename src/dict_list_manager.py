@@ -32,7 +32,7 @@ import json
 import warnings
 
 from copy import copy, deepcopy
-from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Type, Tuple, Literal
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Type, Tuple, Literal, Generator
 
 from jsonschema import validate
 from jsonschema import Validator, Draft202012Validator
@@ -199,7 +199,7 @@ class DictListManager():
 				afterfunc(item)
 
 
-	def iterateMatches(self, p_words_lists: List[List[str]]) -> None:
+	def iterateMatches(self, p_words_lists: List[List[str]]) -> Generator:
 
 		for word_list in p_words_lists:
 			lw = len(word_list)
@@ -214,7 +214,7 @@ class DictListManager():
 		self,
 		predicate: Callable[[Dict[str, Any]], bool],
 		testlist: Optional[List[str]] = None
-	) -> List[int]:
+	) -> Generator:
 		found_idxs = []
 		fluxo = []
 		check_fluxo = False
