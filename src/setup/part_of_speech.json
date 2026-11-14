@@ -1173,6 +1173,9 @@
     "contexto": [
         "nome"
     ],
+    "texto": [
+        "nome"
+    ],
     "significado": [
         "nome",
         "participio"
@@ -15942,6 +15945,10 @@
     ],
     "replantação": [
         "nome"
+    ],
+    "auxiliar": [
+        "adjetivo",
+        "verbo"
     ]
     
 }

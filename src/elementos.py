@@ -372,9 +372,9 @@ class ReconhecimentoElementos(object):
 
 			injetarTemposVerbais(self.part_of_speech_dict)
 
-		self.substituicoes = None
+		self.substituicoes_siglas = None
 		with open(os.path.join(setup_folder, 'substituicoes.json'), 'r', encoding='utf-8') as fp: 
-			self.substituicoes = json.load(fp)	
+			self.substituicoes_siglas = json.load(fp)	
 
 		if not substituicoes_locais is None:
 			self.substituicoes_locais = substituicoes_locais
@@ -445,7 +445,7 @@ class ReconhecimentoElementos(object):
 			if not p_str in p_out_siglas:
 				p_out_siglas.append(p_str)
 
-		siglas = list(self.substituicoes.keys())
+		siglas = list(self.substituicoes_siglas.keys())
 		siglas.extend(self.substituicoes_locais.keys())
 
 		p_list.walk(
@@ -485,7 +485,7 @@ class ReconhecimentoElementos(object):
 						the_prev_tkn = None
 						break
 
-			siglas = list(self.substituicoes.keys())
+			siglas = list(self.substituicoes_siglas.keys())
 			siglas.extend(self.substituicoes_locais.keys())
 
 			try:
@@ -638,8 +638,8 @@ class ReconhecimentoElementos(object):
 
 		for sigla in p_siglas_list:
 
-			if sigla in self.substituicoes.keys():
-				words_subst = self.substituicoes[sigla].split()
+			if sigla in self.substituicoes_siglas.keys():
+				words_subst = self.substituicoes_siglas[sigla].split()
 			else:
 				words_subst = self.substituicoes_locais[sigla].split()
 
@@ -945,22 +945,36 @@ class ReconhecimentoElementos(object):
 			p_layer_obj.update(json.load(fp))
 
 		search_set = set(self.part_of_speech_dict.keys())
+		search_set.update(self.substituicoes_siglas.keys())
+
 		ud_search_set = set([unidecode(w) for w in self.part_of_speech_dict.keys()])
+		# Não vale a pena adicionar siglas unidecoded aqui, pois nenhuma tem caracteres acentuados
 
 		test_words = list(self.part_of_speech_dict.keys())
+		test_words.extend(list(self.substituicoes_siglas.keys()))
+
 		ud_test_words = [unidecode(w) for w in self.part_of_speech_dict.keys()]
 
-		faltas = []
-		substituicoes = {}
+		# faltas = []
+		if "substituicoes" in p_layer_obj.keys():
+			substituicoes = p_layer_obj["substituicoes"]
+		else:
+			substituicoes = {}
 
-		for val in list(p_layer_obj["layers"].values())[0:2]:
+		# for val in list(p_layer_obj["layers"].values())[2:3]:
+		for val in p_layer_obj["layers"].values():
 			for lyrtxt in val["l"]:
 
 				if "wrds" in lyrtxt.keys() and len(lyrtxt["wrds"]) > 0:
 					del lyrtxt["wrds"][:]
 
 				split_words = split_camelcase_words(lyrtxt["txt"])
-				for w in split_words:
+				for w0 in split_words:
+
+					if w0 in substituicoes.keys():
+						w = substituicoes[w0]
+					else:
+						w = w0
 
 					wl = w.lower()
 					found = False
@@ -992,6 +1006,7 @@ class ReconhecimentoElementos(object):
 						else:
 							idx = ud_test_words.index(uwl)
 							lyrtxt.setdefault("wrds", [])
+							# Manter o case da palavra substituída
 							if w[0].isupper():
 								if len(w) >= 2 and w[1].isupper():
 									use_w = test_words[idx].upper()
@@ -1000,13 +1015,13 @@ class ReconhecimentoElementos(object):
 							lyrtxt["wrds"].append(use_w)
 							found = True
 
-					if not found and not w in faltas:
-						faltas.append(w)
+					# if not found and not w in faltas:
+					# 	faltas.append(w)
 
-		print("faltas:", faltas)
+		# print("faltas:", faltas)
 		
-		if len(faltas) > 0:
-			p_layer_obj["faltas"] = sorted(faltas)
+		# if len(faltas) > 0:
+		# 	p_layer_obj["faltas"] = sorted(faltas)
 
 		if bool(substituicoes):
 			p_layer_obj["substituicoes"] = substituicoes

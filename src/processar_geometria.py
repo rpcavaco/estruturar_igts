@@ -22,10 +22,17 @@ def corrigir_chars(p_layer_vals):
 
 def ler_layers_logicas(p_path_versao, p_path, p_layer_field, p_geom_ext):
 
+	global_ret = {}
 	ret = {}
 
 	file_count = 0
 	layer_count = 0
+
+	layers_file_path = os.path.join(p_path_versao, 'output', 'layers.json')
+	if os.path.exists(layers_file_path):
+		with open(layers_file_path, "r", encoding="utf-8") as fp:
+			global_ret.update(json.load(fp))
+			del global_ret["layers"]
 
 	for dirpath, folders, files in os.walk(p_path):
 
@@ -76,10 +83,10 @@ def ler_layers_logicas(p_path_versao, p_path, p_layer_field, p_geom_ext):
 				layer_count += 1
 
 
-	retfinal = { "layers": ret }
+	global_ret["layers"] = ret
 
-	with open(os.path.join(p_path_versao, 'output', 'layers.json'), "w", encoding="utf-8") as fp:
-		json.dump(retfinal, fp, indent=4, ensure_ascii=False)
+	with open(layers_file_path, "w", encoding="utf-8") as fp:
+		json.dump(global_ret, fp, indent=4, ensure_ascii=False)
 
 	print(f"Final, totais ficheiros: {file_count}, totais layers: {layer_count}")
 
