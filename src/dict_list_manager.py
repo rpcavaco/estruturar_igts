@@ -39,6 +39,8 @@ from jsonschema import Validator, Draft202012Validator
 from jsonschema.exceptions import SchemaError, ValidationError
 from .validation_helpers import extend_with_default
 
+from .json_helpers import find_unserializable
+
 
 class SchemaValidationError(Exception):
 	"""Raised when a dictionary does not conform to the manager's schema."""
@@ -389,10 +391,12 @@ class DictListManager():
 		text = None
 
 		if path is not None:
+			find_unserializable(self._items)
 			with open(path, "w", encoding="utf-8") as f:
 				json.dump(self._items, indent=indent, ensure_ascii=False, cls=self.Encoder)
 
 		if path is None or do_tee:
+			find_unserializable(self._items)
 			text = json.dumps(self._items, indent=indent, ensure_ascii=False,  cls=self.Encoder)
 
 		return text

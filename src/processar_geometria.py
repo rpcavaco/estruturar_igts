@@ -8,6 +8,7 @@ from shutil import copy2
 
 from .elementos import ReconhecimentoElementos
 from .dict_list_manager import DictListManager
+from .json_helpers import find_unserializable
 
 def corrigir_chars(p_layer_vals):
 	for i, val in enumerate(p_layer_vals):
@@ -88,6 +89,7 @@ def ler_layers_logicas(p_path_versao, p_path, p_layer_field, p_geom_ext):
 
 
 	global_ret["layers"] = ret
+	find_unserializable(global_ret)
 
 	with open(layers_file_path, "w", encoding="utf-8") as fp:
 		json.dump(global_ret, fp, indent=4, ensure_ascii=False)
@@ -103,6 +105,8 @@ def elementos_layers_logicas(p_path_versao):
 	bak_lyrfile_path = lyrfile_path.replace(".json", ".bak.json")
 
 	copy2(lyrfile_path, bak_lyrfile_path)
-		
+
+	find_unserializable(lyrs_obj)
+
 	with open(lyrfile_path, "w", encoding="utf-8") as fp:
 		json.dump(lyrs_obj, fp, indent=4, ensure_ascii=False, cls=DictListManager.Encoder)

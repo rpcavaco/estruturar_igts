@@ -3,6 +3,7 @@ import os
 import json
 
 from .doctree import DocNode, parseFromText, traverseNodes
+from .json_helpers import find_unserializable
 
 
 # from documento_regulamentar import processar_documento
@@ -47,6 +48,8 @@ def genfiles_regulamento(p_versao_concelho, p_tipo_numeracao_alineas, limite = 0
 
 	out_dict = {}
 	traverseNodes(dn.toJSON(), out_dict)
+
+	find_unserializable(out_dict)
 
 	with open(out_path2, 'w', encoding='utf-8') as fp:
 		json.dump(out_dict, fp, indent=4, ensure_ascii=False)	

@@ -9,6 +9,8 @@ from copy import copy, deepcopy
 from datetime import datetime
 
 from .nlp import NumeracaoRomana
+from .json_helpers import find_unserializable
+
 
 VERSION = 0.2
 
@@ -612,6 +614,7 @@ def parseFromText(p_in_path: str, p_out_path: str, p_root_node: 'DocNode', tipo_
 
 		# ajustar os valores de stop
 		walkSetAncestorStop(p_root_node)
+		find_unserializable(p_root_node.toJSON())
 
 		with open(p_out_path, 'w', encoding='utf-8') as fp:
 			json.dump(p_root_node.toJSON(), fp, indent=4, ensure_ascii=False, cls=DocNode.Encoder)

@@ -7,6 +7,7 @@ from copy import deepcopy
 
 from .elementos import ReconhecimentoElementos
 from .dict_list_manager import DictListManager
+from .json_helpers import find_unserializable
 
 FILENAMES = {
 	'condicionantes': 'catalogo_pdm_condicionantes.csv',
@@ -53,6 +54,7 @@ def reconhecer_catalogo_pdm() -> None:
 
 		out_json[modo] = deepcopy(found)
 		
+	find_unserializable(out_json)
 
 	with open(os.path.join(pasta_trabalho, 'tokens_catalogo_objetos_pdm.json'), "w", encoding="utf-8") as fp:
 		json.dump(out_json, fp, indent=4, ensure_ascii=False, cls=DictListManager.Encoder)

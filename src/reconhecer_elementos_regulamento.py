@@ -140,6 +140,8 @@ def matches_faceis(p_versao_concelho, p_referentes_file, p_output_file) -> Tuple
 	# print(f"{found} faltas recuperáveis com '-se', '-lhe', etc.")
 	faltas_lhe_se = found
 
+	find_unserializable(ret)
+
 	with open(os.path.join(wrkdir, p_output_file), 'w', encoding='utf-8') as fp:
 		print(f"Ver {p_output_file} em 'output'")
 		json.dump(ret, fp, indent=4, ensure_ascii=False, cls=DictListManager.Encoder)
@@ -251,6 +253,8 @@ def obter_lista_plantas(p_path_versao_concelho, p_tokens_plantas_primnivel_path,
 			if p_key in found_p:
 				saida.setdefault(p_key, [])
 				saida[p_key].append(tpli_val[p_key])
+
+	find_unserializable(saida)
 
 	with open(os.path.join(wrkdir, "obter_lista_plantas.json"), "w", encoding="utf-8") as fp:
 		json.dump(saida, fp, indent=4, ensure_ascii=False)
