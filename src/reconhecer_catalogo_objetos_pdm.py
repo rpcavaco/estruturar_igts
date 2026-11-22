@@ -6,8 +6,8 @@ import json
 from copy import deepcopy
 
 from .elementos import ReconhecimentoElementos
-from .dict_list_manager import DictListManager
-from .json_helpers import find_unserializable
+from .dict_list_manager import DictListManager, find_unserializable
+
 
 FILENAMES = {
 	'condicionantes': 'catalogo_pdm_condicionantes.csv',

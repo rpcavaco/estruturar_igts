@@ -1,5 +1,8 @@
 Python 3.15.x por causa de 'unicodedata'
 
+Gdal/ogr instalado via pip, a partir de wheel, retirado de https://github.com/cgohlke/geospatial-wheels/releases.
+Tem dependência de compilador cd MSVC++ 
+
 jsonschema
 requests
 unidecode
@@ -7,4 +10,3 @@ customtkinter
 tqdm
 geopandas
 regex
-

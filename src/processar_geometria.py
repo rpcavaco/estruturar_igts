@@ -7,8 +7,12 @@ import json
 from shutil import copy2
 
 from .elementos import ReconhecimentoElementos
-from .dict_list_manager import DictListManager
-from .json_helpers import find_unserializable
+from .dict_list_manager import DictListManager, find_unserializable
+
+import warnings
+
+# warnings.simplefilter("error")
+os.environ["SHAPE_RESTORE_SHX"] = "YES"
 
 def corrigir_chars(p_layer_vals):
 	for i, val in enumerate(p_layer_vals):
@@ -39,6 +43,7 @@ def ler_layers_logicas(p_path_versao, p_path, p_layer_field, p_geom_ext):
 			except:
 				pass
 
+	messages = []
 	for dirpath, folders, files in os.walk(p_path):
 
 		for the_file in files:
@@ -61,13 +66,38 @@ def ler_layers_logicas(p_path_versao, p_path, p_layer_field, p_geom_ext):
 			# 	if hex(ldid) == '0x3':
 			# 		encoding = "cp1252"
 
+			del messages[:]
+
 			try:
-				df = gpd.read_file(fullpath, read_geometry=True) #, engine="pyogrio", encoding=encoding)
+				df = read_file_strict(messages, fullpath, read_geometry=True, engine="pyogrio", on_invalid="fix")
+				if df is None:
+					print('>> df is None', the_file)
 				gts = df.geom_type.unique()
 				df.drop(columns="geometry")
 			except pyogrio.errors.DataSourceError as dse:
-				print("DataSourceError:", dse, relpath)
+				print(">DataSourceError< :", dse, relpath)
 				continue
+
+			for i, msg in enumerate(messages):
+				print("># msg" ,i, ":", msg)
+
+			# with warnings.catch_warnings(reco):
+			# 	warnings.simplefilter("error", RuntimeWarning)
+			# 	df = gpd.read_file(fullpath, read_geometry=True, engine="pyogrio") #, encoding=encoding)
+			# 	gts = df.geom_type.unique()
+			# 	df.drop(columns="geometry")
+
+			# try:
+			# 	print(">>>>")
+			# 	df = gpd.read_file(fullpath, read_geometry=True) #, engine="pyogrio", encoding=encoding)
+			# 	gts = df.geom_type.unique()
+			# 	df.drop(columns="geometry")
+			# except pyogrio.errors.DataSourceError as dse:
+			# 	print("DataSourceError:", dse, relpath)
+			# 	continue
+			# except RuntimeError as rwe:
+			# 	print(">> Exception:", rwe, relpath)
+			# 	raise RuntimeError("bwa!!")
 
 			cols = df.columns.tolist()
 			layer_cols = [col for col in cols if col.lower() == p_layer_field.lower()]

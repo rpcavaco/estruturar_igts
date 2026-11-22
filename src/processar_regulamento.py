@@ -3,7 +3,8 @@ import os
 import json
 
 from .doctree import DocNode, parseFromText, traverseNodes
-from .json_helpers import find_unserializable
+from .dict_list_manager import find_unserializable
+
 
 
 # from documento_regulamentar import processar_documento

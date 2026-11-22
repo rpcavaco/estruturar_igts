@@ -5,12 +5,12 @@ import argparse
 from copy import copy, deepcopy
 from typing import Optional, List, Tuple
 
-from .json_helpers import find_unserializable
 from .elementos import ReconhecimentoElementos, Pesquisa
-from .dict_list_manager import DictListManager
+from .dict_list_manager import DictListManager, find_unserializable
 from .nlp import update_parts_of_speech_dict
 
 from tqdm import tqdm
+
 
 def reconhecer(p_versao_concelho, p_output_file, preserve_tokens_ords: Optional[List[int]] = None, limite: Optional[int] = 0, reverter_limite: Optional[bool] = False) -> None:
 	"""

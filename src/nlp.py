@@ -10,15 +10,13 @@ from functools import lru_cache
 from copy import copy, deepcopy
 from time import sleep
 from unidecode import unidecode
+from typing import List, Dict, Any, Optional #, Callable, Dict, Iterable, Iterator, List, , Type
 
 from tqdm import tqdm
 
-from .json_helpers import find_unserializable
-
-from typing import List, Dict, Any, Optional #, Callable, Dict, Iterable, Iterator, List, , Type
 
 
-from .dict_list_manager import DictListManager
+from .dict_list_manager import DictListManager, find_unserializable
 
 # ATENÇÃO - no PROCESSAMENTO DE blocos_analise
 

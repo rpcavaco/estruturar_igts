@@ -9,7 +9,7 @@ from copy import copy, deepcopy
 from datetime import datetime
 
 from .nlp import NumeracaoRomana
-from .json_helpers import find_unserializable
+from .dict_list_manager import find_unserializable
 
 
 VERSION = 0.2

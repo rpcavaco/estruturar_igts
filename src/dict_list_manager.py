@@ -34,13 +34,22 @@ import warnings
 from copy import copy, deepcopy
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Type, Tuple, Literal, Generator
 
-from jsonschema import validate
 from jsonschema import Validator, Draft202012Validator
 from jsonschema.exceptions import SchemaError, ValidationError
 from .validation_helpers import extend_with_default
 
-from .json_helpers import find_unserializable
-
+def find_unserializable(obj, path="root"):
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            find_unserializable(v, f"{path}.{k}")
+    elif isinstance(obj, (list, tuple)):
+        for i, v in enumerate(obj):
+            find_unserializable(v, f"{path}[{i}]")
+    else:
+        try:
+            json.dumps(obj, cls=DictListManager.Encoder)
+        except TypeError:
+            print(f"NOT SERIALIZABLE at {path}: {type(obj)} = {obj!r}")
 
 class SchemaValidationError(Exception):
 	"""Raised when a dictionary does not conform to the manager's schema."""

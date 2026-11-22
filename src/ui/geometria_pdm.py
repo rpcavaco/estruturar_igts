@@ -1,7 +1,7 @@
 import os
 import customtkinter as ctk
 
-from src.processar_geometria import ler_layers_logicas, elementos_layers_logicas
+from src.processar_geometria import ler_layers_logicas, elementos_layers_logicas, verificar_transferir_geopkg
 from src.elementos import EmptyLayersListError
 
 from .cfg import CONCELHOS
@@ -70,6 +70,7 @@ class OpsFrame(BaseFrame):
         # Chaves abaixo são arbitrárias, servem apenas para ajudar a gerir internamente 
         #  os recursos a alocar a cada operação
         operacoes = {
+            "process_files": ("Verifar e ler layers", self.read_layers_callback),
             "logic_layers": ("Layers lógicas", self.logic_layers_callback),
             "tokenize_logic_layers": ("Separar elementos layers", self.tokenizelogiclayers_callback)
         }
@@ -81,6 +82,10 @@ class OpsFrame(BaseFrame):
             caption, callb_func = v
             self.op_buttons[k] = ctk.CTkButton(self, width=200, text=caption, command=callb_func)
             self.op_buttons[k].grid(row=i+2, column=0, padx=30, pady=(10, 0), sticky="w")
+
+    def read_layers_callback(self):
+        app = self.winfo_toplevel()
+        app.read_logiclayers_callback()
 
     def logic_layers_callback(self):
         app = self.winfo_toplevel()
@@ -154,6 +159,24 @@ class App(ctk.CTk):
 
     def choice_versoes_callback(self, choice):
         self.versao_escolhida = choice
+
+    def read_logiclayers_callback(self):
+        if self.concelho_escolhido is None:
+            WarningPopup(app, "Necessário escolher um concelho primeiro")
+        elif self.versao_escolhida is None:
+            WarningPopup(app, "Necessário escolher uma versão primeiro")
+        else:
+            folder_dados = get_dados_folder()
+            pasta_concelho = CONCELHOS[self.concelho_escolhido]["pasta"]
+            cfgs = CONCELHOS[self.concelho_escolhido]["versoes"][self.versao_escolhida]
+            layer_field = cfgs["layer_field"]
+            geom_ext = cfgs["geom_ext"]
+            geom_path = cfgs["geom_path"]
+
+            path_versao = os.path.join(folder_dados, 'PDM', pasta_concelho, self.versao_escolhida)
+            path = os.path.join(path_versao, *geom_path)
+            verificar_transferir_geopkg(path_versao, path, layer_field, geom_ext)
+            InfoPopup(app, "Camadas enumeradas em 'layers.json', transferidas para GPKG")
 
     def exec_logiclayers_callback(self):
         if self.concelho_escolhido is None:
