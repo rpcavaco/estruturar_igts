@@ -3,17 +3,29 @@ import os
 import geopandas as gpd
 import pyogrio
 import json
+import re
 
 from shutil import copy2
+from typing import Optional
+
+from osgeo import ogr, gdal
 
 from .elementos import ReconhecimentoElementos
 from .dict_list_manager import DictListManager, find_unserializable
+from .ui.progress_bar import ProgressDialog
 
-import warnings
+#import warnings
 
 # warnings.simplefilter("error")
 os.environ["SHAPE_RESTORE_SHX"] = "YES"
 
+class GDALLog:
+    def __init__(self):
+        self.messages = []
+
+    def handler(self, err_class, err_no, msg):
+        self.messages.append((err_class, err_no, msg))
+	
 def corrigir_chars(p_layer_vals):
 	for i, val in enumerate(p_layer_vals):
 		p_layer_vals[i] = val.replace('Ã', 'Á')
@@ -25,6 +37,120 @@ def corrigir_chars(p_layer_vals):
 		p_layer_vals[i] = p_layer_vals[i].replace('Ãµ', 'õ')
 		p_layer_vals[i] = p_layer_vals[i].replace('Ã­', 'í')
 
+def layer_name_for(path: str, used: set, use_parentdir = False) -> str:
+	"""Shapefile stem -> safe, unique layer name."""
+	basename = os.path.basename(path)
+	prename = None
+	if use_parentdir:
+		prename = re.sub(r"\W+", "_", os.path.basename(os.path.dirname(path))).strip("_").lower()
+	name = re.sub(r"\W+", "_", os.path.splitext(basename)[0]).strip("_").lower() or "layer"
+
+	i = 2
+	if use_parentdir:
+		fullname = f"{prename}_{name}"
+	else:
+		fullname = name
+	if fullname[0].isdigit():
+		fullname = f"l_{fullname}"
+
+	base = fullname
+	
+	while fullname in used:
+		fullname = f"{base}_{i}"
+		i += 1
+
+	used.add(fullname)
+	return fullname
+
+def transferir_para_geopkg(p_app, p_path, p_out_gpkg_path, p_geom_format, p_encoding, out_msgs, overwrite=True):
+
+	gdal.UseExceptions()
+	ogr.UseExceptions()
+
+	del out_msgs[:]
+
+	if p_geom_format == "SHP":
+		geom_ext = ".shp"
+
+	open_opts = [f"ENCODING={p_encoding}"]
+	gpkg_kwargs = dict(
+		format="GPKG",
+		accessMode="overwrite",		  # replaces this layer only, not the whole file
+		geometryType="PROMOTE_TO_MULTI",  # avoids mixed Polygon/MultiPolygon in shapefiles
+		layerCreationOptions=["GEOMETRY_NAME=geom", "SPATIAL_INDEX=YES"],
+		dstSRS="EPSG:3763"
+	)
+	used = set()
+
+	drv = ogr.GetDriverByName("GPKG")
+
+	if os.path.exists(p_out_gpkg_path):
+		if not overwrite:
+			raise FileExistsError(f"{p_out_gpkg_path} existe e overwrite = False")
+		drv.DeleteDataSource(p_out_gpkg_path)
+
+	dst_ds = drv.CreateDataSource(p_out_gpkg_path)
+	file_count = 0
+
+	found_files = []
+	for dirpath, folders, files in os.walk(p_path):	
+		for the_file in files:
+			if not the_file.lower().endswith(geom_ext.lower()):
+				continue
+			found_files.append((os.path.join(dirpath, the_file), the_file))
+
+	contagem = len(found_files)
+
+	log = GDALLog()
+	gdal.PushErrorHandler(log.handler)
+
+	try:
+		with ProgressDialog(p_app, total=contagem, desc="Convertendo") as d:
+			for full_path, the_file in found_files:
+				
+				if d.cancelled: break
+
+				# relpath = os.path.relpath(fullpath, start=p_path)
+				src_ds = gdal.OpenEx(full_path, gdal.OF_VECTOR, open_options=open_opts)
+				src_layer = src_ds.GetLayer(0)
+				name = layer_name_for(full_path, used, use_parentdir=True)
+		
+				gpkg_kwargs["layerName"] = name
+				if src_layer.GetSpatialRef() is None:
+					gpkg_kwargs["srcSRS"] = f"EPSG:3763"
+
+				opts = gdal.VectorTranslateOptions(**gpkg_kwargs)
+				result = None
+				try:
+					result = gdal.VectorTranslate(dst_ds, src_ds, options=opts)
+				except RuntimeError as err:
+					out_msgs.append(f"Erro: {err}")
+					
+				if result is None:
+					out_msgs.append(f"Erro: falhou a conversão de {the_file}")
+					src_ds = None
+					d.update()
+					continue
+
+				file_count += 1
+				# if file_count % 20 == 0:
+				# 	print(f"ficheiros lidos: {file_count}")
+
+				#print(f"{the_file} -> layer '{name}' ({src_layer.GetFeatureCount()} features)")
+				src_ds = None
+
+				d.update()
+
+	finally:
+		gdal.PopErrorHandler()
+
+	for cls, no, msg in log.messages:
+		tipo = "Erro"
+		if cls == gdal.CE_Warning:
+			tipo = "Aviso"
+		out_msgs.append(f"{tipo} {no}: {msg}")
+
+	return file_count
 
 def ler_layers_logicas(p_path_versao, p_path, p_layer_field, p_geom_ext):
 
@@ -69,7 +195,7 @@ def ler_layers_logicas(p_path_versao, p_path, p_layer_field, p_geom_ext):
 			del messages[:]
 
 			try:
-				df = read_file_strict(messages, fullpath, read_geometry=True, engine="pyogrio", on_invalid="fix")
+				df = None # read_file_strict(messages, fullpath, read_geometry=True, engine="pyogrio", on_invalid="fix")
 				if df is None:
 					print('>> df is None', the_file)
 				gts = df.geom_type.unique()
