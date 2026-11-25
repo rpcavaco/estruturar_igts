@@ -261,7 +261,8 @@ class Pesquisa(object):
 		- base_count_relevantes: dos anteriores, os que não estão na lista 'seps'
 		- found_count: tokens encontrados na pesquisa
 		- found_count_relevantes: dos anteriores (found_count), os que não estão na lista 'seps'
-		- lista de elementos não encontrados
+		- ordered_count: tokens que não estão na lista 'seps' e que segeuem a mesma ordem de p_lista_elementos_to_search
+		- not_found: lista de elementos não encontrados
 		"""
 
 		base_count = 0
@@ -272,6 +273,11 @@ class Pesquisa(object):
 
 		seps = ['da', 'do', 'das', 'dos', 'de', 'e', 'em', 'na', 'no']
 		not_found = []
+		ordered_count = []
+
+		# TODO: implementar ordered count
+
+		
 
 		for tkn_a in p_lista_elementos_to_search:
 
@@ -299,7 +305,7 @@ class Pesquisa(object):
 					if not found:
 						not_found.append(copy(tkn_a))
 
-		return base_count, base_count_relevantes, found_count, found_count_relevantes, not_found
+		return base_count, base_count_relevantes, found_count, found_count_relevantes, ordered_count, not_found
 
 	def similaridadeElementos2(self, p_lista_elementos_to_search: List[Dict[str, Type]], p_lista_elementos_searched: List[Dict[str, Type]], outlist: List[tuple], construct: Optional[str] = None):
 		"""

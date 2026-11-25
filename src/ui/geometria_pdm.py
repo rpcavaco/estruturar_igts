@@ -107,6 +107,7 @@ class WarningPopup(ctk.CTkToplevel):
 		self.after(100, self.grab_set)	  # make modal (delay avoids a CTk timing issue)
 
 class InfoPopup(ctk.CTkToplevel):
+	
 	def __init__(self, master, message):
 		super().__init__(master)
 		self.title("Informação")
@@ -117,49 +118,8 @@ class InfoPopup(ctk.CTkToplevel):
 		ctk.CTkButton(self, text="OK", command=self.destroy).pack()
 		self.after(100, self.grab_set)	  # make modal (delay avoids a CTk timing issue)
 
-# class InfoPopupList(ctk.CTkToplevel):
-# 	def __init__(self, master, message_list):
-# 		super().__init__(master)
-# 		self.title("Informação")
-# 		self.geometry("320x140")
-# 		self.resizable(False, False)
-# 		self.transient(master)			  # stay on top of parent
-# 		#ctk.CTkLabel(self, text=message, wraplength=280).pack(pady=20, padx=20)
-# 		textbox = ctk.CTkTextbox(self)
-# 		textbox.pack(pady=20, padx=20)
-# 		ctk.CTkButton(self, text="OK", command=self.destroy).pack()
-# 		self.after(100, self.grab_set)	  # make modal (delay avoids a CTk timing issue)
-
-# 		for mi, msg in enumerate(message_list):
-# 			textbox.insert(f"{mi}.0", msg)
-
-class InfoPopupListOld(ctk.CTkToplevel):
-	def __init__(self, master, message_list):
-		super().__init__(master)
-		self.title("Informação")
-		self.geometry("320x140")
-		self.resizable(False, False)
-		self.transient(master)
-
-		# Create textbox and button
-		self.textbox = ctk.CTkTextbox(self)
-		self.textbox.pack(pady=20, padx=20, fill='both', expand=True)  # Fill available space
-
-		# Add scrollbar to handle long content
-		self.textbox.configure(state="normal")
-		for mi, msg in enumerate(message_list):
-			self.textbox.insert(f"{mi}.0", msg + "\n")  # Add newline after each item
-		self.textbox.configure(state="disabled")  # Make textbox read-only
-
-		ok_button = ctk.CTkButton(self, text="OK", command=self.destroy)
-		ok_button.pack(pady=(0, 10), padx=20)  # Adjust padding to ensure visibility
-
-		self.after(100, lambda: self.grab_set())  # Make modal after initial render
-
-import customtkinter as ctk
-
-
 class InfoPopupList(ctk.CTkToplevel):
+
 	def __init__(self, master, message_list):
 		super().__init__(master)
 		self.title("Informação")
@@ -241,15 +201,23 @@ class App(ctk.CTk):
 			folder_dados = get_dados_folder()
 			pasta_concelho = CONCELHOS[self.concelho_escolhido]["pasta"]
 			cfgs = CONCELHOS[self.concelho_escolhido]["versoes"][self.versao_escolhida]
-			geom_format = cfgs["geom_format"]
+			geom_src_type = cfgs["geom_src_type"]
 			geom_path = cfgs["geom_path"]
 
 			path_versao = os.path.join(folder_dados, 'PDM', pasta_concelho, self.versao_escolhida)
 			path = os.path.join(path_versao, *geom_path)
 			msgs_list = []
-			file_count = transferir_para_geopkg(app, path, os.path.join(path_versao, geom_path[0], "read_layers.gpkg"), geom_format, cfgs["encoding"], msgs_list)
+			geo_path = os.path.join(path_versao, geom_path[0])
+			file_count = transferir_para_geopkg(app, path, os.path.join(geo_path, "read_layers.gpkg"), geom_src_type, cfgs["encoding"], msgs_list)
 			msgs_list.insert(0, f"Camadas detectadas, transferidas para GPKG: {file_count}")
 			msgs_list.insert(1, "")
+
+			for li, ln in enumerate(msgs_list):
+				msgs_list[li] = ln.replace(geo_path, "")
+
+			with open(os.path.join(geo_path, "layers_report.txt"), "w", encoding="utf-8") as fp:
+				fp.writelines(f"{msgs_list}\n")
+
 			InfoPopupList(app, msgs_list)
 
 	def exec_logiclayers_callback(self):
@@ -261,9 +229,12 @@ class App(ctk.CTk):
 			folder_dados = get_dados_folder()
 			pasta_concelho = CONCELHOS[self.concelho_escolhido]["pasta"]
 			cfgs = CONCELHOS[self.concelho_escolhido]["versoes"][self.versao_escolhida]
-			layer_field = cfgs["layer_field"]
+
 			geom_ext = cfgs["geom_ext"]
 			geom_path = cfgs["geom_path"]
+
+			if cfgs["geom_src_type"] == "SHP_CAD":
+				layer_field = "layer"
 
 			path_versao = os.path.join(folder_dados, 'PDM', pasta_concelho, self.versao_escolhida)
 			path = os.path.join(path_versao, *geom_path)

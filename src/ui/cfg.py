@@ -7,9 +7,8 @@ CONCELHOS = {
 			"2_revisao_AVISO_4731_2025_2": {
 				"tipo_numeracao": "TIPO2",
 				"lim_genfiles_regulamento": 1428,
-				"geom_format": "SHP",
+				"geom_src_type": "SHP_CAD",
                 "encoding": "cp1252",
-				"layer_field": "layer",
 				"geom_path": ["geo", "pub2025"]
 			}
 		}

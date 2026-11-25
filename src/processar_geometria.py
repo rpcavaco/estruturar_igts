@@ -20,12 +20,13 @@ from .ui.progress_bar import ProgressDialog
 os.environ["SHAPE_RESTORE_SHX"] = "YES"
 
 class GDALLog:
-    def __init__(self):
-        self.messages = []
+	def __init__(self):
+		self.messages = []
+		self.current_file = None
 
-    def handler(self, err_class, err_no, msg):
-        self.messages.append((err_class, err_no, msg))
-	
+	def handler(self, err_class, err_no, msg):
+		self.messages.append((self.current_file, err_class, err_no, msg))
+
 def corrigir_chars(p_layer_vals):
 	for i, val in enumerate(p_layer_vals):
 		p_layer_vals[i] = val.replace('Ã', 'Á')
@@ -62,15 +63,17 @@ def layer_name_for(path: str, used: set, use_parentdir = False) -> str:
 	used.add(fullname)
 	return fullname
 
-def transferir_para_geopkg(p_app, p_path, p_out_gpkg_path, p_geom_format, p_encoding, out_msgs, overwrite=True):
+def transferir_para_geopkg(p_app, p_path, p_out_gpkg_path, p_geom_src_type, p_encoding, out_msgs, overwrite=True):
 
 	gdal.UseExceptions()
 	ogr.UseExceptions()
 
 	del out_msgs[:]
 
-	if p_geom_format == "SHP":
+	if p_geom_src_type == "SHP_CAD":
 		geom_ext = ".shp"
+
+	assert not geom_ext is None
 
 	open_opts = [f"ENCODING={p_encoding}"]
 	gpkg_kwargs = dict(
@@ -107,6 +110,8 @@ def transferir_para_geopkg(p_app, p_path, p_out_gpkg_path, p_geom_format, p_enco
 	try:
 		with ProgressDialog(p_app, total=contagem, desc="Convertendo") as d:
 			for full_path, the_file in found_files:
+
+				log.current_file = the_file
 				
 				if d.cancelled: break
 
@@ -144,11 +149,14 @@ def transferir_para_geopkg(p_app, p_path, p_out_gpkg_path, p_geom_format, p_enco
 	finally:
 		gdal.PopErrorHandler()
 
-	for cls, no, msg in log.messages:
+	for the_file, cls, no, msg in log.messages:
 		tipo = "Erro"
 		if cls == gdal.CE_Warning:
 			tipo = "Aviso"
-		out_msgs.append(f"{tipo} {no}: {msg}")
+		if the_file is None:
+			out_msgs.append(f"{tipo} {no}: {msg}")
+		else:
+			out_msgs.append(f"[{the_file}] {tipo} {no}: {msg}")
 
 	return file_count
 
